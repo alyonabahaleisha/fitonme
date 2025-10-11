@@ -1,0 +1,352 @@
+{
+  "timestamp": "2025-10-06T02:05:59.007Z",
+  "routes": [
+    {
+      "path": "/",
+      "component": "Home /",
+      "file": "src/App.jsx"
+    },
+    {
+      "path": "/try-on",
+      "component": "TryOn /",
+      "file": "src/App.jsx"
+    },
+    {
+      "path": "/admin",
+      "component": "Admin /",
+      "file": "src/App.jsx"
+    }
+  ],
+  "analytics": {
+    "found": [],
+    "target": [
+      "Landing",
+      "StartOnboarding",
+      "PhotoUploaded",
+      "BodyScanSuccess",
+      "FirstLookGenerated",
+      "LookSaved",
+      "ShareTapped",
+      "StoreClickOut",
+      "PurchaseConfirmed"
+    ]
+  },
+  "performance": {
+    "asyncIssues": [
+      {
+        "type": "no_code_splitting",
+        "file": "src/main.jsx",
+        "severity": "medium",
+        "impact": "All routes bundled together; slow initial load"
+      },
+      {
+        "type": "no_code_splitting",
+        "file": "src/App.jsx",
+        "severity": "medium",
+        "impact": "All routes bundled together; slow initial load"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 23,
+        "code": "await fetch",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 24,
+        "code": "await res.blob",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 33,
+        "code": "await dataURLtoFile",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 34,
+        "code": "await fetch",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 37,
+        "code": "await dataURLtoFile",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 38,
+        "code": "await fetch",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 46,
+        "code": "await fetch",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 52,
+        "code": "await response.json",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/image-processor.js",
+        "line": 56,
+        "code": "await response.json",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/gemini-client.js",
+        "line": 27,
+        "code": "await model.generateContent",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/gemini-client.js",
+        "line": 28,
+        "code": "await result.response",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/gemini-client.js",
+        "line": 55,
+        "code": "await model.generateContent",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/lib/gemini-client.js",
+        "line": 65,
+        "code": "await result.response",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/hooks/useOutfitOverlay.js",
+        "line": 18,
+        "code": "await overlayOutfitOnPhoto",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/components/ShareModal.jsx",
+        "line": 17,
+        "code": "await addWatermark",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/components/PhotoUpload.jsx",
+        "line": 27,
+        "code": "await fileToBase64",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      },
+      {
+        "type": "blocking_await",
+        "file": "src/components/AdminOutfitUpload.jsx",
+        "line": 60,
+        "code": "await generateThumbnail",
+        "severity": "high",
+        "impact": "Blocks rendering; user sees frozen UI"
+      }
+    ],
+    "bundle": {
+      "totalSizeKB": "50.74",
+      "files": [
+        {
+          "file": "src/components/AdminOutfitUpload.jsx",
+          "size": 11747,
+          "sizeKB": "11.47"
+        },
+        {
+          "file": "src/components/OutfitCarousel.jsx",
+          "size": 6555,
+          "sizeKB": "6.40"
+        },
+        {
+          "file": "src/components/ShareModal.jsx",
+          "size": 6135,
+          "sizeKB": "5.99"
+        },
+        {
+          "file": "src/components/OutfitViewer.jsx",
+          "size": 6121,
+          "sizeKB": "5.98"
+        },
+        {
+          "file": "src/lib/image-processor.js",
+          "size": 4658,
+          "sizeKB": "4.55"
+        },
+        {
+          "file": "src/components/PhotoUpload.jsx",
+          "size": 4610,
+          "sizeKB": "4.50"
+        },
+        {
+          "file": "src/pages/Home.jsx",
+          "size": 3856,
+          "sizeKB": "3.77"
+        },
+        {
+          "file": "src/lib/gemini-client.js",
+          "size": 2348,
+          "sizeKB": "2.29"
+        },
+        {
+          "file": "src/store/useAppStore.js",
+          "size": 1807,
+          "sizeKB": "1.76"
+        },
+        {
+          "file": "src/pages/TryOn.jsx",
+          "size": 1716,
+          "sizeKB": "1.68"
+        }
+      ]
+    }
+  },
+  "ux": {
+    "friction": [
+      {
+        "type": "modal_no_escape",
+        "file": "src/store/useAppStore.js",
+        "severity": "low",
+        "impact": "User may feel trapped in modal",
+        "fix": "Add Escape key handler and backdrop click to close"
+      },
+      {
+        "type": "modal_no_escape",
+        "file": "src/pages/TryOn.jsx",
+        "severity": "low",
+        "impact": "User may feel trapped in modal",
+        "fix": "Add Escape key handler and backdrop click to close"
+      },
+      {
+        "type": "navigation_without_confirm",
+        "file": "src/pages/TryOn.jsx",
+        "severity": "low",
+        "impact": "User may lose work by accidentally navigating away",
+        "fix": "Add useEffect with window.onbeforeunload when dirty"
+      },
+      {
+        "type": "navigation_without_confirm",
+        "file": "src/pages/Home.jsx",
+        "severity": "low",
+        "impact": "User may lose work by accidentally navigating away",
+        "fix": "Add useEffect with window.onbeforeunload when dirty"
+      },
+      {
+        "type": "no_form_persistence",
+        "file": "src/components/ShareModal.jsx",
+        "severity": "medium",
+        "impact": "User loses form data on accidental navigation",
+        "fix": "Add localStorage.setItem() on form field changes"
+      },
+      {
+        "type": "modal_no_escape",
+        "file": "src/components/ShareModal.jsx",
+        "severity": "low",
+        "impact": "User may feel trapped in modal",
+        "fix": "Add Escape key handler and backdrop click to close"
+      },
+      {
+        "type": "no_form_persistence",
+        "file": "src/components/OutfitViewer.jsx",
+        "severity": "medium",
+        "impact": "User loses form data on accidental navigation",
+        "fix": "Add localStorage.setItem() on form field changes"
+      },
+      {
+        "type": "modal_no_escape",
+        "file": "src/components/OutfitViewer.jsx",
+        "severity": "low",
+        "impact": "User may feel trapped in modal",
+        "fix": "Add Escape key handler and backdrop click to close"
+      },
+      {
+        "type": "no_form_persistence",
+        "file": "src/components/OutfitCarousel.jsx",
+        "severity": "medium",
+        "impact": "User loses form data on accidental navigation",
+        "fix": "Add localStorage.setItem() on form field changes"
+      },
+      {
+        "type": "no_form_persistence",
+        "file": "src/components/AdminOutfitUpload.jsx",
+        "severity": "medium",
+        "impact": "User loses form data on accidental navigation",
+        "fix": "Add localStorage.setItem() on form field changes"
+      }
+    ]
+  },
+  "attribution": {
+    "issues": [
+      {
+        "type": "share_not_tracked",
+        "file": "src/store/useAppStore.js",
+        "severity": "high",
+        "fix": "Add analytics tracking for share events"
+      },
+      {
+        "type": "share_not_tracked",
+        "file": "src/pages/TryOn.jsx",
+        "severity": "high",
+        "fix": "Add analytics tracking for share events"
+      },
+      {
+        "type": "share_not_tracked",
+        "file": "src/components/ShareModal.jsx",
+        "severity": "high",
+        "fix": "Add analytics tracking for share events"
+      },
+      {
+        "type": "share_not_tracked",
+        "file": "src/components/OutfitViewer.jsx",
+        "severity": "high",
+        "fix": "Add analytics tracking for share events"
+      }
+    ]
+  },
+  "summary": {
+    "totalFiles": 15,
+    "routesFound": 3,
+    "analyticsEvents": 0,
+    "performanceIssues": 19,
+    "frictionPoints": 10,
+    "attributionIssues": 4,
+    "bundleSizeKB": "50.74"
+  }
+}

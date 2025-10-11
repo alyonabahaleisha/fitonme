@@ -1,0 +1,692 @@
+{
+  "wtp_summary": [
+    {
+      "segment": "Busy Professional",
+      "pricing_model": "subscription",
+      "mean": "$67.17",
+      "median": "$61.39",
+      "ci_95": "[$66.38, $67.89]",
+      "p25": "$51.09",
+      "p75": "$76.30"
+    },
+    {
+      "segment": "Busy Professional",
+      "pricing_model": "per_outfit",
+      "mean": "$9.70",
+      "median": "$8.91",
+      "ci_95": "[$9.58, $9.81]",
+      "p25": "$7.34",
+      "p75": "$11.03"
+    },
+    {
+      "segment": "Busy Professional",
+      "pricing_model": "bundle_10",
+      "mean": "$67.87",
+      "median": "$62.37",
+      "ci_95": "[$67.07, $68.68]",
+      "p25": "$51.38",
+      "p75": "$77.24"
+    },
+    {
+      "segment": "Gen-Z Social Shopper",
+      "pricing_model": "subscription",
+      "mean": "$25.10",
+      "median": "$24.54",
+      "ci_95": "[$24.95, $25.24]",
+      "p25": "$21.82",
+      "p75": "$27.65"
+    },
+    {
+      "segment": "Gen-Z Social Shopper",
+      "pricing_model": "per_outfit",
+      "mean": "$5.24",
+      "median": "$5.14",
+      "ci_95": "[$5.22, $5.27]",
+      "p25": "$4.64",
+      "p75": "$5.75"
+    },
+    {
+      "segment": "Gen-Z Social Shopper",
+      "pricing_model": "bundle_10",
+      "mean": "$36.71",
+      "median": "$36.00",
+      "ci_95": "[$36.51, $36.90]",
+      "p25": "$32.45",
+      "p75": "$40.22"
+    },
+    {
+      "segment": "Fashion-Anxious Men",
+      "pricing_model": "subscription",
+      "mean": "$35.44",
+      "median": "$33.95",
+      "ci_95": "[$35.08, $35.81]",
+      "p25": "$29.04",
+      "p75": "$39.96"
+    },
+    {
+      "segment": "Fashion-Anxious Men",
+      "pricing_model": "per_outfit",
+      "mean": "$5.05",
+      "median": "$4.83",
+      "ci_95": "[$4.99, $5.11]",
+      "p25": "$4.14",
+      "p75": "$5.72"
+    },
+    {
+      "segment": "Fashion-Anxious Men",
+      "pricing_model": "bundle_10",
+      "mean": "$35.34",
+      "median": "$33.80",
+      "ci_95": "[$34.98, $35.70]",
+      "p25": "$28.95",
+      "p75": "$40.05"
+    }
+  ],
+  "elasticity": [
+    {
+      "segment": "busy_professional",
+      "price_elasticity": -0.35958755596936925,
+      "optimal_price_sub": 45.0,
+      "demand_curve": [
+        [
+          5,
+          1.0
+        ],
+        [
+          10,
+          1.0
+        ],
+        [
+          15,
+          1.0
+        ],
+        [
+          20,
+          1.0
+        ],
+        [
+          25,
+          1.0
+        ],
+        [
+          30,
+          0.9994285714285714
+        ],
+        [
+          35,
+          0.9911428571428571
+        ],
+        [
+          40,
+          0.9514285714285714
+        ],
+        [
+          45,
+          0.8802857142857143
+        ],
+        [
+          50,
+          0.7711428571428571
+        ],
+        [
+          55,
+          0.6517142857142857
+        ]
+      ]
+    },
+    {
+      "segment": "genz_social",
+      "price_elasticity": -3.232291307478353,
+      "optimal_price_sub": 20.0,
+      "demand_curve": [
+        [
+          5,
+          1.0
+        ],
+        [
+          10,
+          1.0
+        ],
+        [
+          15,
+          0.998
+        ],
+        [
+          20,
+          0.88125
+        ],
+        [
+          25,
+          0.46125
+        ],
+        [
+          30,
+          0.1445
+        ],
+        [
+          35,
+          0.03825
+        ],
+        [
+          40,
+          0.00625
+        ],
+        [
+          45,
+          0.0005
+        ],
+        [
+          50,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ]
+      ]
+    },
+    {
+      "segment": "fashion_anxious_men",
+      "price_elasticity": -1.948849317868892,
+      "optimal_price_sub": 25.0,
+      "demand_curve": [
+        [
+          5,
+          1.0
+        ],
+        [
+          10,
+          1.0
+        ],
+        [
+          15,
+          1.0
+        ],
+        [
+          20,
+          0.9924
+        ],
+        [
+          25,
+          0.9132
+        ],
+        [
+          30,
+          0.7088
+        ],
+        [
+          35,
+          0.448
+        ],
+        [
+          40,
+          0.2484
+        ],
+        [
+          45,
+          0.1308
+        ],
+        [
+          50,
+          0.0684
+        ],
+        [
+          55,
+          0.0368
+        ]
+      ]
+    }
+  ],
+  "feature_scores": {
+    "busy_professional": {
+      "upload_photo_body_scan": 7.5,
+      "combine_full_outfits": 9.5,
+      "direct_store_links": 9.0,
+      "save_share_looks": 5.0,
+      "outfit_dupes_finder": 4.0,
+      "occasion_packs": 9.5,
+      "confidence_mode": 8.5,
+      "creator_sets_marketplace": 6.0
+    },
+    "genz_social": {
+      "upload_photo_body_scan": 8.5,
+      "combine_full_outfits": 8.0,
+      "direct_store_links": 9.5,
+      "save_share_looks": 10.0,
+      "outfit_dupes_finder": 10.0,
+      "occasion_packs": 6.5,
+      "confidence_mode": 3.0,
+      "creator_sets_marketplace": 9.5
+    },
+    "fashion_anxious_men": {
+      "upload_photo_body_scan": 6.0,
+      "combine_full_outfits": 9.0,
+      "direct_store_links": 8.5,
+      "save_share_looks": 4.0,
+      "outfit_dupes_finder": 5.5,
+      "occasion_packs": 8.5,
+      "confidence_mode": 10.0,
+      "creator_sets_marketplace": 7.0
+    }
+  },
+  "jtbd_forces": {
+    "busy_professional": {
+      "job": "Help me look stylish without thinking about it",
+      "push": [
+        "Boring wardrobe",
+        "No time to shop",
+        "Decision fatigue"
+      ],
+      "pull": [
+        "Pre-vetted outfits",
+        "Save 3+ hours/week",
+        "Effortless style"
+      ],
+      "anxiety": [
+        "Will AI understand my style?",
+        "Quality of recommendations",
+        "Return hassle"
+      ],
+      "habit": [
+        "Already have go-to stores",
+        "Personal shopper relationships",
+        "Shopping as stress relief"
+      ]
+    },
+    "genz_social": {
+      "job": "Help me look like my favorite influencer without the guesswork",
+      "push": [
+        "Can't recreate IG looks",
+        "Budget constraints",
+        "Too many options"
+      ],
+      "pull": [
+        "Instant outfit dupes",
+        "Shareable transformations",
+        "Social validation"
+      ],
+      "anxiety": [
+        "Will it actually look like the inspo?",
+        "Friends already have it",
+        "Shipping time"
+      ],
+      "habit": [
+        "Hours scrolling for deals",
+        "Pinterest boards",
+        "Ask friends for opinions"
+      ]
+    },
+    "fashion_anxious_men": {
+      "job": "Make me look better without making me learn fashion",
+      "push": [
+        "Shopping is overwhelming",
+        "Don't know what matches",
+        "Low confidence"
+      ],
+      "pull": [
+        "No-brainer formulas",
+        "Look good in photos",
+        "Simple process"
+      ],
+      "anxiety": [
+        "Will it fit?",
+        "Too trendy/young?",
+        "Wasting money on wrong choices"
+      ],
+      "habit": [
+        "Buy same brands",
+        "Let partner choose",
+        "Avoid shopping entirely"
+      ]
+    }
+  },
+  "acquisition_funnels": [
+    {
+      "segment": "busy_professional",
+      "channel": "TikTok",
+      "impressions": 80000,
+      "ctr": {
+        "mean": 0.015228368584904497,
+        "ci_lower": 0.007674496950865089,
+        "ci_upper": 0.02264063654124505,
+        "std": 0.0038870405050043326
+      },
+      "cvr_signup": {
+        "mean": 0.07923631418291334,
+        "ci_lower": 0.04912801868123439,
+        "ci_upper": 0.10872868249795012,
+        "std": 0.015300624541876827
+      },
+      "try_first_look": {
+        "mean": 0.5491106684635961,
+        "ci_lower": 0.40108368976328085,
+        "ci_upper": 0.7040323293918191,
+        "std": 0.07985381096246959
+      },
+      "share_rate": {
+        "mean": 0.24963990050952384,
+        "ci_lower": 0.12728268174335475,
+        "ci_upper": 0.3642100435849185,
+        "std": 0.06079042100786465
+      },
+      "day7_retention": {
+        "mean": 0.34983866065197733,
+        "ci_lower": 0.21390220505929333,
+        "ci_upper": 0.4791704920275592,
+        "std": 0.0686094642274284
+      },
+      "absolute_numbers": {
+        "clicks": 1218,
+        "signups": 96,
+        "tried_first_look": 53,
+        "shared": 13,
+        "day7_retained": 33
+      },
+      "cac_range": [
+        35,
+        60
+      ]
+    },
+    {
+      "segment": "busy_professional",
+      "channel": "LinkedIn",
+      "impressions": 100000,
+      "ctr": {
+        "mean": 0.024834174069515675,
+        "ci_lower": 0.015200492455995872,
+        "ci_upper": 0.035030674975594256,
+        "std": 0.005114264285693245
+      },
+      "cvr_signup": {
+        "mean": 0.11961609601692912,
+        "ci_lower": 0.0829453620041485,
+        "ci_upper": 0.15743047949910063,
+        "std": 0.019317259531143625
+      },
+      "try_first_look": {
+        "mean": 0.6466738168590027,
+        "ci_lower": 0.49547020931461416,
+        "ci_upper": 0.809356575141799,
+        "std": 0.08059665135929533
+      },
+      "share_rate": {
+        "mean": 0.15025988667775095,
+        "ci_lower": 0.04601938791047471,
+        "ci_upper": 0.2552093595488827,
+        "std": 0.05076088547944412
+      },
+      "day7_retention": {
+        "mean": 0.45003916542249317,
+        "ci_lower": 0.2913817105346086,
+        "ci_upper": 0.6179211358634098,
+        "std": 0.08139718366360693
+      },
+      "absolute_numbers": {
+        "clicks": 2483,
+        "signups": 297,
+        "tried_first_look": 192,
+        "shared": 28,
+        "day7_retained": 133
+      },
+      "cac_range": [
+        25,
+        45
+      ]
+    },
+    {
+      "segment": "genz_social",
+      "channel": "TikTok",
+      "impressions": 250000,
+      "ctr": {
+        "mean": 0.0452386256909949,
+        "ci_lower": 0.02903104774733517,
+        "ci_upper": 0.06188084180627891,
+        "std": 0.008229568248211071
+      },
+      "cvr_signup": {
+        "mean": 0.17984684433763695,
+        "ci_lower": 0.12420332898249983,
+        "ci_upper": 0.23424014490769524,
+        "std": 0.029009726929470497
+      },
+      "try_first_look": {
+        "mean": 0.749804051609432,
+        "ci_lower": 0.6312123596030992,
+        "ci_upper": 0.8591996707287728,
+        "std": 0.060326206413176243
+      },
+      "share_rate": {
+        "mean": 0.5461323905733669,
+        "ci_lower": 0.38842399311813375,
+        "ci_upper": 0.6982267413587939,
+        "std": 0.08161754537376614
+      },
+      "day7_retention": {
+        "mean": 0.500736826401058,
+        "ci_lower": 0.33487367092592807,
+        "ci_upper": 0.6802179238699089,
+        "std": 0.08705890929777808
+      },
+      "absolute_numbers": {
+        "clicks": 11309,
+        "signups": 2034,
+        "tried_first_look": 1525,
+        "shared": 832,
+        "day7_retained": 1018
+      },
+      "cac_range": [
+        8,
+        18
+      ]
+    },
+    {
+      "segment": "genz_social",
+      "channel": "LinkedIn",
+      "impressions": 30000,
+      "ctr": {
+        "mean": 0.007975039657367004,
+        "ci_lower": 0.0015133428826656172,
+        "ci_upper": 0.01385080376455469,
+        "std": 0.003082053162133019
+      },
+      "cvr_signup": {
+        "mean": 0.05047210901219775,
+        "ci_lower": 0.026767745048260173,
+        "ci_upper": 0.07368770627960043,
+        "std": 0.012151523163317636
+      },
+      "try_first_look": {
+        "mean": 0.49308409039430673,
+        "ci_lower": 0.2957723853114381,
+        "ci_upper": 0.6875396444627553,
+        "std": 0.10164543901727861
+      },
+      "share_rate": {
+        "mean": 0.3036274986127697,
+        "ci_lower": 0.14750082636998976,
+        "ci_upper": 0.45960014382048164,
+        "std": 0.07925512135026898
+      },
+      "day7_retention": {
+        "mean": 0.24838030228567037,
+        "ci_lower": 0.09206346010816668,
+        "ci_upper": 0.40851242138474175,
+        "std": 0.07897884100458713
+      },
+      "absolute_numbers": {
+        "clicks": 239,
+        "signups": 12,
+        "tried_first_look": 5,
+        "shared": 1,
+        "day7_retained": 2
+      },
+      "cac_range": [
+        45,
+        80
+      ]
+    },
+    {
+      "segment": "fashion_anxious_men",
+      "channel": "TikTok",
+      "impressions": 120000,
+      "ctr": {
+        "mean": 0.02763453538916795,
+        "ci_lower": 0.015781983689417193,
+        "ci_upper": 0.03956702231724523,
+        "std": 0.005896909869353198
+      },
+      "cvr_signup": {
+        "mean": 0.10113369598044482,
+        "ci_lower": 0.06345059723897141,
+        "ci_upper": 0.14219958072136904,
+        "std": 0.02015069365045562
+      },
+      "try_first_look": {
+        "mean": 0.6518081183232236,
+        "ci_lower": 0.4993329971094616,
+        "ci_upper": 0.804252334928616,
+        "std": 0.07786983149335809
+      },
+      "share_rate": {
+        "mean": 0.20172405101730428,
+        "ci_lower": 0.08610547670394876,
+        "ci_upper": 0.32333440057974966,
+        "std": 0.060308525059435854
+      },
+      "day7_retention": {
+        "mean": 0.47724012440373803,
+        "ci_lower": 0.3295382352041823,
+        "ci_upper": 0.6198813000319757,
+        "std": 0.07625009417388107
+      },
+      "absolute_numbers": {
+        "clicks": 3316,
+        "signups": 335,
+        "tried_first_look": 218,
+        "shared": 44,
+        "day7_retained": 160
+      },
+      "cac_range": [
+        22,
+        40
+      ]
+    },
+    {
+      "segment": "fashion_anxious_men",
+      "channel": "LinkedIn",
+      "impressions": 75000,
+      "ctr": {
+        "mean": 0.02005557218173056,
+        "ci_lower": 0.010253024350441804,
+        "ci_upper": 0.02987750194801689,
+        "std": 0.005023598384277924
+      },
+      "cvr_signup": {
+        "mean": 0.15002674109447145,
+        "ci_lower": 0.10416081839527368,
+        "ci_upper": 0.19868250016457883,
+        "std": 0.025186595242632694
+      },
+      "try_first_look": {
+        "mean": 0.6991223026419084,
+        "ci_lower": 0.5653589143332786,
+        "ci_upper": 0.8394423800591323,
+        "std": 0.06915780026472905
+      },
+      "share_rate": {
+        "mean": 0.10100234804108532,
+        "ci_lower": 0.0211309028405788,
+        "ci_upper": 0.17643103937434856,
+        "std": 0.03896774421731979
+      },
+      "day7_retention": {
+        "mean": 0.5477637447013272,
+        "ci_lower": 0.3951706984631898,
+        "ci_upper": 0.7043120306107173,
+        "std": 0.07991629810509453
+      },
+      "absolute_numbers": {
+        "clicks": 1504,
+        "signups": 225,
+        "tried_first_look": 157,
+        "shared": 15,
+        "day7_retained": 123
+      },
+      "cac_range": [
+        18,
+        35
+      ]
+    }
+  ],
+  "validation_experiments": {
+    "busy_professional": {
+      "title": "Corporate Professional Interview Study",
+      "method": "In-depth interviews + price testing",
+      "steps": [
+        "1. Recruit 20 corporate professionals (LinkedIn + referrals)",
+        "2. Pre-screen: Must shop <1x/month, care about appearance, income >$70k",
+        "3. Show mockups of 5 pre-styled \"work week\" outfit sets",
+        "4. Conduct 30-min interviews asking:",
+        "   - How much time spent on outfit decisions weekly?",
+        "   - Current shopping pain points",
+        "   - Van Westendorp pricing: Too cheap? Cheap? Expensive? Too expensive?",
+        "5. A/B test pricing: $29/mo vs $49/mo tier messaging",
+        "6. Track email signup rate by price point shown"
+      ],
+      "success_threshold": {
+        "min_wtp_median": 35,
+        "email_signup_rate": 0.4,
+        "time_saved_claim": "3+ hours/week"
+      },
+      "stop_rule": "If <30% would pay $25/mo, pivot to pay-per-outfit model",
+      "iterate_rule": "If anxiety around \"AI understanding style\" >60%, add style quiz flow"
+    },
+    "genz_social": {
+      "title": "TikTok Outfit Transformation Virality Test",
+      "method": "UGC content test + engagement tracking",
+      "steps": [
+        "1. Create 10 TikTok videos: \"Influencer outfit for $50\" format",
+        "2. Show side-by-side: Expensive IG look \u2192 AI-matched affordable dupe",
+        "3. Include swipe-up link to waitlist",
+        "4. Partner with 3 micro-influencers (50k-200k followers) for posts",
+        "5. Track for 2 weeks:",
+        "   - Save rate (benchmark: >8% = high intent)",
+        "   - DM requests asking \"how did you do this?\"",
+        "   - Waitlist signups per 1k views",
+        "   - Share rate + duets/stitches",
+        "6. Run IG story polls: \"Would you pay $3 per outfit dupe?\" Y/N"
+      ],
+      "success_threshold": {
+        "save_rate": 0.08,
+        "dm_request_rate": 0.02,
+        "waitlist_per_1k_views": 5,
+        "poll_yes_rate": 0.6
+      },
+      "stop_rule": "If save rate <3%, creative not resonating - test new hooks",
+      "iterate_rule": "If share rate high but signup low, reduce friction (remove waitlist, add instant try-on)"
+    },
+    "fashion_anxious_men": {
+      "title": "Dating Profile Photo A/B Test (Partner with Dating Coaches)",
+      "method": "Styled vs. unstyled profile performance",
+      "steps": [
+        "1. Partner with 3-5 dating coaches with male clients",
+        "2. Recruit 30 men struggling with dating app photos",
+        "3. Control group: Current photos",
+        "4. Test group: AI-styled outfits \u2192 new photos in suggested looks",
+        "5. Run profiles for 2 weeks, measure:",
+        "   - Match rate increase",
+        "   - Right swipe rate (if data available)",
+        "   - Conversation start rate",
+        "6. Exit survey: \"How confident did you feel?\" (1-10)",
+        "7. Ask: \"Would you pay $X for outfit recommendations?\" (test $15, $25, $40 one-time)"
+      ],
+      "success_threshold": {
+        "match_rate_lift": 1.5,
+        "confidence_score": 7.5,
+        "wtp_40_percent": 0.35
+      },
+      "stop_rule": "If match rate lift <20%, styling not differentiated enough",
+      "iterate_rule": "If confidence high but WTP low, bundle with photography service for higher perceived value"
+    }
+  }
+}
