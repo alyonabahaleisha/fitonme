@@ -43,7 +43,8 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
     formData.append('clothingImage', outfitFile);
 
     // Call the backend API
-    const response = await fetch('http://localhost:3001/api/try-on', {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const response = await fetch(`${apiUrl}/api/try-on`, {
       method: 'POST',
       body: formData,
     });
