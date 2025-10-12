@@ -51,7 +51,11 @@ function fileToGenerativePart(path, mimeType) {
   };
 }
 
-// Health check endpoint
+// Health check endpoints
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'FitOnMe API Server is running' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
@@ -146,7 +150,8 @@ The final image should appear as if the person is naturally wearing this clothin
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`API endpoint: http://localhost:${PORT}/api/try-on`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`API endpoint: http://0.0.0.0:${PORT}/api/try-on`);
+  console.log(`Health check: http://0.0.0.0:${PORT}/api/health`);
 });
