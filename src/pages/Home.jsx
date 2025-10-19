@@ -48,16 +48,6 @@ const Home = () => {
                 How It Works
               </button>
             </div>
-
-            {/* Admin Link */}
-            <div className="pt-4">
-              <button
-                onClick={() => navigate('/admin')}
-                className="text-gray-600 hover:text-gray-900 text-sm underline transition-colors"
-              >
-                Admin Access
-              </button>
-            </div>
           </div>
         </div>
 
