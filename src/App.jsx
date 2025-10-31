@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import Index from './pages/Index';
 import TryOn from './pages/TryOn';
 import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
@@ -30,7 +30,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Index />} />
         <Route path="/try-on" element={<TryOn />} />
       </Routes>
     </Router>
