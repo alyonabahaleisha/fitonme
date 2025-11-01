@@ -10,61 +10,128 @@ interface PlayfulCarouselProps {
   outfits: Outfit[];
   autoPlayMs?: number;
   onSelect: (outfitId: string) => void;
+  externalIsHovered?: boolean;
+  onHoverChange?: (isHovered: boolean) => void;
 }
 
-const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect }: PlayfulCarouselProps) => {
+const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect, externalIsHovered, onHoverChange }: PlayfulCarouselProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const [internalIsHovered, setInternalIsHovered] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const lastInteractionRef = useRef<number>(0);
-  const onSelectRef = useRef(onSelect);
 
-  // Keep ref updated
+  // Use external hover state if provided, otherwise use internal
+  const isHovered = externalIsHovered !== undefined ? externalIsHovered : internalIsHovered;
+
+  const lastInteractionRef = useRef<number>(0);
+  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const advanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onSelectRef = useRef(onSelect);
+  const isHoveredRef = useRef(isHovered);
+  const isPausedRef = useRef(isPaused);
+
+  // Keep refs updated
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
+
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+  }, [isHovered]);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
   // Auto-advance on mount
   useEffect(() => {
     onSelectRef.current(outfits[0].id);
   }, []);
 
+  // Cleanup pause timeout on unmount
   useEffect(() => {
-    if (isHovered || isPaused) return;
+    return () => {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current);
+      }
+    };
+  }, []);
 
-    let timeoutId: NodeJS.Timeout;
+  useEffect(() => {
+    // Clear any existing timeout when this effect runs
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
+    }
+
+    // Don't start new timeout if hovered or paused
+    if (isHovered || isPaused) {
+      return;
+    }
+
     let currentDelay = autoPlayMs;
 
     const advance = () => {
+      // Check if hovered/paused at the START to prevent race conditions
+      if (isHoveredRef.current || isPausedRef.current) {
+        return;
+      }
+
+      let nextIndex: number;
+
       setSelectedIndex((prev) => {
-        const next = (prev + 1) % outfits.length;
-        onSelectRef.current(outfits[next].id);
+        nextIndex = (prev + 1) % outfits.length;
 
         // Calm and happy heartbeat pattern: gentle rhythm
         // Two gentle beats, then a relaxed pause
-        if ((next + 1) % 3 === 0) {
+        if ((nextIndex + 1) % 3 === 0) {
           currentDelay = autoPlayMs * 1.8; // Relaxed pause after 2 gentle beats
         } else {
           currentDelay = autoPlayMs * 1.2; // Gentle beat
         }
 
-        return next;
+        return nextIndex;
       });
 
-      timeoutId = setTimeout(advance, currentDelay);
+      // Update model image
+      onSelectRef.current(outfits[nextIndex!].id);
+
+      // Schedule next advance ONLY if not hovered or paused
+      if (!isHoveredRef.current && !isPausedRef.current) {
+        advanceTimeoutRef.current = setTimeout(advance, currentDelay);
+      }
     };
 
-    timeoutId = setTimeout(advance, currentDelay);
+    // Start the first timeout
+    advanceTimeoutRef.current = setTimeout(advance, currentDelay);
 
-    return () => clearTimeout(timeoutId);
+    // Cleanup: clear timeout when effect re-runs or component unmounts
+    return () => {
+      if (advanceTimeoutRef.current) {
+        clearTimeout(advanceTimeoutRef.current);
+        advanceTimeoutRef.current = null;
+      }
+    };
   }, [isHovered, isPaused, autoPlayMs, outfits.length]);
 
   const handleCardClick = (index: number) => {
     setSelectedIndex(index);
     onSelect(outfits[index].id);
     lastInteractionRef.current = Date.now();
+
+    // Clear any existing pause timeout
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current);
+    }
+
+    // Update ref IMMEDIATELY before state update
+    isPausedRef.current = true;
     setIsPaused(true);
-    setTimeout(() => setIsPaused(false), 4000);
+
+    // Set a timeout to unpause after 4 seconds (only if user stays hovered)
+    pauseTimeoutRef.current = setTimeout(() => {
+      isPausedRef.current = false;
+      setIsPaused(false);
+    }, 4000);
   };
 
   const getCardStyle = (index: number) => {
@@ -99,11 +166,43 @@ const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect }: PlayfulCarous
     };
   };
 
+  const handleMouseEnter = () => {
+    // Clear the advance timeout IMMEDIATELY
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
+    }
+
+    // Notify parent or update internal state
+    if (onHoverChange) {
+      onHoverChange(true);
+    } else {
+      setInternalIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Clear the pause timeout when mouse leaves, allowing carousel to resume immediately
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current);
+      pauseTimeoutRef.current = null;
+    }
+    isPausedRef.current = false;
+    setIsPaused(false);
+
+    // Notify parent or update internal state
+    if (onHoverChange) {
+      onHoverChange(false);
+    } else {
+      setInternalIsHovered(false);
+    }
+  };
+
   return (
     <div
       className="relative w-full overflow-visible max-w-5xl mx-auto"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div 
         className="relative h-[280px] lg:h-[360px] xl:h-[380px] flex items-center justify-center pt-8 lg:pt-12"

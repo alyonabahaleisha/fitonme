@@ -36,6 +36,7 @@ const Index = () => {
   const [swapCount, setSwapCount] = useState(0);
   const [showNudge, setShowNudge] = useState(false);
   const [dwellTime, setDwellTime] = useState(0);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
   const uploadButtonRef = useRef(null);
 
   const outfits = [
@@ -139,6 +140,8 @@ const Index = () => {
                 outfits={outfits}
                 autoPlayMs={1000}
                 onSelect={handleOutfitSelect}
+                externalIsHovered={isCarouselHovered}
+                onHoverChange={setIsCarouselHovered}
               />
             </div>
           </div>
@@ -195,6 +198,8 @@ const Index = () => {
                   outfits={outfits}
                   autoPlayMs={1000}
                   onSelect={handleOutfitSelect}
+                  externalIsHovered={isCarouselHovered}
+                  onHoverChange={setIsCarouselHovered}
                 />
               </div>
             </div>
