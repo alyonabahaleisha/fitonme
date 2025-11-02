@@ -124,16 +124,16 @@ const TryOn = () => {
           </button>
         </div>
 
-        <div className="grid lg:grid-cols-[350px_1fr] gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-[auto_1fr] gap-8 lg:gap-12">
           {/* Left Sidebar - Avatar */}
           <div className="space-y-6">
             <div className="sticky top-8">
-              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group">
+              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group" style={{ width: 'fit-content' }}>
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '85vh' }}>
+                <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '85vh', width: 'fit-content' }}>
                   {isProcessing ? (
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center">
