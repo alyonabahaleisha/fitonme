@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Upload, ArrowLeft, User } from 'lucide-react';
 import OutfitCarousel from '../components/OutfitCarousel';
 import ShareModal from '../components/ShareModal';
+import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
 import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 
@@ -11,6 +12,8 @@ const TryOn = () => {
   const { userPhoto, outfits, currentOutfit, setCurrentOutfit, setUserPhoto } = useAppStore();
   const [displayImage, setDisplayImage] = useState(null);
   const [hasAppliedOutfit, setHasAppliedOutfit] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(false);
+  const fileInputRef = useRef(null);
   const { applyOutfit, isProcessing } = useOutfitOverlay();
 
   useEffect(() => {
@@ -64,26 +67,36 @@ const TryOn = () => {
   };
 
   const handlePhotoUpload = () => {
-    // Trigger file input
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setUserPhoto(event.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
+    setShowGuidelines(true);
+  };
+
+  const handleChoosePhoto = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setUserPhoto(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
-    <section className="min-h-screen gradient-bg py-12 px-4 md:py-20">
-      <div className="container mx-auto max-w-7xl">
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      <section className="min-h-screen gradient-bg py-12 px-4 md:py-20">
+        <div className="container mx-auto max-w-7xl">
         {/* Back Button */}
         <button
           onClick={handleBack}
@@ -183,13 +196,20 @@ const TryOn = () => {
             />
           </div>
         </div>
-      </div>
 
-      <ShareModal
-        imageToShare={displayImage || userPhoto}
-        outfitName={currentOutfit?.name}
+        <ShareModal
+          imageToShare={displayImage || userPhoto}
+          outfitName={currentOutfit?.name}
+        />
+      </div>
+      </section>
+
+      <PhotoGuidelinesModal
+        isOpen={showGuidelines}
+        onClose={() => setShowGuidelines(false)}
+        onChoosePhoto={handleChoosePhoto}
       />
-    </section>
+    </>
   );
 };
 

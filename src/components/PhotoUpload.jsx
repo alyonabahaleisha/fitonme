@@ -2,12 +2,14 @@ import { useState, useRef } from 'react';
 import { Upload, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { validatePhoto, fileToBase64 } from '../lib/image-processor';
 import useAppStore from '../store/useAppStore';
+import PhotoGuidelinesModal from './PhotoGuidelinesModal';
 
 const PhotoUpload = ({ onUploadComplete }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(false);
   const fileInputRef = useRef(null);
   const { setUserPhoto } = useAppStore();
 
@@ -68,6 +70,12 @@ const PhotoUpload = ({ onUploadComplete }) => {
   };
 
   const handleClick = () => {
+    if (!preview) {
+      setShowGuidelines(true);
+    }
+  };
+
+  const handleChoosePhoto = () => {
     fileInputRef.current?.click();
   };
 
@@ -153,6 +161,12 @@ const PhotoUpload = ({ onUploadComplete }) => {
           <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
+
+      <PhotoGuidelinesModal
+        isOpen={showGuidelines}
+        onClose={() => setShowGuidelines(false)}
+        onChoosePhoto={handleChoosePhoto}
+      />
     </div>
   );
 };

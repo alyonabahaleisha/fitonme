@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Upload, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import PhotoGuidelinesModal from "./PhotoGuidelinesModal";
+import useAppStore from "@/store/useAppStore";
 
 interface UploadButtonProps {
   variant?: "default" | "hero" | "secondary";
@@ -11,12 +14,19 @@ interface UploadButtonProps {
 }
 
 const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUpload }: UploadButtonProps) => {
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showGuidelines, setShowGuidelines] = useState(false);
   const { toast } = useToast();
+  const { setUserPhoto } = useAppStore();
 
   const handleClick = () => {
+    setShowGuidelines(true);
+  };
+
+  const handleChoosePhoto = () => {
     fileInputRef.current?.click();
   };
 
@@ -44,36 +54,47 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
       return;
     }
 
-    setIsProcessing(true);
-    setProgress(0);
+    // Convert file to base64 for storage
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const photoData = event.target?.result as string;
 
-    // Simulate optimistic progress
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 60) {
-          clearInterval(progressInterval);
-          return 60;
-        }
-        return prev + Math.random() * 20;
-      });
-    }, 200);
+      setIsProcessing(true);
+      setProgress(0);
 
-    // In production, this would upload and process
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setProgress(100);
-      onUpload?.(file);
-      
-      toast({
-        title: "Photo uploaded!",
-        description: "Preparing your personalized try-on experience...",
-      });
+      // Simulate optimistic progress
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 60) {
+            clearInterval(progressInterval);
+            return 60;
+          }
+          return prev + Math.random() * 20;
+        });
+      }, 200);
 
-      // Redirect to try-on page
+      // In production, this would upload and process
       setTimeout(() => {
-        window.location.href = "/try";
-      }, 800);
-    }, 1500);
+        clearInterval(progressInterval);
+        setProgress(100);
+
+        // Save photo to store
+        setUserPhoto(photoData);
+        onUpload?.(file);
+
+        toast({
+          title: "Photo uploaded!",
+          description: "Preparing your personalized try-on experience...",
+        });
+
+        // Redirect to try-on page
+        setTimeout(() => {
+          navigate("/try-on");
+        }, 800);
+      }, 1500);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -86,7 +107,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
         onChange={handleFileChange}
         className="hidden"
       />
-      
+
       {isProcessing ? (
         <div className={`${fullWidth ? "w-full" : ""}`}>
           <div className="bg-card rounded-2xl p-4 border border-border">
@@ -121,6 +142,12 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
           Upload Your Photo
         </Button>
       )}
+
+      <PhotoGuidelinesModal
+        isOpen={showGuidelines}
+        onClose={() => setShowGuidelines(false)}
+        onChoosePhoto={handleChoosePhoto}
+      />
     </>
   );
 };

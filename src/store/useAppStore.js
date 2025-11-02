@@ -49,8 +49,9 @@ const useAppStore = create(
     {
       name: 'godlovesme-storage',
       partialize: (state) => ({
-        // Only persist favorites - exclude outfits, userPhoto, and processedImages to avoid quota issues
+        // Persist favorites and userPhoto - exclude outfits and processedImages to avoid quota issues
         favorites: state.favorites,
+        userPhoto: state.userPhoto,
       }),
     }
   )
