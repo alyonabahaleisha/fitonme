@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Upload, ArrowLeft, User } from 'lucide-react';
+import { Sparkles, Upload, ArrowLeft, User, MoreVertical } from 'lucide-react';
 import OutfitCarousel from '../components/OutfitCarousel';
 import ShareModal from '../components/ShareModal';
 import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
@@ -13,8 +13,15 @@ const TryOn = () => {
   const [displayImage, setDisplayImage] = useState(null);
   const [hasAppliedOutfit, setHasAppliedOutfit] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const fileInputRef = useRef(null);
   const { applyOutfit, isProcessing } = useOutfitOverlay();
+
+  const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night'];
+
+  const filteredOutfits = selectedCategory === 'All'
+    ? outfits
+    : outfits.filter(outfit => outfit.category === selectedCategory);
 
   useEffect(() => {
     // Set first outfit as current if none selected
@@ -97,25 +104,36 @@ const TryOn = () => {
 
       <section className="min-h-screen gradient-bg py-12 px-4 md:py-20">
         <div className="container mx-auto max-w-7xl">
-        {/* Back Button */}
-        <button
-          onClick={handleBack}
-          className="mb-6 flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors font-medium"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Home
-        </button>
+        {/* Header with Back Button and Upload Button */}
+        <div className="mb-6 flex items-center justify-between">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors font-medium"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Home
+          </button>
 
-        <div className="grid lg:grid-cols-[280px_1fr] gap-8 lg:gap-12">
+          <button
+            onClick={handlePhotoUpload}
+            className="bg-coral-500 hover:bg-coral-600 text-white font-semibold px-6 py-2.5 rounded-full flex items-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg"
+            style={{ backgroundColor: '#ff6b5a' }}
+          >
+            <Upload className="w-4 h-4" />
+            Upload Your Photo
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-[350px_1fr] gap-8 lg:gap-12">
           {/* Left Sidebar - Avatar */}
           <div className="space-y-6">
             <div className="sticky top-8">
-              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 group">
+              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group">
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="aspect-[3/7] bg-gradient-to-b from-gray-100 to-gray-200 relative">
+                <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '85vh' }}>
                   {isProcessing ? (
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center">
@@ -124,17 +142,37 @@ const TryOn = () => {
                       </div>
                     </div>
                   ) : hasAppliedOutfit && displayImage ? (
-                    <img
-                      src={displayImage}
-                      alt="Your avatar with outfit"
-                      className="h-full w-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={displayImage}
+                        alt="Your avatar with outfit"
+                        className="h-full w-full object-cover"
+                      />
+                      {/* Three Dots Menu - On top of the outfit image */}
+                      <button
+                        onClick={handlePhotoUpload}
+                        className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Change photo"
+                      >
+                        <MoreVertical className="w-5 h-5 text-gray-700" />
+                      </button>
+                    </>
                   ) : userPhoto ? (
-                    <img
-                      src={userPhoto}
-                      alt="Your photo"
-                      className="h-full w-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={userPhoto}
+                        alt="Your photo"
+                        className="h-full w-full object-cover"
+                      />
+                      {/* Three Dots Menu - On top of the image */}
+                      <button
+                        onClick={handlePhotoUpload}
+                        className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Change photo"
+                      >
+                        <MoreVertical className="w-5 h-5 text-gray-700" />
+                      </button>
+                    </>
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center text-gray-400">
@@ -149,9 +187,6 @@ const TryOn = () => {
                   {!userPhoto && (
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/50 to-transparent" />
                   )}
-
-                  {/* Glow Border on Hover */}
-                  <div className="absolute inset-0 border-4 border-accent/0 group-hover:border-accent/50 rounded-3xl transition-all duration-300" />
                 </div>
 
                 {/* Upload Button Overlay - Only show when no photo uploaded */}
@@ -181,18 +216,38 @@ const TryOn = () => {
 
           {/* Right Side - Outfit Grid */}
           <div className="space-y-6">
-            <div className="space-y-2">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 flex items-center gap-3">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
                 <Sparkles className="h-8 w-8 text-accent" />
-                Try On Outfits
-              </h2>
-              <p className="text-gray-700 text-lg">
-                {userPhoto ? 'Select an outfit and click "Try On" to see it on your photo' : 'Upload your photo first, then select an outfit'}
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900">
+                  Try On Outfits
+                </h2>
+              </div>
+              <p className="text-gray-600">
+                Select an outfit and click "Try On" to see it on your photo
               </p>
+
+              {/* Category Filter Buttons */}
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
+                      selectedCategory === category
+                        ? 'bg-coral-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:border-coral-400 hover:text-coral-600'
+                    }`}
+                    style={selectedCategory === category ? { backgroundColor: '#ff6b5a' } : {}}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <OutfitCarousel
-              outfits={outfits}
+              outfits={filteredOutfits}
               selectedOutfit={currentOutfit}
               onSelectOutfit={handleOutfitSelect}
             />
@@ -203,7 +258,7 @@ const TryOn = () => {
           imageToShare={displayImage || userPhoto}
           outfitName={currentOutfit?.name}
         />
-      </div>
+        </div>
       </section>
 
       <PhotoGuidelinesModal

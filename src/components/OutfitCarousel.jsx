@@ -15,41 +15,31 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit }) => {
         <div
           key={outfit.id}
           onClick={() => onSelectOutfit(outfit)}
-          style={{ width: 'calc((100% - 4 * 1rem) / 5)' }}
+          style={{ width: 'calc((100% - 3 * 1rem) / 4)' }}
           className="group relative overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer"
         >
           {/* Outfit Image */}
-          <div className="aspect-square overflow-hidden bg-gray-100">
+          <div className="aspect-[3/4] overflow-hidden bg-white relative p-[5px]">
             <img
               src={outfit.thumbnailUrl || outfit.imageUrl}
               alt={outfit.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="h-full w-full object-cover"
               loading="lazy"
             />
-          </div>
 
-          {/* Outfit Info */}
-          <div className="p-4 space-y-2">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {outfit.category || 'Outfit'}
-              </p>
-              <h3 className="font-semibold text-gray-900 line-clamp-1">
-                {outfit.name}
-              </h3>
+            {/* Try On Button Overlay - Shows on Hover */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <button
+                className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                  selectedOutfit?.id === outfit.id
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white text-gray-900 hover:bg-primary-500 hover:text-white'
+                }`}
+              >
+                <Sparkles className="h-4 w-4" />
+                {selectedOutfit?.id === outfit.id ? 'Selected' : 'Try On'}
+              </button>
             </div>
-
-            {/* Try On Button */}
-            <button
-              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
-                selectedOutfit?.id === outfit.id
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-900 hover:bg-primary-500 hover:text-white border border-gray-200'
-              }`}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              {selectedOutfit?.id === outfit.id ? 'Selected' : 'Try On'}
-            </button>
           </div>
         </div>
       ))}
