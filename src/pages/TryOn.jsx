@@ -134,14 +134,7 @@ const TryOn = () => {
 
                 {/* Avatar Image */}
                 <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '85vh', width: 'fit-content' }}>
-                  {isProcessing ? (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Applying outfit...</p>
-                      </div>
-                    </div>
-                  ) : hasAppliedOutfit && displayImage ? (
+                  {hasAppliedOutfit && displayImage ? (
                     <>
                       <img
                         src={displayImage}
@@ -179,6 +172,23 @@ const TryOn = () => {
                         <User className="w-24 h-24 mx-auto mb-4 opacity-30" strokeWidth={1} />
                         <p className="text-lg font-medium">No photo uploaded</p>
                         <p className="text-sm mt-2">Upload your photo below</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Processing Overlay - Shows on top of existing image */}
+                  {isProcessing && (
+                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-40 animate-fade-in">
+                      <div className="text-center">
+                        <div className="relative mb-4">
+                          <Sparkles className="w-16 h-16 text-accent mx-auto animate-pulse" />
+                        </div>
+                        <p className="text-white text-xl font-semibold">AI Magic is happening</p>
+                        <div className="flex gap-1 justify-center mt-3">
+                          <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
                       </div>
                     </div>
                   )}
