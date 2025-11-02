@@ -12,9 +12,10 @@ interface PlayfulCarouselProps {
   onSelect: (outfitId: string) => void;
   externalIsHovered?: boolean;
   onHoverChange?: (isHovered: boolean) => void;
+  imagesLoaded?: boolean;
 }
 
-const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect, externalIsHovered, onHoverChange }: PlayfulCarouselProps) => {
+const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect, externalIsHovered, onHoverChange, imagesLoaded = true }: PlayfulCarouselProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [internalIsHovered, setInternalIsHovered] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -63,8 +64,8 @@ const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect, externalIsHover
       advanceTimeoutRef.current = null;
     }
 
-    // Don't start new timeout if hovered or paused
-    if (isHovered || isPaused) {
+    // Don't start new timeout if hovered, paused, or images not loaded
+    if (isHovered || isPaused || !imagesLoaded) {
       return;
     }
 
@@ -111,7 +112,7 @@ const PlayfulCarousel = ({ outfits, autoPlayMs = 2500, onSelect, externalIsHover
         advanceTimeoutRef.current = null;
       }
     };
-  }, [isHovered, isPaused, autoPlayMs, outfits.length]);
+  }, [isHovered, isPaused, autoPlayMs, outfits.length, imagesLoaded]);
 
   const handleCardClick = (index: number) => {
     setSelectedIndex(index);

@@ -37,6 +37,7 @@ const Index = () => {
   const [showNudge, setShowNudge] = useState(false);
   const [dwellTime, setDwellTime] = useState(0);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const uploadButtonRef = useRef(null);
 
   const outfits = [
@@ -50,6 +51,28 @@ const Index = () => {
     { id: "8", image: outfit8, generatedImage: generated8, label: "Look 8" },
     { id: "9", image: outfit9, generatedImage: generated9, label: "Look 9" },
   ];
+
+  // Preload all images to prevent blinking
+  useEffect(() => {
+    const imagesToPreload = [
+      modelBase,
+      ...outfits.map(o => o.image),
+      ...outfits.map(o => o.generatedImage)
+    ];
+
+    const imagePromises = imagesToPreload.map((src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Resolve anyway to not block the carousel
+        img.src = src;
+      });
+    });
+
+    Promise.all(imagePromises).then(() => {
+      setImagesLoaded(true);
+    });
+  }, []);
 
   // Track dwell time
   useEffect(() => {
@@ -142,6 +165,7 @@ const Index = () => {
                 onSelect={handleOutfitSelect}
                 externalIsHovered={isCarouselHovered}
                 onHoverChange={setIsCarouselHovered}
+                imagesLoaded={imagesLoaded}
               />
             </div>
           </div>
@@ -200,6 +224,7 @@ const Index = () => {
                   onSelect={handleOutfitSelect}
                   externalIsHovered={isCarouselHovered}
                   onHoverChange={setIsCarouselHovered}
+                  imagesLoaded={imagesLoaded}
                 />
               </div>
             </div>

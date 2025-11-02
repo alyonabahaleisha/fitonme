@@ -10,6 +10,9 @@ const HeroModelCanvas = ({ modelImage, appliedOutfitImage, alt }: HeroModelCanva
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
+  // Use the generated image if available, otherwise use the base model image
+  const displayImage = appliedOutfitImage || modelImage;
+
   const handleImageLoad = () => {
     setIsLoading(false);
   };
@@ -37,9 +40,6 @@ const HeroModelCanvas = ({ modelImage, appliedOutfitImage, alt }: HeroModelCanva
     );
   }
 
-  // Use the generated image if available, otherwise use the base model image
-  const displayImage = appliedOutfitImage || modelImage;
-
   return (
     <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-white border border-border shadow-card p-[30px]">
       {isLoading && (
@@ -49,15 +49,11 @@ const HeroModelCanvas = ({ modelImage, appliedOutfitImage, alt }: HeroModelCanva
       )}
 
       <img
-        key={displayImage}
         src={displayImage}
         alt={alt}
         onLoad={handleImageLoad}
         onError={handleImageError}
-        className="w-full h-full object-cover rounded-lg transition-all duration-700 ease-out"
-        style={{
-          animation: 'fadeIn 0.7s ease-out'
-        }}
+        className="w-full h-full object-cover rounded-lg"
       />
     </div>
   );
