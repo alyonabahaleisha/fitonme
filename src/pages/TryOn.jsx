@@ -145,8 +145,10 @@ const TryOn = () => {
                     </div>
                   )}
 
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/50 to-transparent" />
+                  {/* Gradient Overlay - Only show when no photo uploaded */}
+                  {!userPhoto && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/50 to-transparent" />
+                  )}
 
                   {/* Glow Border on Hover */}
                   <div className="absolute inset-0 border-4 border-accent/0 group-hover:border-accent/50 rounded-3xl transition-all duration-300" />
