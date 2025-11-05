@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Upload, ArrowLeft, User, MoreVertical } from 'lucide-react';
+import { Sparkles, Upload, ArrowLeft, User, MoreVertical, ShoppingBag } from 'lucide-react';
 import OutfitCarousel from '../components/OutfitCarousel';
 import ShareModal from '../components/ShareModal';
 import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
+import ShoppingPanel from '../components/ShoppingPanel';
 import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 
@@ -14,8 +15,9 @@ const TryOn = () => {
   const [hasAppliedOutfit, setHasAppliedOutfit] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showShoppingPanel, setShowShoppingPanel] = useState(false);
   const fileInputRef = useRef(null);
-  const { applyOutfit, isProcessing } = useOutfitOverlay();
+  const { applyOutfit, isProcessing} = useOutfitOverlay();
 
   const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night'];
 
@@ -133,7 +135,7 @@ const TryOn = () => {
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '85vh', width: 'fit-content' }}>
+                <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '60vh', width: 'fit-content' }}>
                   {hasAppliedOutfit && displayImage ? (
                     <>
                       <img
@@ -221,6 +223,20 @@ const TryOn = () => {
                   </div>
                 )}
               </div>
+
+              {/* Shop Now Button - Shows when outfit is selected */}
+              {currentOutfit && (
+                <button
+                  onClick={() => setShowShoppingPanel(true)}
+                  className="w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold text-base py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                  style={{ backgroundColor: '#ff6b5a' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ff5544'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff6b5a'}
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  Shop Now
+                </button>
+              )}
             </div>
           </div>
 
@@ -263,18 +279,24 @@ const TryOn = () => {
             />
           </div>
         </div>
-
-        <ShareModal
-          imageToShare={displayImage || userPhoto}
-          outfitName={currentOutfit?.name}
-        />
         </div>
       </section>
+
+      <ShareModal
+        imageToShare={displayImage || userPhoto}
+        outfitName={currentOutfit?.name}
+      />
 
       <PhotoGuidelinesModal
         isOpen={showGuidelines}
         onClose={() => setShowGuidelines(false)}
         onChoosePhoto={handleChoosePhoto}
+      />
+
+      <ShoppingPanel
+        isOpen={showShoppingPanel}
+        onClose={() => setShowShoppingPanel(false)}
+        outfit={currentOutfit}
       />
     </>
   );
