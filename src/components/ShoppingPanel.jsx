@@ -5,6 +5,22 @@ const ShoppingPanel = ({ isOpen, onClose, outfit }) => {
 
   const products = outfit?.products || [];
 
+  // Add Amazon affiliate tag to product links
+  const getAffiliateLink = (link) => {
+    if (!link) return link;
+    try {
+      const url = new URL(link);
+      if (url.hostname.includes('amazon.com')) {
+        url.searchParams.set('tag', 'alvalgrace-20');
+        return url.toString();
+      }
+      return link;
+    } catch (e) {
+      // If URL parsing fails, just return the original link
+      return link;
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -76,7 +92,7 @@ const ShoppingPanel = ({ isOpen, onClose, outfit }) => {
                     {/* Buy Button */}
                     {product.link && (
                       <a
-                        href={product.link}
+                        href={getAffiliateLink(product.link)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"

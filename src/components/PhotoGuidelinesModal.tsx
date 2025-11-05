@@ -102,22 +102,23 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                 ))}
               </div>
 
-              {/* Buttons */}
-              <div className="flex gap-1.5 sm:gap-2 md:gap-3">
-                <button
-                  onClick={onClose}
-                  className="flex-1 py-2 sm:py-2.5 md:py-4 px-2.5 sm:px-3 md:px-6 rounded-full border-2 border-brand/30 text-brand font-medium hover:bg-brand/5 transition-colors text-[11px] sm:text-xs md:text-base"
-                >
-                  Cancel
-                </button>
+              {/* Button */}
+              <div className="mt-auto">
                 <button
                   onClick={() => {
                     onChoosePhoto();
                     onClose();
                   }}
-                  className="flex-1 py-2 sm:py-2.5 md:py-4 px-2.5 sm:px-3 md:px-6 rounded-full bg-brand text-white font-medium hover:bg-brand/90 transition-colors flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 text-[11px] sm:text-xs md:text-base"
+                  className="w-full py-2.5 md:py-3 px-4 md:px-6 rounded-full text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
+                  style={{ backgroundColor: '#ff6b5a' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ff5544';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ff6b5a';
+                  }}
                 >
-                  <Camera size={12} className="sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" />
+                  <Camera className="w-4 h-4 md:w-5 md:h-5" />
                   Choose Photo
                 </button>
               </div>

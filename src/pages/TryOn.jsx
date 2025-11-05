@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, Upload, ArrowLeft, User, MoreVertical, ShoppingBag } from 'lucide-react';
+import { Sparkles, User, MoreVertical, ShoppingBag, Upload } from 'lucide-react';
+import Navigation from '../components/Navigation';
 import OutfitCarousel from '../components/OutfitCarousel';
 import ShareModal from '../components/ShareModal';
 import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
@@ -9,7 +9,6 @@ import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 
 const TryOn = () => {
-  const navigate = useNavigate();
   const { userPhoto, outfits, currentOutfit, setCurrentOutfit, setUserPhoto } = useAppStore();
   const [displayImage, setDisplayImage] = useState(null);
   const [hasAppliedOutfit, setHasAppliedOutfit] = useState(false);
@@ -87,10 +86,6 @@ const TryOn = () => {
     }
   };
 
-  const handleBack = () => {
-    navigate('/');
-  };
-
   const handlePhotoUpload = () => {
     setShowGuidelines(true);
   };
@@ -112,6 +107,8 @@ const TryOn = () => {
 
   return (
     <>
+      <Navigation />
+
       <input
         ref={fileInputRef}
         type="file"
@@ -120,28 +117,8 @@ const TryOn = () => {
         className="hidden"
       />
 
-      <section className="min-h-screen gradient-bg py-12 px-4 md:py-20">
+      <section className="min-h-screen gradient-bg pt-20 pb-12 px-4 md:pt-24 md:pb-20">
         <div className="container mx-auto max-w-7xl">
-        {/* Header with Back Button and Upload Button */}
-        <div className="mb-6 flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors font-medium"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Home
-          </button>
-
-          <button
-            onClick={handlePhotoUpload}
-            className="bg-coral-500 hover:bg-coral-600 text-white font-semibold px-6 py-2.5 rounded-full flex items-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg"
-            style={{ backgroundColor: '#ff6b5a' }}
-          >
-            <Upload className="w-4 h-4" />
-            Upload Your Photo
-          </button>
-        </div>
-
         <div className="grid lg:grid-cols-[auto_1fr] gap-8 lg:gap-12">
           {/* Left Sidebar - Avatar */}
           <div className="space-y-6">
@@ -151,7 +128,7 @@ const TryOn = () => {
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '4/7', maxHeight: 'calc(70vh + 10px)', maxWidth: 'calc((4/7) * 70vh - 10px)', width: 'fit-content' }}>
+                <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(70vh + 10px)', width: 'calc((4/7) * (70vh + 10px))' }}>
                   {hasAppliedOutfit && displayImage ? (
                     <>
                       <img

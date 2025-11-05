@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
+import FeedbackModal from "./FeedbackModal";
 
 const Navigation = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,25 +23,31 @@ const Navigation = () => {
       }`}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-accent flex items-center justify-center shadow-md">
             <Heart className="w-5 h-5 text-white fill-white" />
           </div>
           <span className="font-serif font-semibold text-2xl text-brand tracking-tight">ILovMe</span>
-        </div>
+        </button>
 
-        <div className="hidden md:flex items-center gap-8">
-          <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            How it works
-          </a>
-          <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Pricing
-          </a>
-          <Button variant="ghost" size="sm">
-            Sign in
-          </Button>
+        <div className="flex items-center gap-4 md:gap-6">
+          <button
+            onClick={() => setShowFeedback(true)}
+            className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
+            style={{ color: '#ff6b5a' }}
+          >
+            Give Feedback
+          </button>
         </div>
       </div>
+
+      <FeedbackModal
+        isOpen={showFeedback}
+        onClose={() => setShowFeedback(false)}
+      />
     </nav>
   );
 };

@@ -1,4 +1,4 @@
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { Sparkles, RefreshCw, RotateCw } from 'lucide-react';
 
 const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, hasAppliedOutfit }) => {
   if (!outfits || outfits.length === 0) {
@@ -15,8 +15,12 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, hasAppliedOut
         <div
           key={outfit.id}
           onClick={() => onSelectOutfit(outfit)}
-          style={{ width: 'calc((100% - 3 * 1rem) / 4)' }}
-          className="group relative overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer"
+          className={`group relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/4)] ${
+            selectedOutfit?.id === outfit.id
+              ? 'border-2 shadow-lg'
+              : 'border border-gray-200'
+          }`}
+          style={selectedOutfit?.id === outfit.id ? { borderColor: '#ff6b5a' } : {}}
         >
           {/* Outfit Image */}
           <div className="aspect-[3/4] overflow-hidden bg-white relative p-[5px]">
@@ -54,6 +58,21 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, hasAppliedOut
                 )}
               </button>
             </div>
+
+            {/* Retry Button - Shows on selected and applied outfit */}
+            {selectedOutfit?.id === outfit.id && hasAppliedOutfit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectOutfit(outfit);
+                }}
+                className="absolute top-2 right-2 z-10 bg-white/95 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                style={{ color: '#ff6b5a' }}
+                aria-label="Regenerate outfit"
+              >
+                <RotateCw className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       ))}
