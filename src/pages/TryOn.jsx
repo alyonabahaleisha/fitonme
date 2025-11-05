@@ -51,10 +51,17 @@ const TryOn = () => {
   };
 
   const handleOutfitSelect = async (outfit) => {
+    const isRegenerate = currentOutfit?.id === outfit.id && hasAppliedOutfit;
+
     setCurrentOutfit(outfit);
 
     // Automatically apply the outfit if user photo is available
     if (userPhoto) {
+      // Reset state for regeneration to trigger fresh application
+      if (isRegenerate) {
+        setHasAppliedOutfit(false);
+      }
+
       try {
         const result = await applyOutfit(outfit);
         if (result) {
