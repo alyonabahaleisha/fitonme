@@ -135,7 +135,7 @@ const TryOn = () => {
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '2/3', maxHeight: '60vh', width: 'fit-content' }}>
+                <div className="bg-white relative" style={{ aspectRatio: '4/7', maxHeight: 'calc(70vh + 10px)', maxWidth: 'calc((4/7) * 70vh - 10px)', width: 'fit-content' }}>
                   {hasAppliedOutfit && displayImage ? (
                     <>
                       <img
@@ -224,8 +224,8 @@ const TryOn = () => {
                 )}
               </div>
 
-              {/* Shop Now Button - Shows when outfit is selected */}
-              {currentOutfit && (
+              {/* Shop Now Button - Shows when outfit is generated */}
+              {hasAppliedOutfit && currentOutfit && (
                 <button
                   onClick={() => setShowShoppingPanel(true)}
                   className="w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold text-base py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
@@ -276,6 +276,7 @@ const TryOn = () => {
               outfits={filteredOutfits}
               selectedOutfit={currentOutfit}
               onSelectOutfit={handleOutfitSelect}
+              hasAppliedOutfit={hasAppliedOutfit}
             />
           </div>
         </div>

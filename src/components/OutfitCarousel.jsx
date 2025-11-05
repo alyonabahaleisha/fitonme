@@ -1,6 +1,6 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 
-const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit }) => {
+const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, hasAppliedOutfit }) => {
   if (!outfits || outfits.length === 0) {
     return (
       <div className="text-center py-12">
@@ -36,8 +36,22 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit }) => {
                     : 'bg-white text-gray-900 hover:bg-primary-500 hover:text-white'
                 }`}
               >
-                <Sparkles className="h-4 w-4" />
-                {selectedOutfit?.id === outfit.id ? 'Selected' : 'Try On'}
+                {selectedOutfit?.id === outfit.id && hasAppliedOutfit ? (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    Regenerate
+                  </>
+                ) : selectedOutfit?.id === outfit.id ? (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Selected
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Try On
+                  </>
+                )}
               </button>
             </div>
           </div>
