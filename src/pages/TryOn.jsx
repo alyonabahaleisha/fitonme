@@ -60,6 +60,7 @@ const TryOn = () => {
       // Reset state for regeneration to trigger fresh application
       if (isRegenerate) {
         setHasAppliedOutfit(false);
+        setDisplayImage(null);
       }
 
       try {
@@ -70,10 +71,18 @@ const TryOn = () => {
         } else {
           console.error('Failed to apply outfit:', outfit.name);
           alert(`Failed to apply outfit "${outfit.name}". Please try another outfit or check your connection.`);
+          // Restore previous state if failed
+          if (isRegenerate) {
+            setHasAppliedOutfit(true);
+          }
         }
       } catch (error) {
         console.error('Error applying outfit:', error);
         alert(`Error applying outfit "${outfit.name}": ${error.message}`);
+        // Restore previous state if error
+        if (isRegenerate) {
+          setHasAppliedOutfit(true);
+        }
       }
     }
   };
