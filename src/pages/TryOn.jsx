@@ -41,32 +41,39 @@ const TryOn = () => {
 
   const handleTryOnOutfit = async () => {
     if (currentOutfit && userPhoto) {
+      console.log('Applying outfit:', currentOutfit.name);
       const result = await applyOutfit(currentOutfit);
       if (result) {
         setDisplayImage(result);
         setHasAppliedOutfit(true);
+        console.log('Outfit applied successfully');
+      } else {
+        console.error('Failed to apply outfit:', currentOutfit.name);
+        alert(`Failed to apply outfit "${currentOutfit.name}". Please try another outfit or check your connection.`);
       }
     }
   };
 
-  const handleOutfitSelect = async (outfit) => {
-    const isRegenerate = currentOutfit?.id === outfit.id && hasAppliedOutfit;
+  const handleRegenerate = async () => {
+    console.log('Regenerating current outfit...');
+    // Reset display to show processing
+    setDisplayImage(null);
+    setHasAppliedOutfit(false);
 
-    console.log('handleOutfitSelect called:', { outfitId: outfit.id, isRegenerate, currentOutfitId: currentOutfit?.id, hasAppliedOutfit });
+    // Small delay to ensure state updates
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Call the same function as try on
+    await handleTryOnOutfit();
+  };
+
+  const handleOutfitSelect = async (outfit) => {
+    console.log('handleOutfitSelect called:', { outfitId: outfit.id, currentOutfitId: currentOutfit?.id });
 
     setCurrentOutfit(outfit);
 
     // Automatically apply the outfit if user photo is available
     if (userPhoto) {
-      // Reset state for regeneration to trigger fresh application
-      if (isRegenerate) {
-        console.log('Regenerating outfit...');
-        setHasAppliedOutfit(false);
-        setDisplayImage(null);
-        // Add a small delay to ensure state is updated
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
       try {
         console.log('Applying outfit:', outfit.name);
         const result = await applyOutfit(outfit);
@@ -77,18 +84,10 @@ const TryOn = () => {
         } else {
           console.error('Failed to apply outfit:', outfit.name);
           alert(`Failed to apply outfit "${outfit.name}". Please try another outfit or check your connection.`);
-          // Restore previous state if failed
-          if (isRegenerate) {
-            setHasAppliedOutfit(true);
-          }
         }
       } catch (error) {
         console.error('Error applying outfit:', error);
         alert(`Error applying outfit "${outfit.name}": ${error.message}`);
-        // Restore previous state if error
-        if (isRegenerate) {
-          setHasAppliedOutfit(true);
-        }
       }
     }
   };
@@ -276,6 +275,7 @@ const TryOn = () => {
               outfits={filteredOutfits}
               selectedOutfit={currentOutfit}
               onSelectOutfit={handleOutfitSelect}
+              onRegenerate={handleRegenerate}
               hasAppliedOutfit={hasAppliedOutfit}
             />
           </div>

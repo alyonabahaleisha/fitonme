@@ -1,6 +1,6 @@
 import { Sparkles, RefreshCw, RotateCw } from 'lucide-react';
 
-const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, hasAppliedOutfit }) => {
+const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate, hasAppliedOutfit }) => {
   if (!outfits || outfits.length === 0) {
     return (
       <div className="text-center py-12">
@@ -64,7 +64,7 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, hasAppliedOut
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectOutfit(outfit);
+                  onRegenerate();
                 }}
                 className="absolute top-2 right-2 z-10 bg-white/95 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
                 style={{ color: '#ff6b5a' }}
