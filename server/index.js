@@ -91,18 +91,21 @@ app.post('/api/try-on', upload.fields([
 
     // Generate image directly with both image inputs
     const fitDescription = description ? `\n- The clothing should fit ${description}` : '';
-    const generationPrompt = `Create a photorealistic image showing the person from the first undressed from current clothes and put on all the clothing items from second image.
-
+    const generationPrompt = `Create a photorealistic image showing the person from the first photo naturally wearing the clothing items from the second image.
+Undress person first then apply clothes from second picture.
 Be hyper-specific and detailed:
-- Use the exact facial features, skin tone, hair, and body proportions from the first image
-- Preserve the person's pose and the background setting from the first image
-- Apply the exact clothing items from the second image onto the person's body
-- Match the clothing's precise style, color, pattern, texture, and all design details, length${fitDescription}
-- Ensure realistic lighting that matches the original photo
-- Create natural shadows and realistic fabric draping on the body
-- Make it look like a seamless, professional photograph
 
-The final image should appear as if the person is naturally wearing this clothing in their original photo.`;
+Use the exact facial features, hair, skin tone, and body proportions from the first image.
+
+Preserve the person’s pose, background, and lighting conditions from the first image.
+
+Overlay or substitute the current outfit with the garments from the second image, matching each item’s fit, style, color, texture, and drape.
+
+Adjust the garment contours to the person’s shape so that items appear naturally fitted — loose, tight, long, or short according to each clothing piece.
+
+Ensure realistic lighting consistency and shadows.
+
+The final result must look like a seamless, professional photograph of the person wearing the new outfit in their original setting.`;
 
     const result = await model.generateContent([
       generationPrompt,
