@@ -102,8 +102,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
         onChange={handleFileChange}
         className="hidden"
       />

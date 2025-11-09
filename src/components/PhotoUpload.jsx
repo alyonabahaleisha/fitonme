@@ -95,7 +95,7 @@ const PhotoUpload = ({ onUploadComplete }) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
           onChange={handleFileSelect}
           className="hidden"
         />

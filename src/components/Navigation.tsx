@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
+import PricingModal from "./PricingModal";
 
 const Navigation = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +37,13 @@ const Navigation = () => {
 
         <div className="flex items-center gap-4 md:gap-6">
           <button
+            onClick={() => setShowPricing(true)}
+            className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
+            style={{ color: '#ff6b5a' }}
+          >
+            Pricing
+          </button>
+          <button
             onClick={() => setShowFeedback(true)}
             className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
             style={{ color: '#ff6b5a' }}
@@ -47,6 +56,10 @@ const Navigation = () => {
       <FeedbackModal
         isOpen={showFeedback}
         onClose={() => setShowFeedback(false)}
+      />
+      <PricingModal
+        isOpen={showPricing}
+        onClose={() => setShowPricing(false)}
       />
     </nav>
   );
