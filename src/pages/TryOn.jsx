@@ -5,16 +5,33 @@ import OutfitCarousel from '../components/OutfitCarousel';
 import ShareModal from '../components/ShareModal';
 import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
 import ShoppingPanel from '../components/ShoppingPanel';
+import SignUpModal from '../components/SignUpModal';
+import PricingModal from '../components/PricingModal';
 import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
+import { useAuth } from '../contexts/AuthContext';
+import { checkUserCredits, decrementUserCredits, recordTryOn } from '../lib/supabase';
 
 const TryOn = () => {
-  const { userPhoto, outfits, currentOutfit, setCurrentOutfit, setUserPhoto } = useAppStore();
+  const {
+    userPhoto,
+    outfits,
+    currentOutfit,
+    setCurrentOutfit,
+    setUserPhoto,
+    guestTryOns,
+    incrementGuestTryOns,
+    hasReachedFreeLimit,
+    showSignUpModal,
+    setShowSignUpModal,
+  } = useAppStore();
+  const { user, userData, isAuthenticated } = useAuth();
   const [displayImage, setDisplayImage] = useState(null);
   const [hasAppliedOutfit, setHasAppliedOutfit] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showShoppingPanel, setShowShoppingPanel] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
   const fileInputRef = useRef(null);
   const { applyOutfit, isProcessing} = useOutfitOverlay();
 
@@ -40,17 +57,65 @@ const TryOn = () => {
   }, [userPhoto]);
 
   const handleTryOnOutfit = async (forceRefresh = false) => {
-    if (currentOutfit && userPhoto) {
-      console.log('Applying outfit:', currentOutfit.name, 'forceRefresh:', forceRefresh);
-      const result = await applyOutfit(currentOutfit, forceRefresh);
-      if (result) {
-        setDisplayImage(result);
-        setHasAppliedOutfit(true);
-        console.log('Outfit applied successfully');
-      } else {
-        console.error('Failed to apply outfit:', currentOutfit.name);
-        alert(`Failed to apply outfit "${currentOutfit.name}". Please try another outfit or check your connection.`);
+    if (!currentOutfit || !userPhoto) return;
+
+    // Check if user has permission to try on
+    const canTryOn = await checkTryOnPermission();
+    if (!canTryOn) return;
+
+    console.log('Applying outfit:', currentOutfit.name, 'forceRefresh:', forceRefresh);
+    const result = await applyOutfit(currentOutfit, forceRefresh);
+
+    if (result) {
+      setDisplayImage(result);
+      setHasAppliedOutfit(true);
+      console.log('Outfit applied successfully');
+
+      // Track the try-on
+      await trackTryOn(currentOutfit.id, result);
+    } else {
+      console.error('Failed to apply outfit:', currentOutfit.name);
+      alert(`Failed to apply outfit "${currentOutfit.name}". Please try another outfit or check your connection.`);
+    }
+  };
+
+  // Check if user has permission to try on (credits or subscription)
+  const checkTryOnPermission = async () => {
+    // Authenticated users - check credits/subscription
+    if (isAuthenticated && user) {
+      const hasCredits = await checkUserCredits(user.id);
+
+      if (!hasCredits) {
+        // No credits left - show pricing modal
+        setShowPricing(true);
+        return false;
       }
+
+      return true;
+    }
+
+    // Guest users - check local limit
+    if (hasReachedFreeLimit()) {
+      setShowSignUpModal(true);
+      return false;
+    }
+
+    return true;
+  };
+
+  // Track the try-on attempt
+  const trackTryOn = async (outfitId, resultUrl) => {
+    if (isAuthenticated && user) {
+      // Authenticated user - decrement credits and record in database
+      try {
+        await decrementUserCredits(user.id);
+        await recordTryOn(user.id, outfitId, userPhoto, resultUrl);
+      } catch (error) {
+        console.error('Error tracking try-on:', error);
+      }
+    } else {
+      // Guest user - increment local counter
+      incrementGuestTryOns();
     }
   };
 
@@ -74,6 +139,10 @@ const TryOn = () => {
 
     // Automatically apply the outfit if user photo is available
     if (userPhoto) {
+      // Check if user has permission to try on
+      const canTryOn = await checkTryOnPermission();
+      if (!canTryOn) return;
+
       try {
         console.log('Applying outfit:', outfit.name);
         const result = await applyOutfit(outfit);
@@ -81,6 +150,9 @@ const TryOn = () => {
           setDisplayImage(result);
           setHasAppliedOutfit(true);
           console.log('Outfit applied successfully');
+
+          // Track the try-on
+          await trackTryOn(outfit.id, result);
         } else {
           console.error('Failed to apply outfit:', outfit.name);
           alert(`Failed to apply outfit "${outfit.name}". Please try another outfit or check your connection.`);
@@ -298,6 +370,18 @@ const TryOn = () => {
         isOpen={showShoppingPanel}
         onClose={() => setShowShoppingPanel(false)}
         outfit={currentOutfit}
+      />
+
+      <SignUpModal
+        isOpen={showSignUpModal}
+        onClose={() => setShowSignUpModal(false)}
+        onShowPricing={() => setShowPricing(true)}
+        tryOnsUsed={guestTryOns}
+      />
+
+      <PricingModal
+        isOpen={showPricing}
+        onClose={() => setShowPricing(false)}
       />
     </>
   );

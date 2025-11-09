@@ -45,13 +45,30 @@ const useAppStore = create(
       // UI state
       showShareModal: false,
       setShowShareModal: (show) => set({ showShareModal: show }),
+
+      // Guest user try-on tracking (for free/unauthenticated users)
+      guestTryOns: 0,
+      incrementGuestTryOns: () => set((state) => ({
+        guestTryOns: state.guestTryOns + 1
+      })),
+      resetGuestTryOns: () => set({ guestTryOns: 0 }),
+      hasReachedFreeLimit: () => {
+        const state = get();
+        const FREE_LIMIT = 2;
+        return state.guestTryOns >= FREE_LIMIT;
+      },
+
+      // Sign-up modal state
+      showSignUpModal: false,
+      setShowSignUpModal: (show) => set({ showSignUpModal: show }),
     }),
     {
       name: 'godlovesme-storage',
       partialize: (state) => ({
-        // Persist favorites and userPhoto - exclude outfits and processedImages to avoid quota issues
+        // Persist favorites, userPhoto, and guestTryOns
         favorites: state.favorites,
         userPhoto: state.userPhoto,
+        guestTryOns: state.guestTryOns,
       }),
     }
   )

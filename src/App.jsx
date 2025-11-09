@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import TryOn from './pages/TryOn';
+import AuthCallback from './pages/AuthCallback';
 import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
 
@@ -32,6 +33,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/try-on" element={<TryOn />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
     </Router>
   );

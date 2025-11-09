@@ -97,6 +97,7 @@ Detailed instructions:
 
 Use the exact facial features, skin tone, hair, and body proportions from the first image.
 
+undress person first, and then apply outfit on naked body. so nothing out old clothes is left.
 Keep the same pose, lighting, and background from the first image.
 
 Perform precise body and clothing segmentation: treat the person’s figure as a neutral base layer (remove or ignore any existing garments only for segmentation purposes, not to expose the body).
