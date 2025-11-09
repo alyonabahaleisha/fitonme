@@ -104,7 +104,7 @@ Overlay or substitute the current outfit with the garments from the second image
 Adjust the garment contours to the person’s shape so that items appear naturally fitted — loose, tight, long, or short according to each clothing piece.
 if outfit has shoes put them on persons feet.
 
-Ensure realistic lighting consistency and shadows. Clean the room to make it look rich.
+Ensure realistic lighting consistency and shadows. Clean the room to make it look rich studio remove unnessesary details.
 
 The final result must look like a seamless, professional photograph of the person wearing the new outfit in their original setting.`;
 
