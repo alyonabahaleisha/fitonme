@@ -6,12 +6,19 @@ export const useOutfitOverlay = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { userPhoto, getProcessedImage, cacheProcessedImage } = useAppStore();
 
-  const applyOutfit = useCallback(async (outfit) => {
+  const applyOutfit = useCallback(async (outfit, forceRefresh = false) => {
     if (!userPhoto || !outfit) return null;
 
-    // Check cache first
-    const cached = getProcessedImage(outfit.id);
-    if (cached) return cached;
+    // Check cache first (unless force refresh is requested)
+    if (!forceRefresh) {
+      const cached = getProcessedImage(outfit.id);
+      if (cached) {
+        console.log('Using cached image for outfit:', outfit.id);
+        return cached;
+      }
+    } else {
+      console.log('Forcing fresh generation for outfit:', outfit.id);
+    }
 
     setIsProcessing(true);
     try {

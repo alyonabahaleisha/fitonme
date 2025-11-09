@@ -39,10 +39,10 @@ const TryOn = () => {
     }
   }, [userPhoto]);
 
-  const handleTryOnOutfit = async () => {
+  const handleTryOnOutfit = async (forceRefresh = false) => {
     if (currentOutfit && userPhoto) {
-      console.log('Applying outfit:', currentOutfit.name);
-      const result = await applyOutfit(currentOutfit);
+      console.log('Applying outfit:', currentOutfit.name, 'forceRefresh:', forceRefresh);
+      const result = await applyOutfit(currentOutfit, forceRefresh);
       if (result) {
         setDisplayImage(result);
         setHasAppliedOutfit(true);
@@ -63,8 +63,8 @@ const TryOn = () => {
     // Small delay to ensure state updates
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Call the same function as try on
-    await handleTryOnOutfit();
+    // Call the same function as try on with forceRefresh=true to bypass cache
+    await handleTryOnOutfit(true);
   };
 
   const handleOutfitSelect = async (outfit) => {
