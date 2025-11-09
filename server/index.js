@@ -91,22 +91,21 @@ app.post('/api/try-on', upload.fields([
 
     // Generate image directly with both image inputs
     const fitDescription = description ? `\n- The clothing should fit ${description}` : '';
-    const generationPrompt = `Create a photorealistic image showing the person from the first photo naturally wearing the clothing items from the second image.
-Undress person first then apply clothes from second picture.
-Be hyper-specific and detailed:
+    const generationPrompt = `Generate a photorealistic virtual try-on image using the person from the first photo as the base and the outfit from the second image.
 
-Use the exact facial features, hair, skin tone, and body proportions from the first image.
+Detailed instructions:
 
-Preserve the person’s pose, background, and lighting conditions from the first image.
+Use the exact facial features, skin tone, hair, and body proportions from the first image.
 
-Overlay or substitute the current outfit with the garments from the second image, matching each item’s fit, style, color, texture, and drape.
+Keep the same pose, lighting, and background from the first image.
 
-Adjust the garment contours to the person’s shape so that items appear naturally fitted — loose, tight, long, or short according to each clothing piece.
-if outfit has shoes put them on persons feet.
+Perform precise body and clothing segmentation: treat the person’s figure as a neutral base layer (remove or ignore any existing garments only for segmentation purposes, not to expose the body).
 
-Ensure realistic lighting consistency and shadows. Clean the room to make it look rich studio remove unnessesary details.
+Apply the outfit from the second image directly to the person’s contours — respecting each item’s natural fit (loose, tight, cropped, long, etc.), texture, and fabric drape.
 
-The final result must look like a seamless, professional photograph of the person wearing the new outfit in their original setting.`;
+Maintain realistic fabric interaction, light behavior, and natural shadowing.
+
+The result should look like a professional fashion photo of the same person wearing the new clothes naturally in their original setting.`;
 
     const result = await model.generateContent([
       generationPrompt,
