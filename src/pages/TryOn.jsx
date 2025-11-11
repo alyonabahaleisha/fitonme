@@ -30,6 +30,7 @@ const TryOn = () => {
   const [hasAppliedOutfit, setHasAppliedOutfit] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedGender, setSelectedGender] = useState('woman'); // 'man' or 'woman'
   const [showShoppingPanel, setShowShoppingPanel] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const fileInputRef = useRef(null);
@@ -37,9 +38,10 @@ const TryOn = () => {
 
   const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night'];
 
-  const filteredOutfits = selectedCategory === 'All'
-    ? outfits
-    : outfits.filter(outfit => outfit.category === selectedCategory);
+  // Filter by gender and category
+  const filteredOutfits = outfits
+    .filter(outfit => outfit.gender === selectedGender)
+    .filter(outfit => selectedCategory === 'All' || outfit.category === selectedCategory);
 
   useEffect(() => {
     // Set first outfit as current if none selected
@@ -341,6 +343,35 @@ const TryOn = () => {
               <p className="text-gray-600">
                 Select an outfit and click "Try On" to see it on your photo
               </p>
+
+              {/* Gender Filter Switch */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700">Style:</span>
+                <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
+                  <button
+                    onClick={() => setSelectedGender('woman')}
+                    className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
+                      selectedGender === 'woman'
+                        ? 'bg-coral-500 text-white shadow-sm'
+                        : 'text-gray-700 hover:text-coral-600'
+                    }`}
+                    style={selectedGender === 'woman' ? { backgroundColor: '#ff6b5a' } : {}}
+                  >
+                    Women
+                  </button>
+                  <button
+                    onClick={() => setSelectedGender('man')}
+                    className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
+                      selectedGender === 'man'
+                        ? 'bg-coral-500 text-white shadow-sm'
+                        : 'text-gray-700 hover:text-coral-600'
+                    }`}
+                    style={selectedGender === 'man' ? { backgroundColor: '#ff6b5a' } : {}}
+                  >
+                    Men
+                  </button>
+                </div>
+              </div>
 
               {/* Category Filter Buttons */}
               <div className="flex flex-wrap gap-2">

@@ -28,6 +28,7 @@ export const getAllOutfits = async () => {
       imageUrl: outfit.combined_image_url, // Use combined image for try-on
       thumbnailUrl: outfit.combined_image_url, // Same image for thumbnail
       createdAt: outfit.created_at,
+      gender: outfit.gender || 'woman', // man or woman
 
       // Include products for "Shop This Look" feature
       products: outfit.products?.map(p => ({
@@ -70,6 +71,7 @@ export const getOutfitById = async (id) => {
       imageUrl: data.combined_image_url,
       thumbnailUrl: data.combined_image_url,
       createdAt: data.created_at,
+      gender: data.gender || 'woman', // man or woman
       products: data.products?.map(p => ({
         name: p.product_name,
         link: p.product_link,
