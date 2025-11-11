@@ -1,13 +1,30 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Index from './pages/Index';
 import TryOn from './pages/TryOn';
 import AuthCallback from './pages/AuthCallback';
 import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
+import { initGA, trackPageView } from './services/analytics';
+
+// Component to track page views
+function PageViewTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   const { setOutfits, setLoading } = useAppStore();
+
+  // Initialize Google Analytics
+  useEffect(() => {
+    initGA();
+  }, []);
 
   // Load published outfits from Supabase (shared database with Admin)
   useEffect(() => {
@@ -30,6 +47,7 @@ function App() {
 
   return (
     <Router>
+      <PageViewTracker />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/try-on" element={<TryOn />} />

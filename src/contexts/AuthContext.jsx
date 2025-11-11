@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getCurrentUser, getUserData, onAuthStateChange } from '../lib/supabase';
+import { identifyUser } from '../services/analytics';
 
 const AuthContext = createContext({
   user: null,
@@ -28,6 +29,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await getUserData(userId);
       setUserData(data);
+
+      // Identify user in Google Analytics
+      if (user && data) {
+        identifyUser(
+          user.id,
+          user.email,
+          data.plan_type,
+          data.auth_provider
+        );
+      }
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }

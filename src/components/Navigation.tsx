@@ -5,6 +5,7 @@ import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/supabase";
+import { trackPricingModalOpened, trackFeedbackModalOpened, trackLogout } from "../services/analytics";
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Navigation = () => {
 
   const handleSignOut = async () => {
     try {
+      trackLogout(user?.id);
       await signOut();
       navigate('/');
     } catch (error) {
@@ -60,14 +62,20 @@ const Navigation = () => {
 
         <div className="flex items-center gap-4 md:gap-6">
           <button
-            onClick={() => setShowPricing(true)}
+            onClick={() => {
+              trackPricingModalOpened('navigation', user?.id);
+              setShowPricing(true);
+            }}
             className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
             style={{ color: '#ff6b5a' }}
           >
             Pricing
           </button>
           <button
-            onClick={() => setShowFeedback(true)}
+            onClick={() => {
+              trackFeedbackModalOpened(user?.id);
+              setShowFeedback(true);
+            }}
             className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
             style={{ color: '#ff6b5a' }}
           >

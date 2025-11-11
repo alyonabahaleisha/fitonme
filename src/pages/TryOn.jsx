@@ -11,6 +11,20 @@ import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 import { useAuth } from '../contexts/AuthContext';
 import { checkUserCredits, decrementUserCredits, recordTryOn } from '../lib/supabase';
+import {
+  trackPhotoUploaded,
+  trackGenderFilterChanged,
+  trackCategoryFilterChanged,
+  trackOutfitSelected,
+  trackTryOnStarted,
+  trackTryOnCompleted,
+  trackRegenerateClicked,
+  trackFreeLimitReached,
+  trackCreditsDepletedModalShown,
+  trackShoppingPanelOpened,
+  trackPricingModalOpened,
+  trackPhotoGuidelinesModalOpened,
+} from '../services/analytics';
 
 const TryOn = () => {
   const {
@@ -66,6 +80,11 @@ const TryOn = () => {
     if (!canTryOn) return;
 
     console.log('Applying outfit:', currentOutfit.name, 'forceRefresh:', forceRefresh);
+
+    // Track try-on started
+    const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
+    trackTryOnStarted(currentOutfit.id, currentOutfit.name, user?.id, userType);
+
     const result = await applyOutfit(currentOutfit, forceRefresh);
 
     if (result) {
@@ -73,10 +92,17 @@ const TryOn = () => {
       setHasAppliedOutfit(true);
       console.log('Outfit applied successfully');
 
-      // Track the try-on
+      // Track try-on completed
+      trackTryOnCompleted(currentOutfit.id, currentOutfit.name, user?.id, userType, true);
+
+      // Track the try-on in database
       await trackTryOn(currentOutfit.id, result);
     } else {
       console.error('Failed to apply outfit:', currentOutfit.name);
+
+      // Track try-on failed
+      trackTryOnCompleted(currentOutfit.id, currentOutfit.name, user?.id, userType, false);
+
       alert(`Failed to apply outfit "${currentOutfit.name}". Please try another outfit or check your connection.`);
     }
   };
@@ -98,6 +124,7 @@ const TryOn = () => {
 
       if (!hasCredits) {
         // No credits left - show pricing modal
+        trackCreditsDepletedModalShown(user.id, userData?.plan_type || 'free');
         setShowPricing(true);
         return false;
       }
@@ -107,6 +134,7 @@ const TryOn = () => {
 
     // Guest users - check local limit
     if (hasReachedFreeLimit()) {
+      trackFreeLimitReached(guestTryOns);
       setShowSignUpModal(true);
       return false;
     }
@@ -141,6 +169,10 @@ const TryOn = () => {
 
   const handleRegenerate = async () => {
     console.log('Regenerating current outfit...');
+
+    // Track regenerate
+    trackRegenerateClicked(currentOutfit.id, currentOutfit.name, user?.id);
+
     // Reset display to show processing
     setDisplayImage(null);
     setHasAppliedOutfit(false);
@@ -154,6 +186,9 @@ const TryOn = () => {
 
   const handleOutfitSelect = async (outfit) => {
     console.log('handleOutfitSelect called:', { outfitId: outfit.id, currentOutfitId: currentOutfit?.id });
+
+    // Track outfit selection
+    trackOutfitSelected(outfit.id, outfit.name, outfit.gender, user?.id);
 
     setCurrentOutfit(outfit);
 
@@ -185,6 +220,7 @@ const TryOn = () => {
   };
 
   const handlePhotoUpload = () => {
+    trackPhotoGuidelinesModalOpened(user?.id);
     setShowGuidelines(true);
   };
 
@@ -198,6 +234,8 @@ const TryOn = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         setUserPhoto(event.target.result);
+        // Track photo upload
+        trackPhotoUploaded(user?.id);
       };
       reader.readAsDataURL(file);
     }
@@ -318,7 +356,10 @@ const TryOn = () => {
               {/* Shop Now Button - Shows when outfit is generated */}
               {hasAppliedOutfit && currentOutfit && (
                 <button
-                  onClick={() => setShowShoppingPanel(true)}
+                  onClick={() => {
+                    trackShoppingPanelOpened(currentOutfit.id, currentOutfit.name, user?.id);
+                    setShowShoppingPanel(true);
+                  }}
                   className="w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold text-base py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
                   style={{ backgroundColor: '#ff6b5a' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ff5544'}
@@ -349,7 +390,10 @@ const TryOn = () => {
                 <span className="text-sm font-medium text-gray-700">Style:</span>
                 <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
                   <button
-                    onClick={() => setSelectedGender('woman')}
+                    onClick={() => {
+                      setSelectedGender('woman');
+                      trackGenderFilterChanged('woman', user?.id);
+                    }}
                     className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
                       selectedGender === 'woman'
                         ? 'bg-coral-500 text-white shadow-sm'
@@ -360,7 +404,10 @@ const TryOn = () => {
                     Women
                   </button>
                   <button
-                    onClick={() => setSelectedGender('man')}
+                    onClick={() => {
+                      setSelectedGender('man');
+                      trackGenderFilterChanged('man', user?.id);
+                    }}
                     className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
                       selectedGender === 'man'
                         ? 'bg-coral-500 text-white shadow-sm'
@@ -378,7 +425,10 @@ const TryOn = () => {
                 {categories.map((category) => (
                   <button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      trackCategoryFilterChanged(category, user?.id);
+                    }}
                     className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
                       selectedCategory === category
                         ? 'bg-coral-500 text-white shadow-md'

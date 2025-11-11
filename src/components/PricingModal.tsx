@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "../contexts/AuthContext";
+import { trackPlanSelected, trackCheckoutStarted } from "../services/analytics";
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -88,9 +89,10 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
     },
   ];
 
-  const handleCheckout = async (priceId: string | null) => {
+  const handleCheckout = async (priceId: string | null, planName: string) => {
     if (!priceId) {
       // Free plan - just close modal
+      trackPlanSelected('free', null, user?.id);
       onClose();
       return;
     }
@@ -100,9 +102,18 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       return;
     }
 
+    // Track plan selection
+    const planType = planName.toLowerCase().includes('weekly') ? 'weekly' :
+                     planName.toLowerCase().includes('monthly') ? 'monthly' :
+                     planName.toLowerCase().includes('annual') ? 'annual' : 'unknown';
+    trackPlanSelected(planType, priceId, user.id);
+
     setLoadingPriceId(priceId);
 
     try {
+      // Track checkout started
+      trackCheckoutStarted(planType, priceId, user.id);
+
       // Create checkout session
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/create-checkout-session`, {
         method: 'POST',
@@ -224,7 +235,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={() => handleCheckout(tier.stripePriceId)}
+                  onClick={() => handleCheckout(tier.stripePriceId, tier.name)}
                   disabled={loadingPriceId === tier.stripePriceId}
                   className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${
                     tier.variant === 'filled'

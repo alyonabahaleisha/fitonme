@@ -1,6 +1,9 @@
 import { X, ShoppingBag, ExternalLink } from 'lucide-react';
+import { trackProductClicked } from '../services/analytics';
+import { useAuth } from '../contexts/AuthContext';
 
 const ShoppingPanel = ({ isOpen, onClose, outfit }) => {
+  const { user } = useAuth();
   if (!isOpen) return null;
 
   const products = outfit?.products || [];
@@ -95,6 +98,7 @@ const ShoppingPanel = ({ isOpen, onClose, outfit }) => {
                         href={getAffiliateLink(product.link)}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => trackProductClicked(product.name, product.link, outfit?.id, user?.id)}
                         className="block w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
                         style={{ backgroundColor: '#ff6b5a' }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ff5544'}
