@@ -81,10 +81,12 @@ const TryOn = () => {
 
   // Check if user has permission to try on (credits or subscription)
   const checkTryOnPermission = async () => {
-    // Development mode: Skip all checks for easy testing
+    // Development mode OR UAT environment: Skip all checks for easy testing
     const isDevelopment = import.meta.env.DEV;
-    if (isDevelopment) {
-      console.log('🔧 DEV MODE: Skipping authentication and credit checks');
+    const isUAT = window.location.hostname === 'fitonme.vercel.app';
+
+    if (isDevelopment || isUAT) {
+      console.log(isDevelopment ? '🔧 DEV MODE: Skipping authentication and credit checks' : '🧪 UAT MODE: Skipping authentication and credit checks');
       return true;
     }
 
@@ -112,10 +114,12 @@ const TryOn = () => {
 
   // Track the try-on attempt
   const trackTryOn = async (outfitId, resultUrl) => {
-    // Development mode: Skip tracking
+    // Development mode OR UAT environment: Skip tracking
     const isDevelopment = import.meta.env.DEV;
-    if (isDevelopment) {
-      console.log('🔧 DEV MODE: Skipping try-on tracking');
+    const isUAT = window.location.hostname === 'fitonme.vercel.app';
+
+    if (isDevelopment || isUAT) {
+      console.log(isDevelopment ? '🔧 DEV MODE: Skipping try-on tracking' : '🧪 UAT MODE: Skipping try-on tracking');
       return;
     }
 

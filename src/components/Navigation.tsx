@@ -51,6 +51,11 @@ const Navigation = () => {
               DEV MODE
             </span>
           )}
+          {window.location.hostname === 'fitonme.vercel.app' && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-400 text-blue-900">
+              UAT
+            </span>
+          )}
         </button>
 
         <div className="flex items-center gap-4 md:gap-6">
