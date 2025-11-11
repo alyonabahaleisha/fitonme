@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -41,6 +42,9 @@ const upload = multer({
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 // Helper function to convert image to base64
 function fileToGenerativePart(path, mimeType) {
   return {
@@ -58,6 +62,101 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Stripe: Create checkout session
+app.post('/api/create-checkout-session', express.json(), async (req, res) => {
+  try {
+    const { priceId, userId, userEmail } = req.body;
+
+    if (!priceId) {
+      return res.status(400).json({ error: 'Price ID is required' });
+    }
+
+    // Create Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.VITE_API_URL || 'http://localhost:5173'}/try-on?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.VITE_API_URL || 'http://localhost:5173'}/try-on`,
+      customer_email: userEmail,
+      metadata: {
+        userId: userId || 'guest',
+      },
+      subscription_data: {
+        metadata: {
+          userId: userId || 'guest',
+        },
+      },
+    });
+
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
+  }
+});
+
+// Stripe: Webhook endpoint for subscription events
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const session = event.data.object;
+      console.log('Checkout session completed:', session.id);
+      // TODO: Update user's subscription in Supabase
+      break;
+
+    case 'customer.subscription.created':
+    case 'customer.subscription.updated':
+      const subscription = event.data.object;
+      console.log('Subscription updated:', subscription.id);
+      // TODO: Update subscription in Supabase
+      break;
+
+    case 'customer.subscription.deleted':
+      const deletedSubscription = event.data.object;
+      console.log('Subscription cancelled:', deletedSubscription.id);
+      // TODO: Mark subscription as cancelled in Supabase
+      break;
+
+    case 'invoice.payment_succeeded':
+      const invoice = event.data.object;
+      console.log('Payment succeeded:', invoice.id);
+      // TODO: Grant/extend access
+      break;
+
+    case 'invoice.payment_failed':
+      const failedInvoice = event.data.object;
+      console.log('Payment failed:', failedInvoice.id);
+      // TODO: Handle failed payment
+      break;
+
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  res.json({ received: true });
 });
 
 // Main endpoint for virtual try-on (accepts file uploads)

@@ -46,6 +46,11 @@ const Navigation = () => {
             <Heart className="w-5 h-5 text-white fill-white" />
           </div>
           <span className="font-serif font-semibold text-2xl text-brand tracking-tight">ILovMe</span>
+          {import.meta.env.DEV && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900">
+              DEV MODE
+            </span>
+          )}
         </button>
 
         <div className="flex items-center gap-4 md:gap-6">

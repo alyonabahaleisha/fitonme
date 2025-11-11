@@ -1,11 +1,20 @@
+import { useState } from "react";
 import { X, Check } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { useAuth } from "../contexts/AuthContext";
 
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
 const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
+  const { user } = useAuth();
+  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+
   if (!isOpen) return null;
 
   const tiers = [
@@ -23,6 +32,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Get Started",
       popular: false,
       variant: "outlined" as const,
+      stripePriceId: null, // Free plan - no Stripe
     },
     {
       name: "Weekly Pass",
@@ -39,6 +49,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Try Weekly",
       popular: false,
       variant: "outlined" as const,
+      stripePriceId: "price_weekly_placeholder", // Replace with your Stripe Price ID
     },
     {
       name: "Monthly Plan",
@@ -56,6 +67,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Start Free Trial",
       popular: true,
       variant: "filled" as const,
+      stripePriceId: "price_monthly_placeholder", // Replace with your Stripe Price ID
     },
     {
       name: "Annual Pro Closet",
@@ -72,8 +84,59 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Go Pro",
       popular: false,
       variant: "outlined" as const,
+      stripePriceId: "price_annual_placeholder", // Replace with your Stripe Price ID
     },
   ];
+
+  const handleCheckout = async (priceId: string | null) => {
+    if (!priceId) {
+      // Free plan - just close modal
+      onClose();
+      return;
+    }
+
+    if (!user) {
+      alert("Please sign in to subscribe");
+      return;
+    }
+
+    setLoadingPriceId(priceId);
+
+    try {
+      // Create checkout session
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: user.id,
+          userEmail: user.email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      // Redirect to Stripe Checkout
+      const stripe = await stripePromise;
+      if (stripe && data.sessionId) {
+        await stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else if (data.url) {
+        // Fallback: redirect directly to checkout URL
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      alert('Failed to start checkout. Please try again.');
+    } finally {
+      setLoadingPriceId(null);
+    }
+  };
 
   return (
     <>
@@ -161,7 +224,9 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
                 {/* CTA Button */}
                 <button
-                  className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto ${
+                  onClick={() => handleCheckout(tier.stripePriceId)}
+                  disabled={loadingPriceId === tier.stripePriceId}
+                  className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${
                     tier.variant === 'filled'
                       ? 'text-white shadow-md hover:shadow-lg'
                       : 'border-2 bg-white hover:bg-opacity-5'
@@ -186,7 +251,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
                     }
                   }}
                 >
-                  {tier.cta}
+                  {loadingPriceId === tier.stripePriceId ? 'Loading...' : tier.cta}
                 </button>
               </div>
             ))}

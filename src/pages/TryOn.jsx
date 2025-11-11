@@ -81,6 +81,13 @@ const TryOn = () => {
 
   // Check if user has permission to try on (credits or subscription)
   const checkTryOnPermission = async () => {
+    // Development mode: Skip all checks for easy testing
+    const isDevelopment = import.meta.env.DEV;
+    if (isDevelopment) {
+      console.log('🔧 DEV MODE: Skipping authentication and credit checks');
+      return true;
+    }
+
     // Authenticated users - check credits/subscription
     if (isAuthenticated && user) {
       const hasCredits = await checkUserCredits(user.id);
@@ -105,6 +112,13 @@ const TryOn = () => {
 
   // Track the try-on attempt
   const trackTryOn = async (outfitId, resultUrl) => {
+    // Development mode: Skip tracking
+    const isDevelopment = import.meta.env.DEV;
+    if (isDevelopment) {
+      console.log('🔧 DEV MODE: Skipping try-on tracking');
+      return;
+    }
+
     if (isAuthenticated && user) {
       // Authenticated user - decrement credits and record in database
       try {
