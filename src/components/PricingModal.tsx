@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "../contexts/AuthContext";
 import { trackPlanSelected, trackCheckoutStarted } from "../services/analytics";
+import SignUpModal from "./SignUpModal";
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -15,6 +16,18 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
   const { user } = useAuth();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [pendingCheckout, setPendingCheckout] = useState<{ priceId: string; planName: string } | null>(null);
+
+  // When user signs in and we have a pending checkout, proceed automatically
+  useEffect(() => {
+    if (user && pendingCheckout && !showSignUp) {
+      // User just authenticated, proceed with checkout
+      handleCheckout(pendingCheckout.priceId, pendingCheckout.planName);
+      setPendingCheckout(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, pendingCheckout, showSignUp]);
 
   if (!isOpen) return null;
 
@@ -98,7 +111,9 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
     }
 
     if (!user) {
-      alert("Please sign in to subscribe");
+      // Store the pending checkout and show sign-up modal
+      setPendingCheckout({ priceId, planName });
+      setShowSignUp(true);
       return;
     }
 
@@ -277,6 +292,19 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
         </div>
       </div>
       </div>
+
+      {/* Sign Up Modal - shown when user tries to checkout without authentication */}
+      <SignUpModal
+        isOpen={showSignUp}
+        onClose={() => {
+          setShowSignUp(false);
+          setPendingCheckout(null);
+        }}
+        onShowPricing={() => {
+          // User can view pricing again after closing sign-up
+          setShowSignUp(false);
+        }}
+      />
     </>
   );
 };

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Heart, User, LogOut } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
-import SignUpModal from "./SignUpModal";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/supabase";
 import { trackPricingModalOpened, trackFeedbackModalOpened, trackLogout } from "../services/analytics";
@@ -14,7 +13,6 @@ const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
@@ -66,12 +64,7 @@ const Navigation = () => {
           <button
             onClick={() => {
               trackPricingModalOpened('navigation', user?.id);
-              // Require authentication before showing pricing
-              if (!isAuthenticated) {
-                setShowSignUp(true);
-              } else {
-                setShowPricing(true);
-              }
+              setShowPricing(true);
             }}
             className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
             style={{ color: '#ff6b5a' }}
@@ -144,11 +137,6 @@ const Navigation = () => {
       <FeedbackModal
         isOpen={showFeedback}
         onClose={() => setShowFeedback(false)}
-      />
-      <SignUpModal
-        isOpen={showSignUp}
-        onClose={() => setShowSignUp(false)}
-        onShowPricing={() => setShowPricing(true)}
       />
       <PricingModal
         isOpen={showPricing}
