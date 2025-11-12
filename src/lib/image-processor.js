@@ -42,10 +42,26 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
     formData.append('personImage', userPhotoFile);
     formData.append('clothingImage', outfitFile);
 
+    // Get JWT token from Supabase session (if authenticated)
+    const headers = {};
+    try {
+      const { supabase } = await import('./supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+        console.log('[API] Sending authenticated request with JWT token');
+      } else {
+        console.log('[API] Sending unauthenticated request (no JWT token)');
+      }
+    } catch (error) {
+      console.warn('[API] Could not get auth session:', error.message);
+    }
+
     // Call the backend API
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     const response = await fetch(`${apiUrl}/api/try-on`, {
       method: 'POST',
+      headers,
       body: formData,
     });
 

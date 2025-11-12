@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { verifyAuth, optionalAuth } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -160,7 +161,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 });
 
 // Main endpoint for virtual try-on (accepts file uploads)
-app.post('/api/try-on', upload.fields([
+// Apply optionalAuth middleware to check JWT if present
+app.post('/api/try-on', optionalAuth, upload.fields([
   { name: 'personImage', maxCount: 1 },
   { name: 'clothingImage', maxCount: 1 }
 ]), async (req, res) => {
@@ -174,6 +176,13 @@ app.post('/api/try-on', upload.fields([
     const personImageMime = req.files.personImage[0].mimetype;
     const clothingImageMime = req.files.clothingImage[0].mimetype;
     const description = req.body.description || '';
+
+    // Log authentication status
+    if (req.user) {
+      console.log(`[AUTH] Authenticated try-on request from user: ${req.user.email} (${req.user.id})`);
+    } else {
+      console.log('[AUTH] Unauthenticated try-on request (guest user)');
+    }
 
     console.log('Processing images...');
     console.log('Person image:', personImagePath);
