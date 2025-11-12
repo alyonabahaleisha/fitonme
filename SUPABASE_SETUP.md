@@ -104,7 +104,20 @@ For each bucket (outfit-images and outfit-thumbnails):
    - **Project URL**: `https://xxxxxxxxxxxxx.supabase.co`
    - **anon public key**: `eyJhbGc...` (long string)
 
-## 6. Add Credentials to Your App
+## 6. Configure Authentication Redirect URLs
+
+**IMPORTANT:** This step is required for authentication to work correctly in production.
+
+1. In your Supabase dashboard, go to **Authentication** → **URL Configuration**
+2. Add your allowed redirect URLs:
+   - For local development: `http://localhost:5173/auth/callback`
+   - For production: `https://fitonme.vercel.app/auth/callback`
+   - For UAT: `https://your-uat-domain.vercel.app/auth/callback` (if applicable)
+3. Click **Save**
+
+**Note:** The code automatically uses `window.location.origin` for redirects, but Supabase must have these URLs explicitly allowed in its configuration.
+
+## 7. Add Credentials to Your App
 
 1. In your project root, create or update `.env` file:
 
@@ -119,7 +132,7 @@ GEMINI_API_KEY=your-gemini-key-here
 
 2. Replace the placeholder values with your actual Supabase credentials
 
-## 7. Verify Setup
+## 8. Verify Setup
 
 Run your app and try uploading an outfit through the Admin panel. You should see:
 - Outfit data saved in the `outfits` table (check in Supabase Dashboard → Table Editor)
@@ -161,6 +174,16 @@ outfits
 **Error: "Invalid API key"**
 - Verify VITE_SUPABASE_ANON_KEY is the anon/public key
 - Don't use the service_role key (it's secret)
+
+**Redirected to localhost after authentication**
+- **This is the most common production issue**
+- Go to Supabase Dashboard → **Authentication** → **URL Configuration**
+- Add your production domain to the redirect URLs: `https://fitonme.vercel.app/auth/callback`
+- Make sure to add ALL domains where your app is deployed:
+  - Local: `http://localhost:5173/auth/callback`
+  - Production: `https://fitonme.vercel.app/auth/callback`
+  - UAT: `https://your-uat-domain.vercel.app/auth/callback`
+- Click **Save** and try authenticating again
 
 **Images not uploading**
 - Check storage buckets are public
