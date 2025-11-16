@@ -95,9 +95,11 @@ export const trackOutfitSelected = (outfitId, outfitName, gender, userId) => {
   ReactGA.event({
     category: 'Try-On',
     action: 'outfit_selected',
-    label: `${outfitName} (${outfitId})`,
+    label: outfitName,
     value: gender === 'man' ? 1 : 0, // 1 for men, 0 for women
     userId: userId || 'guest',
+    outfit_id: outfitId,
+    outfit_gender: gender,
   });
 };
 
@@ -105,9 +107,10 @@ export const trackTryOnStarted = (outfitId, outfitName, userId, userType) => {
   ReactGA.event({
     category: 'Try-On',
     action: 'try_on_started',
-    label: `${outfitName} (${outfitId})`,
+    label: outfitName,
     userId: userId || 'guest',
     user_type: userType, // 'guest', 'free', 'weekly', 'monthly', 'annual'
+    outfit_id: outfitId,
   });
 };
 
@@ -115,9 +118,11 @@ export const trackTryOnCompleted = (outfitId, outfitName, userId, userType, succ
   ReactGA.event({
     category: 'Try-On',
     action: success ? 'try_on_completed' : 'try_on_failed',
-    label: `${outfitName} (${outfitId})`,
+    label: outfitName,
     userId: userId || 'guest',
     user_type: userType,
+    outfit_id: outfitId,
+    success: success,
   });
 };
 
@@ -125,8 +130,9 @@ export const trackRegenerateClicked = (outfitId, outfitName, userId) => {
   ReactGA.event({
     category: 'Try-On',
     action: 'regenerate_clicked',
-    label: `${outfitName} (${outfitId})`,
+    label: outfitName,
     userId: userId || 'guest',
+    outfit_id: outfitId,
   });
 };
 
@@ -156,8 +162,9 @@ export const trackShoppingPanelOpened = (outfitId, outfitName, userId) => {
   ReactGA.event({
     category: 'Shopping',
     action: 'shopping_panel_opened',
-    label: `${outfitName} (${outfitId})`,
+    label: outfitName,
     userId: userId || 'guest',
+    outfit_id: outfitId,
   });
 };
 
@@ -165,9 +172,10 @@ export const trackProductClicked = (productName, productLink, outfitId, userId) 
   ReactGA.event({
     category: 'Shopping',
     action: 'product_clicked',
-    label: `${productName} - ${outfitId}`,
-    value: productLink,
+    label: productName,
     userId: userId || 'guest',
+    outfit_id: outfitId,
+    product_link: productLink,
   });
 };
 
