@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Sparkles, User, MoreVertical, ShoppingBag, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import Navigation from '../components/Navigation';
 import OutfitCarousel from '../components/OutfitCarousel';
 import ShareModal from '../components/ShareModal';
@@ -27,6 +29,7 @@ import {
 } from '../services/analytics';
 
 const TryOn = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     userPhoto,
     outfits,
@@ -49,6 +52,27 @@ const TryOn = () => {
   const [showPricing, setShowPricing] = useState(false);
   const fileInputRef = useRef(null);
   const { applyOutfit, isProcessing} = useOutfitOverlay();
+
+  // Check for successful payment redirect from Stripe
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (sessionId) {
+      console.log('[PAYMENT] Payment successful! Session ID:', sessionId);
+
+      // Show success message
+      toast.success('Payment Successful!', {
+        description: 'Your subscription is now active. Enjoy unlimited try-ons!',
+        duration: 5000,
+      });
+
+      // Remove session_id from URL
+      searchParams.delete('session_id');
+      setSearchParams(searchParams, { replace: true });
+
+      // Optionally refresh user data to get updated subscription status
+      // This would require a refetch of user data from your auth context
+    }
+  }, [searchParams, setSearchParams]);
 
   const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night'];
 

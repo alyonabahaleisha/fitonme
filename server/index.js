@@ -21,6 +21,13 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path}`);
+  next();
+});
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -44,6 +51,10 @@ const upload = multer({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Initialize Stripe
+console.log('[STARTUP] Initializing Stripe...');
+console.log('[STARTUP] STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+console.log('[STARTUP] STRIPE_SECRET_KEY length:', process.env.STRIPE_SECRET_KEY?.length);
+console.log('[STARTUP] STRIPE_SECRET_KEY starts with:', process.env.STRIPE_SECRET_KEY?.substring(0, 130));
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Helper function to convert image to base64
@@ -68,11 +79,17 @@ app.get('/api/health', (req, res) => {
 // Stripe: Create checkout session
 app.post('/api/create-checkout-session', express.json(), async (req, res) => {
   try {
+    console.log('[CHECKOUT] Creating checkout session...');
+    console.log('[CHECKOUT] Request body:', req.body);
+
     const { priceId, userId, userEmail } = req.body;
 
     if (!priceId) {
+      console.log('[CHECKOUT] ERROR: No priceId provided');
       return res.status(400).json({ error: 'Price ID is required' });
     }
+
+    console.log('[CHECKOUT] Creating session with priceId:', priceId);
 
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -84,8 +101,8 @@ app.post('/api/create-checkout-session', express.json(), async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.VITE_API_URL || 'http://localhost:5173'}/try-on?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.VITE_API_URL || 'http://localhost:5173'}/try-on`,
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/try-on?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/try-on`,
       customer_email: userEmail,
       metadata: {
         userId: userId || 'guest',
@@ -97,9 +114,12 @@ app.post('/api/create-checkout-session', express.json(), async (req, res) => {
       },
     });
 
+    console.log('[CHECKOUT] Session created successfully:', session.id);
     res.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('[CHECKOUT] Error creating checkout session:', error.message);
+    console.error('[CHECKOUT] Error type:', error.type);
+    console.error('[CHECKOUT] Status code:', error.statusCode);
     res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
   }
 });

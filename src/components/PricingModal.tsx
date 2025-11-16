@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "../contexts/AuthContext";
 import { trackPlanSelected, trackCheckoutStarted } from "../services/analytics";
 import SignUpModal from "./SignUpModal";
+import { getStripe } from "../lib/stripe";
 
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
   const { user } = useAuth();
@@ -63,7 +60,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Try Weekly",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_weekly_placeholder", // Replace with your Stripe Price ID
+      stripePriceId: "price_1SRdKUPdZyXoKKUKezEa0FVG",
     },
     {
       name: "Monthly Plan",
@@ -129,6 +126,8 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       // Track checkout started
       trackCheckoutStarted(planType, priceId, user.id);
 
+      console.log('[CHECKOUT] Starting checkout for priceId:', priceId);
+
       // Create checkout session
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/create-checkout-session`, {
         method: 'POST',
@@ -142,19 +141,25 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
         }),
       });
 
+      console.log('[CHECKOUT] Response status:', response.status);
       const data = await response.json();
+      console.log('[CHECKOUT] Response data:', data);
 
       if (!response.ok) {
+        console.error('[CHECKOUT] Response not OK:', data);
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      if (stripe && data.sessionId) {
-        await stripe.redirectToCheckout({ sessionId: data.sessionId });
-      } else if (data.url) {
-        // Fallback: redirect directly to checkout URL
+      // Redirect to Stripe Checkout using the URL
+      console.log('[CHECKOUT] Session ID:', data.sessionId);
+      console.log('[CHECKOUT] Checkout URL:', data.url);
+
+      if (data.url) {
+        console.log('[CHECKOUT] Redirecting to Stripe Checkout...');
         window.location.href = data.url;
+      } else {
+        console.error('[CHECKOUT] No checkout URL in response');
+        throw new Error('Invalid checkout response - missing URL');
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
