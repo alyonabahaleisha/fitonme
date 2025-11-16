@@ -124,14 +124,19 @@ const Index = () => {
               </h1>
 
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                Upload your photo to preview styles on your real body. Fast, personal, and powered by AI.
+                Upload your photo to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">50+ premium curated outfits.</span>
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
                 <UploadButton variant="hero" size="default" />
-                <Button variant="secondary" size="default" onClick={() => navigate('/try-on')}>
-                  Browse Outfits
-                </Button>
+                <div className="relative inline-block">
+                  <Button variant="secondary" size="default" onClick={() => navigate('/try-on')}>
+                    Browse Outfits
+                  </Button>
+                  <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
+                    New
+                  </span>
+                </div>
               </div>
 
               <p className="text-xs text-muted-foreground flex items-center gap-2">
@@ -202,14 +207,19 @@ const Index = () => {
                 </h1>
 
                 <p className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed">
-                  Upload your photo to preview styles on your real body. Fast, personal, and powered by AI.
+                  Upload your photo to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">50+ premium curated outfits.</span>
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
                   <UploadButton variant="hero" size="default" />
-                  <Button variant="secondary" size="default" onClick={() => navigate('/try-on')}>
-                    Browse Outfits
-                  </Button>
+                  <div className="relative inline-block">
+                    <Button variant="secondary" size="default" onClick={() => navigate('/try-on')}>
+                      Browse Outfits
+                    </Button>
+                    <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
+                      New
+                    </span>
+                  </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground flex items-center gap-2">

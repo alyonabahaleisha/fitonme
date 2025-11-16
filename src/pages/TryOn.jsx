@@ -427,20 +427,25 @@ const TryOn = () => {
                   >
                     Women
                   </button>
-                  <button
-                    onClick={() => {
-                      setSelectedGender('man');
-                      trackGenderFilterChanged('man', user?.id);
-                    }}
-                    className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
-                      selectedGender === 'man'
-                        ? 'bg-coral-500 text-white shadow-sm'
-                        : 'text-gray-700 hover:text-coral-600'
-                    }`}
-                    style={selectedGender === 'man' ? { backgroundColor: '#ff6b5a' } : {}}
-                  >
-                    Men
-                  </button>
+                  <div className="relative inline-block">
+                    <button
+                      onClick={() => {
+                        setSelectedGender('man');
+                        trackGenderFilterChanged('man', user?.id);
+                      }}
+                      className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
+                        selectedGender === 'man'
+                          ? 'bg-coral-500 text-white shadow-sm'
+                          : 'text-gray-700 hover:text-coral-600'
+                      }`}
+                      style={selectedGender === 'man' ? { backgroundColor: '#ff6b5a' } : {}}
+                    >
+                      Men
+                    </button>
+                    <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white bg-gradient-to-r from-green-500 via-yellow-400 to-orange-500 rounded-full shadow-lg">
+                      New
+                    </span>
+                  </div>
                 </div>
               </div>
 
