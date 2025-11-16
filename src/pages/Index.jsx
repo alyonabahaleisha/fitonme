@@ -120,11 +120,11 @@ const Index = () => {
               </div>
 
               <h1 className="text-3xl md:text-4xl font-serif font-semibold text-foreground leading-tight tracking-tight">
-                Try Before You Buy<br className="hidden sm:inline" /> — On You
+                See Yourself in Every Outfit — Instantly.
               </h1>
 
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                Watch outfits appear on a real body. Then try them on your own photo in seconds.
+                Upload your photo to preview styles on your real body. Fast, personal, and powered by AI.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
@@ -198,11 +198,11 @@ const Index = () => {
                 </div>
 
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-semibold text-foreground leading-tight tracking-tight">
-                  Try Before You Buy<br /> — On You
+                  See Yourself in Every Outfit — Instantly.
                 </h1>
 
                 <p className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed">
-                  Watch outfits appear on a real body. Then try them on your own photo in seconds.
+                  Upload your photo to preview styles on your real body. Fast, personal, and powered by AI.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>

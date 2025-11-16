@@ -18,14 +18,13 @@ const Home = () => {
 
             {/* Heading */}
             <h1 className="text-5xl md:text-7xl font-display font-bold text-gray-900 leading-tight">
-              Try Before You Buy
-              <span className="block text-primary-600 mt-2">With AI Magic</span>
+              See Yourself in Every Outfit — Instantly.
             </h1>
 
             {/* Description */}
             <p className="text-xl md:text-2xl text-gray-700 max-w-2xl mx-auto">
-              Upload your photo and instantly see complete outfits on yourself.
-              No more guessing—experience the perfect fit before you click buy.
+              Upload your photo to preview styles on your real body.
+              Fast, personal, and powered by AI.
             </p>
 
             {/* CTA Buttons */}
