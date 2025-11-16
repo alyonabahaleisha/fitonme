@@ -129,8 +129,8 @@ const Index = () => {
 
               <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
                 <UploadButton variant="hero" size="default" />
-                <div className="relative inline-block">
-                  <Button variant="secondary" size="default" onClick={() => navigate('/try-on')}>
+                <div className="relative w-full sm:w-auto inline-block">
+                  <Button variant="secondary" size="default" onClick={() => navigate('/try-on')} className="w-full sm:w-auto">
                     Browse Outfits
                   </Button>
                   <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
@@ -212,8 +212,8 @@ const Index = () => {
 
                 <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
                   <UploadButton variant="hero" size="default" />
-                  <div className="relative inline-block">
-                    <Button variant="secondary" size="default" onClick={() => navigate('/try-on')}>
+                  <div className="relative w-full sm:w-auto inline-block">
+                    <Button variant="secondary" size="default" onClick={() => navigate('/try-on')} className="w-full sm:w-auto">
                       Browse Outfits
                     </Button>
                     <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
