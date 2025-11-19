@@ -28,7 +28,7 @@ const ProductRow = ({ outfit }) => {
 
   return (
     <div className="overflow-hidden">
-      <div className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2 snap-x snap-mandatory scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 snap-x snap-mandatory scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
         {products.map((product, index) =>
           product.link ? (
             <a

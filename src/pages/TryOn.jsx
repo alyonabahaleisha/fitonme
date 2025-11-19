@@ -277,18 +277,18 @@ const TryOn = () => {
         className="hidden"
       />
 
-      <section className="min-h-screen gradient-bg pt-20 pb-12 px-4 md:pt-24 md:pb-20">
-        <div className="container mx-auto max-w-7xl">
+      <section className="min-h-screen gradient-bg pt-20 pb-12 md:pt-24 md:pb-20">
+        <div className="mx-auto max-w-7xl px-3 md:px-4">
         <div className="grid lg:grid-cols-[auto_1fr] gap-8 lg:gap-12">
           {/* Left Sidebar - Avatar */}
           <div className="space-y-4">
-            <div className="sticky top-8 space-y-4">
+            <div className="lg:sticky lg:top-24 space-y-4">
               <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group mx-auto lg:mx-0" style={{ width: 'fit-content', maxWidth: '100%' }}>
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(70vh + 10px)', width: 'calc((4/7) * (70vh + 10px))', maxWidth: '100%' }}>
+                <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(55vh + 10px)', width: 'calc((4/7) * (55vh + 10px))', maxWidth: '100%' }}>
                   {hasAppliedOutfit && displayImage ? (
                     <>
                       <img
@@ -379,7 +379,7 @@ const TryOn = () => {
 
               {/* Product Row - Shows items when outfit is generated */}
               {hasAppliedOutfit && currentOutfit && (
-                <div className="mx-auto lg:mx-0" style={{ width: 'calc((4/7) * (70vh + 10px) + 20px)', maxWidth: '100%' }}>
+                <div className="mx-auto lg:mx-0" style={{ width: 'calc((4/7) * (55vh + 10px) + 40px)', maxWidth: '100%' }}>
                   <ProductRow outfit={currentOutfit} />
                 </div>
               )}

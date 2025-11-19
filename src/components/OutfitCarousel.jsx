@@ -15,7 +15,7 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate,
         <div
           key={outfit.id}
           onClick={() => onSelectOutfit(outfit)}
-          className={`group relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/4)] ${
+          className={`group relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer w-[calc((100%-1rem)/2)] lg:w-[calc((100%-4rem)/5)] ${
             selectedOutfit?.id === outfit.id
               ? 'border-2 shadow-lg'
               : 'border border-gray-200'
