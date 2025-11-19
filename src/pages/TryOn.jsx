@@ -379,7 +379,7 @@ const TryOn = () => {
 
               {/* Product Row - Shows items when outfit is generated */}
               {hasAppliedOutfit && currentOutfit && (
-                <div className="mx-auto lg:mx-0" style={{ width: 'calc((4/7) * (55vh + 10px) + 40px)', maxWidth: '100%' }}>
+                <div className="mx-auto lg:mx-0" style={{ width: 'calc((4/7) * (55vh + 10px) + 100px)', maxWidth: '100%' }}>
                   <ProductRow outfit={currentOutfit} />
                 </div>
               )}
