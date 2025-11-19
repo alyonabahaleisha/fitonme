@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, User, MoreVertical, Upload } from 'lucide-react';
+import { Sparkles, User, MoreVertical, Upload, Maximize2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import Navigation from '../components/Navigation';
 import OutfitCarousel from '../components/OutfitCarousel';
@@ -50,6 +50,7 @@ const TryOn = () => {
   const [selectedGender, setSelectedGender] = useState('woman'); // 'man' or 'woman'
   const [showShoppingPanel, setShowShoppingPanel] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
+  const [showZoomedImage, setShowZoomedImage] = useState(false);
   const fileInputRef = useRef(null);
   const { applyOutfit, isProcessing} = useOutfitOverlay();
 
@@ -115,6 +116,9 @@ const TryOn = () => {
       setDisplayImage(result);
       setHasAppliedOutfit(true);
       console.log('Outfit applied successfully');
+
+      // Scroll to top on mobile to see the generated image
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Track try-on completed
       trackTryOnCompleted(currentOutfit.id, currentOutfit.name, user?.id, userType, true);
@@ -296,6 +300,14 @@ const TryOn = () => {
                         alt="Your avatar with outfit"
                         className="h-full w-full object-cover"
                       />
+                      {/* Zoom Button - On top of the outfit image */}
+                      <button
+                        onClick={() => setShowZoomedImage(true)}
+                        className="absolute top-4 left-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Zoom image"
+                      >
+                        <Maximize2 className="w-5 h-5 text-gray-700" />
+                      </button>
                       {/* Three Dots Menu - On top of the outfit image */}
                       <button
                         onClick={handlePhotoUpload}
@@ -497,6 +509,28 @@ const TryOn = () => {
         isOpen={showPricing}
         onClose={() => setShowPricing(false)}
       />
+
+      {/* Zoomed Image Modal */}
+      {showZoomedImage && displayImage && (
+        <div
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowZoomedImage(false)}
+        >
+          <button
+            onClick={() => setShowZoomedImage(false)}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 rounded-full p-3 transition-all duration-300"
+            aria-label="Close zoom"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+          <img
+            src={displayImage}
+            alt="Zoomed outfit"
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </>
   );
 };
