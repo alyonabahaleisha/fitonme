@@ -283,7 +283,7 @@ const TryOn = () => {
           {/* Left Sidebar - Avatar */}
           <div className="space-y-4">
             <div className="lg:sticky lg:top-24 space-y-4">
-              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group mx-auto lg:mx-0" style={{ width: 'fit-content', maxWidth: '100%' }}>
+              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group mx-auto" style={{ width: 'fit-content', maxWidth: '100%' }}>
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
@@ -379,7 +379,7 @@ const TryOn = () => {
 
               {/* Product Row - Shows items when outfit is generated */}
               {hasAppliedOutfit && currentOutfit && (
-                <div className="mx-auto lg:mx-0" style={{ width: 'calc((4/7) * (55vh + 10px) + 100px)', maxWidth: '100%' }}>
+                <div className="mx-auto" style={{ width: 'calc((4/7) * (55vh + 10px) + 100px)', maxWidth: '100%' }}>
                   <ProductRow outfit={currentOutfit} />
                 </div>
               )}
@@ -390,18 +390,14 @@ const TryOn = () => {
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Sparkles className="h-8 w-8 text-accent" />
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900">
+                <Sparkles className="h-6 w-6 text-accent" />
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900">
                   Try On Outfits
                 </h2>
               </div>
-              <p className="text-gray-600">
-                Select an outfit and click "Try On" to see it on your photo
-              </p>
 
               {/* Gender Filter Switch */}
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-700">Style:</span>
                 <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
                   <button
                     onClick={() => {
