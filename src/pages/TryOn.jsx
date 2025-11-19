@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, User, MoreVertical, ShoppingBag, Upload } from 'lucide-react';
+import { Sparkles, User, MoreVertical, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import Navigation from '../components/Navigation';
 import OutfitCarousel from '../components/OutfitCarousel';
@@ -9,6 +9,7 @@ import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
 import ShoppingPanel from '../components/ShoppingPanel';
 import SignUpModal from '../components/SignUpModal';
 import PricingModal from '../components/PricingModal';
+import ProductRow from '../components/ProductRow';
 import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,7 +24,6 @@ import {
   trackRegenerateClicked,
   trackFreeLimitReached,
   trackCreditsDepletedModalShown,
-  trackShoppingPanelOpened,
   trackPricingModalOpened,
   trackPhotoGuidelinesModalOpened,
 } from '../services/analytics';
@@ -281,14 +281,14 @@ const TryOn = () => {
         <div className="container mx-auto max-w-7xl">
         <div className="grid lg:grid-cols-[auto_1fr] gap-8 lg:gap-12">
           {/* Left Sidebar - Avatar */}
-          <div className="space-y-6">
-            <div className="sticky top-8">
-              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group" style={{ width: 'fit-content' }}>
+          <div className="space-y-4">
+            <div className="sticky top-8 space-y-4">
+              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group mx-auto lg:mx-0" style={{ width: 'fit-content', maxWidth: '100%' }}>
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
                 {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(70vh + 10px)', width: 'calc((4/7) * (70vh + 10px))' }}>
+                <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(70vh + 10px)', width: 'calc((4/7) * (70vh + 10px))', maxWidth: '100%' }}>
                   {hasAppliedOutfit && displayImage ? (
                     <>
                       <img
@@ -377,21 +377,11 @@ const TryOn = () => {
                 )}
               </div>
 
-              {/* Shop Now Button - Shows when outfit is generated */}
+              {/* Product Row - Shows items when outfit is generated */}
               {hasAppliedOutfit && currentOutfit && (
-                <button
-                  onClick={() => {
-                    trackShoppingPanelOpened(currentOutfit.id, currentOutfit.name, user?.id);
-                    setShowShoppingPanel(true);
-                  }}
-                  className="w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold text-base py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                  style={{ backgroundColor: '#ff6b5a' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ff5544'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff6b5a'}
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  Shop Now
-                </button>
+                <div className="mx-auto lg:mx-0" style={{ width: 'calc((4/7) * (70vh + 10px) + 20px)', maxWidth: '100%' }}>
+                  <ProductRow outfit={currentOutfit} />
+                </div>
               )}
             </div>
           </div>
