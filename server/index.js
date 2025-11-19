@@ -218,7 +218,6 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     const clothingImagePart = fileToGenerativePart(clothingImagePath, clothingImageMime);
 
     // Generate image directly with both image inputs
-    const fitDescription = description ? `\n- The clothing should fit ${description}` : '';
     const generationPrompt = `Generate a photorealistic virtual try-on image using the person from the first photo as the base and the outfit from the second image.
 
 Detailed instructions:
