@@ -209,9 +209,9 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     console.log('Clothing image:', clothingImagePath);
     console.log('Description:', description);
 
-    // Use Gemini 2.5 Flash Image model for image generation
+    // Use Gemini 3 Pro model for image generation (upgraded Nov 2025)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-image'
+      model: 'gemini-3-pro-preview'
     });
 
     const personImagePart = fileToGenerativePart(personImagePath, personImageMime);
