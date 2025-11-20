@@ -98,16 +98,16 @@ const TryOn = () => {
     }
   }, [userPhoto]);
 
-  // Track generation time while processing (countdown from 10s)
+  // Track generation time while processing (countdown from 12s)
   useEffect(() => {
     let interval;
     if (isProcessing) {
-      setGenerationTime(10);
+      setGenerationTime(12);
       interval = setInterval(() => {
-        setGenerationTime(prev => Math.max(0, prev - 0.1));
-      }, 100); // Update every 100ms for smooth countdown
+        setGenerationTime(prev => Math.max(0, prev - 1));
+      }, 1000); // Update every second
     } else {
-      setGenerationTime(10);
+      setGenerationTime(12);
     }
 
     return () => {
@@ -394,7 +394,7 @@ const TryOn = () => {
                         </div>
                         <p className="text-white text-xl font-semibold">AI Magic is happening</p>
                         <p className="text-white/80 text-lg mt-2 font-mono">
-                          {generationTime.toFixed(1)}s
+                          {Math.round(generationTime)}s
                         </p>
                         <div className="flex gap-1 justify-center mt-3">
                           <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
