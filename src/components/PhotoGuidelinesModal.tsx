@@ -26,6 +26,10 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
     {
       title: "Good lighting",
       description: "Clear, well-lit photo works best"
+    },
+    {
+      title: "Add smile",
+      description: "A smile makes for better results"
     }
   ];
 
