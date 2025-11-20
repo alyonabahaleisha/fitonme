@@ -70,7 +70,7 @@ const useAppStore = create(
         userPhoto: state.userPhoto,
         guestTryOns: state.guestTryOns,
       }),
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (_state, error) => {
         if (error) {
           console.error('[STORAGE] Error rehydrating state:', error);
         } else {
