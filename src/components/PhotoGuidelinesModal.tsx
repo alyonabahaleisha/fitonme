@@ -72,7 +72,7 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                   <Check size={12} className="md:w-5 md:h-5" />
                 </div>
                 {/* Smile badge */}
-                <div className="absolute -bottom-1.5 -left-1.5 md:-bottom-3 md:-left-3 bg-yellow-400 text-gray-900 rounded-full px-2 py-1 md:px-3 md:py-1.5 shadow-lg flex items-center gap-1">
+                <div className="absolute -top-1.5 -left-1.5 md:-top-3 md:-left-3 bg-yellow-400 text-gray-900 rounded-full px-2 py-1 md:px-3 md:py-1.5 shadow-lg flex items-center gap-1">
                   <Smile size={12} className="md:w-4 md:h-4" />
                   <span className="text-xs md:text-sm font-medium">Add smile</span>
                 </div>
