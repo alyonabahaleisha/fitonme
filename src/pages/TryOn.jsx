@@ -98,16 +98,16 @@ const TryOn = () => {
     }
   }, [userPhoto]);
 
-  // Track generation time while processing
+  // Track generation time while processing (countdown from 10s)
   useEffect(() => {
     let interval;
     if (isProcessing) {
-      setGenerationTime(0);
+      setGenerationTime(10);
       interval = setInterval(() => {
-        setGenerationTime(prev => prev + 0.1);
+        setGenerationTime(prev => Math.max(0, prev - 0.1));
       }, 100); // Update every 100ms for smooth countdown
     } else {
-      setGenerationTime(0);
+      setGenerationTime(10);
     }
 
     return () => {
