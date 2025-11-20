@@ -51,6 +51,7 @@ const TryOn = () => {
   const [showShoppingPanel, setShowShoppingPanel] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [showZoomedImage, setShowZoomedImage] = useState(false);
+  const [generationTime, setGenerationTime] = useState(0);
   const fileInputRef = useRef(null);
   const { applyOutfit, isProcessing} = useOutfitOverlay();
 
@@ -96,6 +97,23 @@ const TryOn = () => {
       setHasAppliedOutfit(false);
     }
   }, [userPhoto]);
+
+  // Track generation time while processing
+  useEffect(() => {
+    let interval;
+    if (isProcessing) {
+      setGenerationTime(0);
+      interval = setInterval(() => {
+        setGenerationTime(prev => prev + 0.1);
+      }, 100); // Update every 100ms for smooth countdown
+    } else {
+      setGenerationTime(0);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isProcessing]);
 
   const handleTryOnOutfit = async (forceRefresh = false) => {
     if (!currentOutfit || !userPhoto) return;
@@ -360,6 +378,9 @@ const TryOn = () => {
                           <Sparkles className="w-16 h-16 text-accent mx-auto animate-pulse" />
                         </div>
                         <p className="text-white text-xl font-semibold">AI Magic is happening</p>
+                        <p className="text-white/80 text-lg mt-2 font-mono">
+                          {generationTime.toFixed(1)}s
+                        </p>
                         <div className="flex gap-1 justify-center mt-3">
                           <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                           <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
