@@ -415,18 +415,18 @@ const TryOn = () => {
 
                       <button
                         onClick={handlePhotoUpload}
-                        className="w-full relative text-white font-bold text-lg py-3 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                        className="relative text-white font-semibold text-sm py-2.5 px-6 rounded-full shadow-md transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
                         style={{ backgroundColor: '#ff6b5a' }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = '#ff5544';
-                          e.currentTarget.style.transform = 'scale(1.02)';
+                          e.currentTarget.style.transform = 'scale(1.05)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = '#ff6b5a';
                           e.currentTarget.style.transform = 'scale(1)';
                         }}
                       >
-                        <Upload className="h-5 w-5" />
+                        <Upload className="h-4 w-4" />
                         Upload Your Photo
                       </button>
                     </div>
