@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, Image as ImageIcon, CheckCircle } from 'lucide-react';
-import { validatePhoto, fileToBase64 } from '../lib/image-processor';
+import { validatePhoto, compressImage } from '../lib/image-processor';
 import useAppStore from '../store/useAppStore';
 import PhotoGuidelinesModal from './PhotoGuidelinesModal';
 
@@ -26,18 +26,30 @@ const PhotoUpload = ({ onUploadComplete }) => {
     setIsUploading(true);
 
     try {
-      const base64 = await fileToBase64(file);
-      setPreview(base64);
-      setUserPhoto(base64);
+      // Compress image to fit localStorage limits
+      const compressedBase64 = await compressImage(file);
+      setPreview(compressedBase64);
+
+      // Try to save to localStorage with error handling
+      try {
+        setUserPhoto(compressedBase64);
+        console.log('[PHOTO] Successfully saved photo to localStorage');
+      } catch (storageError) {
+        console.error('[PHOTO] Failed to save to localStorage:', storageError);
+        setError('Image too large. Please try a smaller image.');
+        setIsUploading(false);
+        return;
+      }
 
       // Simulate upload delay for better UX
       setTimeout(() => {
         setIsUploading(false);
         if (onUploadComplete) {
-          onUploadComplete(base64);
+          onUploadComplete(compressedBase64);
         }
       }, 500);
     } catch (err) {
+      console.error('[PHOTO] Failed to process image:', err);
       setError('Failed to process image');
       setIsUploading(false);
     }

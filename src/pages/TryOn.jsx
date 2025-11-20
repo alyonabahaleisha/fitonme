@@ -283,16 +283,31 @@ const TryOn = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setUserPhoto(event.target.result);
-        // Track photo upload
-        trackPhotoUploaded(user?.id);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Import compressImage dynamically
+        const { compressImage } = await import('../lib/image-processor');
+
+        // Compress image to fit localStorage limits
+        const compressedBase64 = await compressImage(file);
+
+        // Try to save to localStorage with error handling
+        try {
+          setUserPhoto(compressedBase64);
+          console.log('[PHOTO] Successfully saved photo to localStorage');
+
+          // Track photo upload
+          trackPhotoUploaded(user?.id);
+        } catch (storageError) {
+          console.error('[PHOTO] Failed to save to localStorage:', storageError);
+          alert('Image too large. Please try a smaller image.');
+        }
+      } catch (err) {
+        console.error('[PHOTO] Failed to process image:', err);
+        alert('Failed to process image. Please try again.');
+      }
     }
   };
 

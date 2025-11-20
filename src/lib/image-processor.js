@@ -172,3 +172,58 @@ export const fileToBase64 = (file) => {
     reader.readAsDataURL(file);
   });
 };
+
+// Compress image to fit localStorage limits (max 3MB for base64)
+export const compressImage = (file, maxSizeMB = 3) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = new Image();
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate max dimensions to keep aspect ratio
+        // Estimate: base64 is ~1.37x larger than binary
+        // Start with max 1500px on longest side for quality
+        const maxDimension = 1500;
+
+        if (width > height && width > maxDimension) {
+          height = (height * maxDimension) / width;
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = (width * maxDimension) / height;
+          height = maxDimension;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Try different quality levels until we get under size limit
+        let quality = 0.9;
+        let result = canvas.toDataURL('image/jpeg', quality);
+
+        // Base64 size in MB (rough estimate: length / 1.37 / 1024 / 1024)
+        while (result.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.3) {
+          quality -= 0.1;
+          result = canvas.toDataURL('image/jpeg', quality);
+        }
+
+        console.log(`[IMAGE] Compressed from ${file.size / 1024 / 1024}MB to ~${result.length / 1024 / 1024}MB (quality: ${quality})`);
+        resolve(result);
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image for compression'));
+      img.src = e.target.result;
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};

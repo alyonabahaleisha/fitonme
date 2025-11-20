@@ -70,6 +70,51 @@ const useAppStore = create(
         userPhoto: state.userPhoto,
         guestTryOns: state.guestTryOns,
       }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('[STORAGE] Error rehydrating state:', error);
+        } else {
+          console.log('[STORAGE] State rehydrated successfully');
+        }
+      },
+      storage: {
+        getItem: (name) => {
+          try {
+            const value = localStorage.getItem(name);
+            return value;
+          } catch (error) {
+            console.error('[STORAGE] Error reading from localStorage:', error);
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, value);
+          } catch (error) {
+            console.error('[STORAGE] Error writing to localStorage:', error);
+            // If quota exceeded, try to clear old data
+            if (error.name === 'QuotaExceededError') {
+              console.warn('[STORAGE] Quota exceeded - clearing storage and retrying');
+              try {
+                // Clear the storage and try again
+                localStorage.removeItem(name);
+                localStorage.setItem(name, value);
+              } catch (retryError) {
+                console.error('[STORAGE] Failed to save even after clearing:', retryError);
+                throw retryError;
+              }
+            }
+            throw error;
+          }
+        },
+        removeItem: (name) => {
+          try {
+            localStorage.removeItem(name);
+          } catch (error) {
+            console.error('[STORAGE] Error removing from localStorage:', error);
+          }
+        },
+      },
     }
   )
 );
