@@ -415,7 +415,16 @@ const TryOn = () => {
 
                       <button
                         onClick={handlePhotoUpload}
-                        className="w-full relative bg-gradient-to-r from-accent via-secondary-500 to-accent text-white font-bold text-lg py-3 px-4 rounded-xl shadow-lg hover:shadow-[var(--shadow-glow)] transition-all duration-300 flex items-center justify-center gap-2"
+                        className="w-full relative text-white font-bold text-lg py-3 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                        style={{ backgroundColor: '#ff6b5a' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ff5544';
+                          e.currentTarget.style.transform = 'scale(1.02)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ff6b5a';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
                       >
                         <Upload className="h-5 w-5" />
                         Upload Your Photo
