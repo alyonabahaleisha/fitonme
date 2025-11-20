@@ -106,6 +106,11 @@ const TryOn = () => {
 
     console.log('Applying outfit:', currentOutfit.name, 'forceRefresh:', forceRefresh);
 
+    // Scroll to top immediately when generation starts
+    console.log('Scrolling to top...');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.log('Scroll triggered');
+
     // Track try-on started
     const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
     trackTryOnStarted(currentOutfit.id, currentOutfit.name, user?.id, userType);
@@ -116,9 +121,6 @@ const TryOn = () => {
       setDisplayImage(result);
       setHasAppliedOutfit(true);
       console.log('Outfit applied successfully');
-
-      // Scroll to top on mobile to see the generated image
-      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Track try-on completed
       trackTryOnCompleted(currentOutfit.id, currentOutfit.name, user?.id, userType, true);
@@ -213,7 +215,7 @@ const TryOn = () => {
   };
 
   const handleOutfitSelect = async (outfit) => {
-    console.log('handleOutfitSelect called:', { outfitId: outfit.id, currentOutfitId: currentOutfit?.id });
+    console.log('🎯 OUTFIT CLICKED - handleOutfitSelect called:', { outfitId: outfit.id, currentOutfitId: currentOutfit?.id });
 
     // Track outfit selection
     trackOutfitSelected(outfit.id, outfit.name, outfit.gender, user?.id);
@@ -222,9 +224,16 @@ const TryOn = () => {
 
     // Automatically apply the outfit if user photo is available
     if (userPhoto) {
+      console.log('📸 User photo exists, will auto-apply outfit');
+
       // Check if user has permission to try on
       const canTryOn = await checkTryOnPermission();
       if (!canTryOn) return;
+
+      // Scroll to top immediately when generation starts
+      console.log('📜 Scrolling to top...');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      console.log('✅ Scroll triggered');
 
       try {
         console.log('Applying outfit:', outfit.name);
