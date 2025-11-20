@@ -233,7 +233,7 @@ Apply the outfit from the second image directly to the person’s contours — r
 
 Maintain realistic fabric interaction, light behavior, and natural shadowing.
 
-The result should look like a professional fashion photo of the same person wearing the new clothes naturally in their original setting.`;
+The result should look like a professional fashion photo of the same person wearing the new clothes naturally in their original setting. Looking happy and shining`;
 
     const result = await model.generateContent([
       generationPrompt,
