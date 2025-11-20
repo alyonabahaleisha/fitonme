@@ -396,11 +396,6 @@ const TryOn = () => {
                         <p className="text-white/80 text-lg mt-2 font-mono">
                           {Math.round(generationTime)}s
                         </p>
-                        <div className="flex gap-1 justify-center mt-3">
-                          <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                          <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                        </div>
                       </div>
                     </div>
                   )}
