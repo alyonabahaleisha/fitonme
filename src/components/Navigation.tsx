@@ -87,12 +87,12 @@ const Navigation = () => {
               {userData?.plan_type && (
                 <div
                   className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${userData.plan_type === 'free'
-                      ? 'bg-gray-100 text-gray-700 border border-gray-300'
-                      : userData.plan_type === 'weekly'
-                        ? 'bg-green-100 text-green-700 border border-green-300'
-                        : userData.plan_type === 'monthly'
-                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                          : 'bg-purple-100 text-purple-700 border border-purple-300'
+                    ? 'bg-gray-100 text-gray-700 border border-gray-300'
+                    : userData.plan_type === 'weekly'
+                      ? 'bg-green-100 text-green-700 border border-green-300'
+                      : userData.plan_type === 'monthly'
+                        ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                        : 'bg-purple-100 text-purple-700 border border-purple-300'
                     }`}
                 >
                   {userData.plan_type === 'free'
@@ -151,7 +151,19 @@ const Navigation = () => {
                 </>
               )}
             </div>
-          ) : null}
+          ) : (
+            <button
+              onClick={() => {
+                trackPricingModalOpened('navigation_signin', null);
+                setShowPricing(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+              style={{ backgroundColor: '#ff6b5a' }}
+            >
+              <User className="w-4 h-4" />
+              Sign In
+            </button>
+          )}
         </div>
       </div>
 
