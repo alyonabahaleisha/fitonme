@@ -152,19 +152,33 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
-      console.log('Checkout session completed:', session.id);
+      console.log('[WEBHOOK] Checkout session completed:', session.id);
+      console.log('[WEBHOOK] Session metadata:', session.metadata);
+      console.log('[WEBHOOK] Customer email:', session.customer_email);
 
       // Update user's subscription in Supabase
       // We stored userId in metadata
       const userId = session.metadata.userId;
       const subscriptionId = session.subscription;
 
+      console.log('[WEBHOOK] userId from metadata:', userId);
+      console.log('[WEBHOOK] subscriptionId:', subscriptionId);
+
+      if (!userId || userId === 'guest') {
+        console.error('[WEBHOOK] ERROR: Invalid userId - cannot save subscription for guest user');
+        console.error('[WEBHOOK] Customer email:', session.customer_email);
+        console.error('[WEBHOOK] Please ensure userId is passed when creating checkout session');
+        break;
+      }
+
       if (userId && subscriptionId) {
         try {
+          console.log('[WEBHOOK] Retrieving subscription from Stripe:', subscriptionId);
           // Retrieve the subscription details from Stripe to get the plan info
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          console.log('[WEBHOOK] Subscription retrieved:', subscription.id);
 
-          await supabase.from('subscriptions').upsert({
+          const subscriptionData = {
             subscription_id: subscription.id,
             user_id: userId,
             plan: subscription.items.data[0].price.recurring.interval, // 'month' or 'year' or 'week'
@@ -173,7 +187,16 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             end_date: new Date(subscription.current_period_end * 1000),
             stripe_customer_id: subscription.customer,
             stripe_price_id: subscription.items.data[0].price.id,
-          });
+          };
+
+          console.log('[WEBHOOK] Upserting subscription to database:', subscriptionData);
+          const { data: subData, error: subError } = await supabase.from('subscriptions').upsert(subscriptionData);
+
+          if (subError) {
+            console.error('[WEBHOOK] ERROR saving subscription:', subError);
+            throw subError;
+          }
+          console.log('[WEBHOOK] Subscription saved successfully:', subData);
 
           // Update user's plan_type in users table
           // Map interval to plan_type: week -> weekly, month -> monthly, year -> annual
@@ -183,14 +206,21 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           if (interval === 'month') planType = 'monthly';
           if (interval === 'year') planType = 'annual';
 
-          await supabase.from('users').update({
+          console.log('[WEBHOOK] Updating user plan_type to:', planType);
+          const { error: userError } = await supabase.from('users').update({
             plan_type: planType,
             credits_remaining: 999999 // Unlimited
           }).eq('id', userId);
 
-          console.log(`Updated subscription for user ${userId} to ${planType}`);
+          if (userError) {
+            console.error('[WEBHOOK] ERROR updating user:', userError);
+            throw userError;
+          }
+
+          console.log('[WEBHOOK] SUCCESS: Updated subscription for user', userId, 'to', planType);
         } catch (err) {
-          console.error('Error updating subscription in Supabase:', err);
+          console.error('[WEBHOOK] ERROR updating subscription in Supabase:', err);
+          console.error('[WEBHOOK] Error details:', JSON.stringify(err, null, 2));
         }
       }
       break;
