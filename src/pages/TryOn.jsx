@@ -466,6 +466,19 @@ const TryOn = () => {
                 {hasAppliedOutfit && currentOutfit && (
                   <div className="mx-auto" style={{ width: 'calc((4/7) * (55vh + 10px) + 100px)', maxWidth: '100%' }}>
                     <ProductRow outfit={currentOutfit} />
+
+                    {/* AI Disclaimer */}
+                    <div className="mt-4 text-center">
+                      <p className="text-xs text-gray-500">
+                        AI-Generated Image: Results may vary from real life.
+                        <button
+                          onClick={handleRegenerate}
+                          className="ml-1 text-accent hover:underline font-medium"
+                        >
+                          Not satisfied? Regenerate
+                        </button>
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
