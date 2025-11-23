@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart, User, LogOut } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
+import SignUpModal from "./SignUpModal";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/supabase";
 import { trackPricingModalOpened, trackFeedbackModalOpened, trackLogout } from "../services/analytics";
@@ -14,6 +15,7 @@ const Navigation = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -152,10 +154,10 @@ const Navigation = () => {
               )}
             </div>
           ) : (
+            /* Sign In button for authentication */
             <button
               onClick={() => {
-                trackPricingModalOpened('navigation_signin', null);
-                setShowPricing(true);
+                setShowSignUpModal(true);
               }}
               className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300"
               style={{ backgroundColor: '#ff6b5a' }}
@@ -171,10 +173,8 @@ const Navigation = () => {
         isOpen={showFeedback}
         onClose={() => setShowFeedback(false)}
       />
-      <PricingModal
-        isOpen={showPricing}
-        onClose={() => setShowPricing(false)}
-      />
+      <SignUpModal isOpen={showSignUpModal} onClose={() => setShowSignUpModal(false)} onShowPricing={() => setShowPricing(true)} />
+      <PricingModal isOpen={showPricing} onClose={() => setShowPricing(false)} />
     </nav>
   );
 };
