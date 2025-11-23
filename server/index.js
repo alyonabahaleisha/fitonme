@@ -8,6 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { verifyAuth, optionalAuth } from './middleware/auth.js';
+import { createClient } from '@supabase/supabase-js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,6 +57,13 @@ console.log('[STARTUP] STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_K
 console.log('[STARTUP] STRIPE_SECRET_KEY length:', process.env.STRIPE_SECRET_KEY?.length);
 console.log('[STARTUP] STRIPE_SECRET_KEY starts with:', process.env.STRIPE_SECRET_KEY?.substring(0, 130));
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Initialize Supabase
+console.log('[STARTUP] Initializing Supabase...');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // Helper function to convert image to base64
 function fileToGenerativePart(path, mimeType) {
