@@ -53,7 +53,7 @@ const TryOn = () => {
   const [showZoomedImage, setShowZoomedImage] = useState(false);
   const [generationTime, setGenerationTime] = useState(0);
   const fileInputRef = useRef(null);
-  const { applyOutfit, isProcessing} = useOutfitOverlay();
+  const { applyOutfit, isProcessing } = useOutfitOverlay();
 
   // Check for successful payment redirect from Stripe
   useEffect(() => {
@@ -83,12 +83,7 @@ const TryOn = () => {
     .filter(outfit => outfit.gender === selectedGender)
     .filter(outfit => selectedCategory === 'All' || outfit.category === selectedCategory);
 
-  useEffect(() => {
-    // Set first outfit as current if none selected
-    if (!currentOutfit && outfits.length > 0) {
-      setCurrentOutfit(outfits[0]);
-    }
-  }, [outfits]);
+
 
   useEffect(() => {
     // Reset display image when user photo is removed
@@ -215,6 +210,11 @@ const TryOn = () => {
     }
   };
 
+  const handlePhotoUpload = () => {
+    trackPhotoGuidelinesModalOpened(user?.id);
+    setShowGuidelines(true);
+  };
+
   const handleRegenerate = async () => {
     console.log('Regenerating current outfit...');
 
@@ -240,43 +240,42 @@ const TryOn = () => {
 
     setCurrentOutfit(outfit);
 
-    // Automatically apply the outfit if user photo is available
-    if (userPhoto) {
-      console.log('📸 User photo exists, will auto-apply outfit');
-
-      // Check if user has permission to try on
-      const canTryOn = await checkTryOnPermission();
-      if (!canTryOn) return;
-
-      // Scroll to top immediately when generation starts
-      console.log('📜 Scrolling to top...');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      console.log('✅ Scroll triggered');
-
-      try {
-        console.log('Applying outfit:', outfit.name);
-        const result = await applyOutfit(outfit);
-        if (result) {
-          setDisplayImage(result);
-          setHasAppliedOutfit(true);
-          console.log('Outfit applied successfully');
-
-          // Track the try-on
-          await trackTryOn(outfit.id, result);
-        } else {
-          console.error('Failed to apply outfit:', outfit.name);
-          alert(`Failed to apply outfit "${outfit.name}". Please try another outfit or check your connection.`);
-        }
-      } catch (error) {
-        console.error('Error applying outfit:', error);
-        alert(`Error applying outfit "${outfit.name}": ${error.message}`);
-      }
+    // If no user photo, show guidelines modal
+    if (!userPhoto) {
+      handlePhotoUpload();
+      return;
     }
-  };
 
-  const handlePhotoUpload = () => {
-    trackPhotoGuidelinesModalOpened(user?.id);
-    setShowGuidelines(true);
+    // Automatically apply the outfit if user photo is available
+    console.log('📸 User photo exists, will auto-apply outfit');
+
+    // Check if user has permission to try on
+    const canTryOn = await checkTryOnPermission();
+    if (!canTryOn) return;
+
+    // Scroll to top immediately when generation starts
+    console.log('📜 Scrolling to top...');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.log('✅ Scroll triggered');
+
+    try {
+      console.log('Applying outfit:', outfit.name);
+      const result = await applyOutfit(outfit);
+      if (result) {
+        setDisplayImage(result);
+        setHasAppliedOutfit(true);
+        console.log('Outfit applied successfully');
+
+        // Track the try-on
+        await trackTryOn(outfit.id, result);
+      } else {
+        console.error('Failed to apply outfit:', outfit.name);
+        alert(`Failed to apply outfit "${outfit.name}". Please try another outfit or check your connection.`);
+      }
+    } catch (error) {
+      console.error('Error applying outfit:', error);
+      alert(`Error applying outfit "${outfit.name}": ${error.message}`);
+    }
   };
 
   const handleChoosePhoto = () => {
@@ -325,208 +324,205 @@ const TryOn = () => {
 
       <section className="min-h-screen gradient-bg pt-20 pb-12 md:pt-24 md:pb-20">
         <div className="mx-auto max-w-7xl px-3 md:px-4">
-        <div className="grid lg:grid-cols-[auto_1fr] gap-8 lg:gap-12">
-          {/* Left Sidebar - Avatar */}
-          <div className="space-y-4">
-            <div className="lg:sticky lg:top-24 space-y-4">
-              <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group mx-auto" style={{ width: 'fit-content', maxWidth: '100%' }}>
-                {/* Shimmer Effect */}
-                <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
+          <div className="grid lg:grid-cols-[auto_1fr] gap-8 lg:gap-12">
+            {/* Left Sidebar - Avatar */}
+            <div className="space-y-4">
+              <div className="lg:sticky lg:top-24 space-y-4">
+                <div className="relative rounded-3xl overflow-hidden bg-white shadow-[var(--shadow-glow)] border-2 border-accent/30 hover:border-accent/50 transition-all duration-300 group mx-auto" style={{ width: 'fit-content', maxWidth: '100%' }}>
+                  {/* Shimmer Effect */}
+                  <div className="absolute inset-0 bg-[var(--gradient-shine)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10 animate-shimmer" />
 
-                {/* Avatar Image */}
-                <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(55vh + 10px)', width: 'calc((4/7) * (55vh + 10px))', maxWidth: '100%' }}>
-                  {hasAppliedOutfit && displayImage ? (
-                    <>
-                      <img
-                        src={displayImage}
-                        alt="Your avatar with outfit"
-                        className="h-full w-full object-cover"
-                      />
-                      {/* Zoom Button - On top of the outfit image */}
-                      <button
-                        onClick={() => setShowZoomedImage(true)}
-                        className="absolute top-4 left-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
-                        aria-label="Zoom image"
-                      >
-                        <Maximize2 className="w-5 h-5 text-gray-700" />
-                      </button>
-                      {/* Three Dots Menu - On top of the outfit image */}
-                      <button
-                        onClick={handlePhotoUpload}
-                        className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
-                        aria-label="Change photo"
-                      >
-                        <MoreVertical className="w-5 h-5 text-gray-700" />
-                      </button>
-                    </>
-                  ) : userPhoto ? (
-                    <>
-                      <img
-                        src={userPhoto}
-                        alt="Your photo"
-                        className="h-full w-full object-cover"
-                      />
-                      {/* Three Dots Menu - On top of the image */}
-                      <button
-                        onClick={handlePhotoUpload}
-                        className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
-                        aria-label="Change photo"
-                      >
-                        <MoreVertical className="w-5 h-5 text-gray-700" />
-                      </button>
-                    </>
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className="text-center text-gray-400">
-                        <User className="w-24 h-24 mx-auto mb-4 opacity-30" strokeWidth={1} />
-                        <p className="text-lg font-medium">No photo uploaded</p>
-                        <p className="text-sm mt-2">Upload your photo below</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Processing Overlay - Shows on top of existing image */}
-                  {isProcessing && (
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-40 animate-fade-in">
-                      <div className="text-center">
-                        <div className="relative mb-4">
-                          <Sparkles className="w-16 h-16 text-accent mx-auto animate-pulse" />
+                  {/* Avatar Image */}
+                  <div className="bg-white relative" style={{ aspectRatio: '4/7', height: 'calc(55vh + 10px)', width: 'calc((4/7) * (55vh + 10px))', maxWidth: '100%' }}>
+                    {hasAppliedOutfit && displayImage ? (
+                      <>
+                        <img
+                          src={displayImage}
+                          alt="Your avatar with outfit"
+                          className="h-full w-full object-cover"
+                        />
+                        {/* Zoom Button - On top of the outfit image */}
+                        <button
+                          onClick={() => setShowZoomedImage(true)}
+                          className="absolute top-4 left-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                          aria-label="Zoom image"
+                        >
+                          <Maximize2 className="w-5 h-5 text-gray-700" />
+                        </button>
+                        {/* Three Dots Menu - On top of the outfit image */}
+                        <button
+                          onClick={handlePhotoUpload}
+                          className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                          aria-label="Change photo"
+                        >
+                          <MoreVertical className="w-5 h-5 text-gray-700" />
+                        </button>
+                      </>
+                    ) : userPhoto ? (
+                      <>
+                        <img
+                          src={userPhoto}
+                          alt="Your photo"
+                          className="h-full w-full object-cover"
+                        />
+                        {/* Three Dots Menu - On top of the image */}
+                        <button
+                          onClick={handlePhotoUpload}
+                          className="absolute top-4 right-4 z-30 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                          aria-label="Change photo"
+                        >
+                          <MoreVertical className="w-5 h-5 text-gray-700" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <div className="text-center text-gray-400">
+                          <User className="w-24 h-24 mx-auto mb-4 opacity-30" strokeWidth={1} />
+                          <p className="text-lg font-medium">No photo uploaded</p>
+                          <p className="text-sm mt-2">Upload your photo below</p>
                         </div>
-                        <p className="text-white text-xl font-semibold">AI Magic is happening</p>
-                        <p className="text-white/80 text-lg mt-2 font-mono">
-                          {Math.round(generationTime)}s
-                        </p>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Gradient Overlay - Only show when no photo uploaded */}
+                    {/* Processing Overlay - Shows on top of existing image */}
+                    {isProcessing && (
+                      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-40 animate-fade-in">
+                        <div className="text-center">
+                          <div className="relative mb-4">
+                            <Sparkles className="w-16 h-16 text-accent mx-auto animate-pulse" />
+                          </div>
+                          <p className="text-white text-xl font-semibold">AI Magic is happening</p>
+                          <p className="text-white/80 text-lg mt-2 font-mono">
+                            {Math.round(generationTime)}s
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Gradient Overlay - Only show when no photo uploaded */}
+                    {!userPhoto && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/50 to-transparent" />
+                    )}
+                  </div>
+
+                  {/* Upload Button Overlay - Only show when no photo uploaded */}
                   {!userPhoto && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 space-y-4 z-20">
+                      <div className="relative">
+                        {/* Glow effect */}
+                        <div className="absolute inset-0 bg-[var(--gradient-upload)] blur-2xl opacity-90 group-hover:opacity-100 transition-opacity animate-pulse" />
+
+                        <button
+                          onClick={handlePhotoUpload}
+                          className="relative text-white font-semibold text-sm py-2.5 px-6 rounded-full shadow-md transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
+                          style={{ backgroundColor: '#ff6b5a' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ff5544';
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ff6b5a';
+                            e.currentTarget.style.transform = 'scale(1)';
+                          }}
+                        >
+                          <Upload className="h-4 w-4" />
+                          Upload Your Photo
+                        </button>
+                      </div>
+
+                      <p className="text-sm text-center text-accent font-medium animate-pulse">
+                        ✨ Start your AI fashion experience
+                      </p>
+                    </div>
                   )}
                 </div>
 
-                {/* Upload Button Overlay - Only show when no photo uploaded */}
-                {!userPhoto && (
-                  <div className="absolute bottom-0 left-0 right-0 p-6 space-y-4 z-20">
-                    <div className="relative">
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 bg-[var(--gradient-upload)] blur-2xl opacity-90 group-hover:opacity-100 transition-opacity animate-pulse" />
-
-                      <button
-                        onClick={handlePhotoUpload}
-                        className="relative text-white font-semibold text-sm py-2.5 px-6 rounded-full shadow-md transition-all duration-300 flex items-center justify-center gap-2 mx-auto"
-                        style={{ backgroundColor: '#ff6b5a' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#ff5544';
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#ff6b5a';
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }}
-                      >
-                        <Upload className="h-4 w-4" />
-                        Upload Your Photo
-                      </button>
-                    </div>
-
-                    <p className="text-sm text-center text-accent font-medium animate-pulse">
-                      ✨ Start your AI fashion experience
-                    </p>
+                {/* Product Row - Shows items when outfit is generated */}
+                {hasAppliedOutfit && currentOutfit && (
+                  <div className="mx-auto" style={{ width: 'calc((4/7) * (55vh + 10px) + 100px)', maxWidth: '100%' }}>
+                    <ProductRow outfit={currentOutfit} />
                   </div>
                 )}
               </div>
-
-              {/* Product Row - Shows items when outfit is generated */}
-              {hasAppliedOutfit && currentOutfit && (
-                <div className="mx-auto" style={{ width: 'calc((4/7) * (55vh + 10px) + 100px)', maxWidth: '100%' }}>
-                  <ProductRow outfit={currentOutfit} />
-                </div>
-              )}
             </div>
-          </div>
 
-          {/* Right Side - Outfit Grid */}
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-6 w-6 text-accent" />
-                <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900">
-                  Try On Outfits
-                </h2>
-              </div>
+            {/* Right Side - Outfit Grid */}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="h-6 w-6 text-accent" />
+                  <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900">
+                    Try On Outfits
+                  </h2>
+                </div>
 
-              {/* Gender Filter Switch */}
-              <div className="flex items-center gap-3">
-                <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
-                  <button
-                    onClick={() => {
-                      setSelectedGender('woman');
-                      trackGenderFilterChanged('woman', user?.id);
-                    }}
-                    className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
-                      selectedGender === 'woman'
-                        ? 'bg-coral-500 text-white shadow-sm'
-                        : 'text-gray-700 hover:text-coral-600'
-                    }`}
-                    style={selectedGender === 'woman' ? { backgroundColor: '#ff6b5a' } : {}}
-                  >
-                    Women
-                  </button>
-                  <div className="relative inline-block">
+                {/* Gender Filter Switch */}
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
                     <button
                       onClick={() => {
-                        setSelectedGender('man');
-                        trackGenderFilterChanged('man', user?.id);
+                        setSelectedGender('woman');
+                        trackGenderFilterChanged('woman', user?.id);
                       }}
-                      className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${
-                        selectedGender === 'man'
+                      className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${selectedGender === 'woman'
+                        ? 'bg-coral-500 text-white shadow-sm'
+                        : 'text-gray-700 hover:text-coral-600'
+                        }`}
+                      style={selectedGender === 'woman' ? { backgroundColor: '#ff6b5a' } : {}}
+                    >
+                      Women
+                    </button>
+                    <div className="relative inline-block">
+                      <button
+                        onClick={() => {
+                          setSelectedGender('man');
+                          trackGenderFilterChanged('man', user?.id);
+                        }}
+                        className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all duration-200 ${selectedGender === 'man'
                           ? 'bg-coral-500 text-white shadow-sm'
                           : 'text-gray-700 hover:text-coral-600'
-                      }`}
-                      style={selectedGender === 'man' ? { backgroundColor: '#ff6b5a' } : {}}
-                    >
-                      Men
-                    </button>
-                    <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white bg-gradient-to-r from-green-500 via-yellow-400 to-orange-500 rounded-full shadow-lg">
-                      New
-                    </span>
+                          }`}
+                        style={selectedGender === 'man' ? { backgroundColor: '#ff6b5a' } : {}}
+                      >
+                        Men
+                      </button>
+                      <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white bg-gradient-to-r from-green-500 via-yellow-400 to-orange-500 rounded-full shadow-lg">
+                        New
+                      </span>
+                    </div>
                   </div>
+                </div>
+
+                {/* Category Filter Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        trackCategoryFilterChanged(category, user?.id);
+                      }}
+                      className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${selectedCategory === category
+                        ? 'bg-coral-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:border-coral-400 hover:text-coral-600'
+                        }`}
+                      style={selectedCategory === category ? { backgroundColor: '#ff6b5a' } : {}}
+                    >
+                      {category}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Category Filter Buttons */}
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      trackCategoryFilterChanged(category, user?.id);
-                    }}
-                    className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
-                      selectedCategory === category
-                        ? 'bg-coral-500 text-white shadow-md'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:border-coral-400 hover:text-coral-600'
-                    }`}
-                    style={selectedCategory === category ? { backgroundColor: '#ff6b5a' } : {}}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+              <OutfitCarousel
+                outfits={filteredOutfits}
+                selectedOutfit={currentOutfit}
+                onSelectOutfit={handleOutfitSelect}
+                onRegenerate={handleRegenerate}
+                hasAppliedOutfit={hasAppliedOutfit}
+              />
             </div>
-
-            <OutfitCarousel
-              outfits={filteredOutfits}
-              selectedOutfit={currentOutfit}
-              onSelectOutfit={handleOutfitSelect}
-              onRegenerate={handleRegenerate}
-              hasAppliedOutfit={hasAppliedOutfit}
-            />
           </div>
-        </div>
         </div>
       </section>
 
