@@ -86,12 +86,12 @@ const TryOn = () => {
 
 
   useEffect(() => {
-    // Reset display image when user photo is removed
-    if (!userPhoto) {
-      setDisplayImage(null);
-      setHasAppliedOutfit(false);
-    }
+    // Reset display image when user photo changes
+    setDisplayImage(null);
+    setHasAppliedOutfit(false);
   }, [userPhoto]);
+
+
 
   // Track generation time while processing (countdown from 12s)
   useEffect(() => {
@@ -306,6 +306,11 @@ const TryOn = () => {
       } catch (err) {
         console.error('[PHOTO] Failed to process image:', err);
         alert('Failed to process image. Please try again.');
+      } finally {
+        // Reset file input so the same file can be selected again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     }
   };
