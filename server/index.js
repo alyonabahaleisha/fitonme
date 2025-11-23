@@ -304,22 +304,17 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     const clothingImagePart = fileToGenerativePart(clothingImagePath, clothingImageMime);
 
     // Generate image directly with both image inputs
-    const generationPrompt = `Generate a photorealistic virtual try-on image using the person from the first photo as the base and the outfit from the second image.
+    const generationPrompt = `Generate a photorealistic virtual try-on image.
+Base Person: Use the person from the first image. Keep their exact face, skin tone, complexion, hair, body proportions, pose, lighting, and background.
+Target Outfit: Use the outfit from the second image.
 
-Detailed instructions:
-
-Use the exact facial features, skin tone, hair, and body proportions from the first image.
-
-undress person first, and then apply outfit on naked body. so nothing out old clothes is left.
-Keep the same pose, lighting, and background from the first image.
-
-Perform precise body and clothing segmentation: treat the person’s figure as a neutral base layer (remove or ignore any existing garments only for segmentation purposes, not to expose the body).
-
-Apply the outfit from the second image directly to the person’s contours — respecting each item’s natural fit (loose, tight, cropped, long, etc.), texture, and fabric drape.
-
-Maintain realistic fabric interaction, light behavior, and natural shadowing.
-
-The result should look like a professional fashion photo of the same person wearing the new clothes naturally in their original setting. face Looking shining. person look stunning in ourfit, motion`;
+CRITICAL INSTRUCTIONS:
+1. COMPLETE CLOTHING REPLACEMENT: Digitally "undress" the person first. Remove ALL original clothing. The new outfit must be worn directly on the body. No traces of the old clothes should be visible.
+2. INCLUDE ACCESSORIES: Ensure that ALL items from the outfit image are applied, including SHOES, JEWELRY, bags, and hats. If the outfit image includes shoes or jewelry, the person MUST be wearing them.
+3. PERFECT FIT & LENGTH: The new outfit must fit the person perfectly. Adjust the size to suit their specific body proportions. IMPORTANT: For full-length pants, they MUST be long enough to cover the shoes partially or fully, creating a long, flowing line. Do not crop them at the ankles.
+4. EXACT FABRIC & PATTERN: You MUST preserve the exact texture, fabric weight, pattern, and details of the target outfit. It should look exactly like the provided clothing image.
+5. MOOD & EXPRESSION: The person should look confident, comfortable, and innerly happy. They should feel good in these clothes.
+6. REALISM: The result must be a seamless, high-quality fashion photo. Natural folds, shadows, and interaction are essential.`;
 
     const result = await model.generateContent([
       generationPrompt,

@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { idbStorage } from '../lib/indexedDB';
 
 const useAppStore = create(
   persist(
     (set, get) => ({
       // User photo state
       userPhoto: null,
-      setUserPhoto: (photo) => set({ userPhoto: photo }),
+      setUserPhoto: (photo) => set({ userPhoto: photo, processedImages: {} }), // Clear cache on new photo
 
       // Current outfit
       currentOutfit: null,
@@ -32,12 +33,17 @@ const useAppStore = create(
       isLoading: false,
       setLoading: (loading) => set({ isLoading: loading }),
 
-      // Processed image cache (in-memory only, not persisted)
+      // Processed image cache
       processedImages: {},
       cacheProcessedImage: (outfitId, imageData) => {
-        // Store in memory but don't persist to localStorage
         const state = get();
-        state.processedImages[outfitId] = imageData;
+        // Create a new object to ensure state update
+        set({
+          processedImages: {
+            ...state.processedImages,
+            [outfitId]: imageData
+          }
+        });
       },
 
       getProcessedImage: (outfitId) => get().processedImages[outfitId],
@@ -65,10 +71,12 @@ const useAppStore = create(
     {
       name: 'godlovesme-storage',
       partialize: (state) => ({
-        // Persist favorites, userPhoto, and guestTryOns
+        // Persist favorites, userPhoto, guestTryOns, currentOutfit, and processedImages
         favorites: state.favorites,
         userPhoto: state.userPhoto,
         guestTryOns: state.guestTryOns,
+        currentOutfit: state.currentOutfit,
+        processedImages: state.processedImages,
       }),
       onRehydrateStorage: () => (_state, error) => {
         if (error) {
@@ -78,41 +86,17 @@ const useAppStore = create(
         }
       },
       storage: {
-        getItem: (name) => {
-          try {
-            const value = localStorage.getItem(name);
-            return value;
-          } catch (error) {
-            console.error('[STORAGE] Error reading from localStorage:', error);
-            return null;
-          }
+        getItem: async (name) => {
+          console.log('[STORAGE] Reading from IndexedDB:', name);
+          return await idbStorage.getItem(name);
         },
-        setItem: (name, value) => {
-          try {
-            localStorage.setItem(name, value);
-          } catch (error) {
-            console.error('[STORAGE] Error writing to localStorage:', error);
-            // If quota exceeded, try to clear old data
-            if (error.name === 'QuotaExceededError') {
-              console.warn('[STORAGE] Quota exceeded - clearing storage and retrying');
-              try {
-                // Clear the storage and try again
-                localStorage.removeItem(name);
-                localStorage.setItem(name, value);
-              } catch (retryError) {
-                console.error('[STORAGE] Failed to save even after clearing:', retryError);
-                throw retryError;
-              }
-            }
-            throw error;
-          }
+        setItem: async (name, value) => {
+          console.log('[STORAGE] Writing to IndexedDB:', name);
+          await idbStorage.setItem(name, value);
         },
-        removeItem: (name) => {
-          try {
-            localStorage.removeItem(name);
-          } catch (error) {
-            console.error('[STORAGE] Error removing from localStorage:', error);
-          }
+        removeItem: async (name) => {
+          console.log('[STORAGE] Removing from IndexedDB:', name);
+          await idbStorage.removeItem(name);
         },
       },
     }

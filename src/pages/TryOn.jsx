@@ -41,6 +41,7 @@ const TryOn = () => {
     hasReachedFreeLimit,
     showSignUpModal,
     setShowSignUpModal,
+    getProcessedImage,
   } = useAppStore();
   const { user, userData, isAuthenticated } = useAuth();
   const [displayImage, setDisplayImage] = useState(null);
@@ -86,10 +87,29 @@ const TryOn = () => {
 
 
   useEffect(() => {
-    // Reset display image when user photo changes
-    setDisplayImage(null);
-    setHasAppliedOutfit(false);
-  }, [userPhoto]);
+    console.log('[TryOn] Checking cache restoration:', {
+      hasCurrentOutfit: !!currentOutfit,
+      hasUserPhoto: !!userPhoto,
+      outfitId: currentOutfit?.id
+    });
+
+    // Restore generated image from cache when outfit changes or on mount
+    if (currentOutfit && userPhoto) {
+      const cachedImage = getProcessedImage(currentOutfit.id);
+      console.log('[TryOn] Cached image found:', !!cachedImage);
+
+      if (cachedImage) {
+        setDisplayImage(cachedImage);
+        setHasAppliedOutfit(true);
+      } else {
+        setDisplayImage(null);
+        setHasAppliedOutfit(false);
+      }
+    } else {
+      setDisplayImage(null);
+      setHasAppliedOutfit(false);
+    }
+  }, [currentOutfit, userPhoto, getProcessedImage]);
 
 
 
