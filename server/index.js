@@ -370,6 +370,38 @@ CRITICAL INSTRUCTIONS:
   }
 });
 
+// TEMPORARY: Admin endpoint to manually update user subscription
+// Remove this after webhooks are working properly
+app.post('/api/admin/update-subscription', express.json(), async (req, res) => {
+  try {
+    const { userId, planType } = req.body;
+
+    if (!userId || !planType) {
+      return res.status(400).json({ error: 'userId and planType are required' });
+    }
+
+    // Update user's plan_type in users table
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        plan_type: planType,
+        credits_remaining: planType === 'free' ? 2 : 999999
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    console.log(`[ADMIN] Manually updated user ${userId} to ${planType} plan`);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('[ADMIN] Error updating subscription:', error);
+    res.status(500).json({ error: 'Failed to update subscription', details: error.message });
+  }
+});
+
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
   console.log(`API endpoint: http://0.0.0.0:${PORT}/api/try-on`);
