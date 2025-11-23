@@ -159,8 +159,7 @@ const Navigation = () => {
               onClick={() => {
                 setShowSignUpModal(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300"
-              style={{ backgroundColor: '#ff6b5a' }}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-[#ff6b5a] text-[#ff6b5a] hover:bg-[#ff6b5a]/10 transition-colors"
             >
               <User className="w-4 h-4" />
               Sign In
