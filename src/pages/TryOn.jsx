@@ -195,12 +195,12 @@ const TryOn = () => {
       return true;
     }
 
-    // Guest users - check local limit
-    if (hasReachedFreeLimit()) {
-      trackFreeLimitReached(guestTryOns);
-      setShowSignUpModal(true);
-      return false;
-    }
+    // Guest users - check local limit (DISABLED FOR NOW)
+    // if (hasReachedFreeLimit()) {
+    //   trackFreeLimitReached(guestTryOns);
+    //   setShowSignUpModal(true);
+    //   return false;
+    // }
 
     return true;
   };
@@ -225,8 +225,8 @@ const TryOn = () => {
         console.error('Error tracking try-on:', error);
       }
     } else {
-      // Guest user - increment local counter
-      incrementGuestTryOns();
+      // Guest user - increment local counter (DISABLED FOR NOW)
+      // incrementGuestTryOns();
     }
   };
 
