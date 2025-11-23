@@ -12,8 +12,8 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 // Initialize Supabase client for JWT verification
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 /**
