@@ -1,5 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthContext";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -7,6 +9,7 @@ interface FeedbackModalProps {
 }
 
 const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
+  const { user } = useAuth();
   const [feedback, setFeedback] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,10 +24,17 @@ const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
     // Here you would typically send the data to your backend
     // For now, we'll just simulate a submission
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase
+        .from('feedback')
+        .insert({
+          message: feedback,
+          email: email || user?.email,
+          user_id: user?.id
+        });
 
-      console.log("Feedback submitted:", { feedback, email });
+      if (error) throw error;
+
+      console.log("Feedback submitted successfully");
       setSubmitted(true);
 
       // Reset form after 2 seconds and close

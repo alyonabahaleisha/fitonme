@@ -242,6 +242,29 @@ export const updateUserData = async (userId, updates) => {
 };
 
 /**
+ * Update user's plan and credits
+ */
+export const updateUserPlan = async (userId, planType, credits = 999999) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        plan_type: planType,
+        credits_remaining: credits
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating user plan:', error);
+    throw error;
+  }
+};
+
+/**
  * Check if user has available credits for try-on
  */
 export const checkUserCredits = async (userId) => {

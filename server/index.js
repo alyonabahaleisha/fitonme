@@ -145,32 +145,118 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     case 'checkout.session.completed':
       const session = event.data.object;
       console.log('Checkout session completed:', session.id);
-      // TODO: Update user's subscription in Supabase
+
+      // Update user's subscription in Supabase
+      // We stored userId in metadata
+      const userId = session.metadata.userId;
+      const subscriptionId = session.subscription;
+
+      if (userId && subscriptionId) {
+        try {
+          // Retrieve the subscription details from Stripe to get the plan info
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+          await supabase.from('subscriptions').upsert({
+            subscription_id: subscription.id,
+            user_id: userId,
+            plan: subscription.items.data[0].price.recurring.interval, // 'month' or 'year' or 'week'
+            status: subscription.status,
+            start_date: new Date(subscription.current_period_start * 1000),
+            end_date: new Date(subscription.current_period_end * 1000),
+            stripe_customer_id: subscription.customer,
+            stripe_price_id: subscription.items.data[0].price.id,
+          });
+
+          // Update user's plan_type in users table
+          // Map interval to plan_type: week -> weekly, month -> monthly, year -> annual
+          const interval = subscription.items.data[0].price.recurring.interval;
+          let planType = 'free';
+          if (interval === 'week') planType = 'weekly';
+          if (interval === 'month') planType = 'monthly';
+          if (interval === 'year') planType = 'annual';
+
+          await supabase.from('users').update({
+            plan_type: planType,
+            credits_remaining: 999999 // Unlimited
+          }).eq('id', userId);
+
+          console.log(`Updated subscription for user ${userId} to ${planType}`);
+        } catch (err) {
+          console.error('Error updating subscription in Supabase:', err);
+        }
+      }
       break;
 
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
       const subscription = event.data.object;
       console.log('Subscription updated:', subscription.id);
-      // TODO: Update subscription in Supabase
+
+      try {
+        // We need to find the user_id. It might be in metadata of the subscription if we passed it,
+        // or we can look it up by stripe_customer_id if we stored it.
+        // For created/updated, we rely on the checkout.session.completed for the initial link,
+        // but for updates we should update the status.
+
+        const { data: existingSub } = await supabase
+          .from('subscriptions')
+          .select('user_id')
+          .eq('subscription_id', subscription.id)
+          .single();
+
+        if (existingSub) {
+          await supabase.from('subscriptions').upsert({
+            subscription_id: subscription.id,
+            user_id: existingSub.user_id,
+            plan: subscription.items.data[0].price.recurring.interval,
+            status: subscription.status,
+            start_date: new Date(subscription.current_period_start * 1000),
+            end_date: new Date(subscription.current_period_end * 1000),
+            stripe_customer_id: subscription.customer,
+            stripe_price_id: subscription.items.data[0].price.id,
+          });
+        }
+      } catch (err) {
+        console.error('Error handling subscription update:', err);
+      }
       break;
 
     case 'customer.subscription.deleted':
       const deletedSubscription = event.data.object;
       console.log('Subscription cancelled:', deletedSubscription.id);
-      // TODO: Mark subscription as cancelled in Supabase
+
+      try {
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .update({ status: 'canceled' })
+          .eq('subscription_id', deletedSubscription.id)
+          .select('user_id')
+          .single();
+
+        if (sub) {
+          // Revert user to free plan
+          await supabase.from('users').update({
+            plan_type: 'free',
+            // We don't reset credits here, maybe they keep what they had or get default?
+            // Let's leave credits alone or set to 0? 
+            // Usually free tier has 2 credits.
+          }).eq('id', sub.user_id);
+        }
+      } catch (err) {
+        console.error('Error handling subscription deletion:', err);
+      }
       break;
 
     case 'invoice.payment_succeeded':
       const invoice = event.data.object;
       console.log('Payment succeeded:', invoice.id);
-      // TODO: Grant/extend access
+      // Already handled by subscription update usually
       break;
 
     case 'invoice.payment_failed':
       const failedInvoice = event.data.object;
       console.log('Payment failed:', failedInvoice.id);
-      // TODO: Handle failed payment
+      // Could notify user
       break;
 
     default:

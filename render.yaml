@@ -14,5 +14,17 @@ services:
         value: 3001
       - key: NODE_ENV
         value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
     healthCheckPath: /
     autoDeploy: true
