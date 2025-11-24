@@ -123,14 +123,27 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           // Retrieve the subscription details from Stripe to get the plan info
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           console.log('[WEBHOOK] Subscription retrieved:', subscription.id);
+          console.log('[WEBHOOK] current_period_start:', subscription.current_period_start);
+          console.log('[WEBHOOK] current_period_end:', subscription.current_period_end);
+
+          // Validate and convert timestamps
+          const startDate = subscription.current_period_start
+            ? new Date(subscription.current_period_start * 1000).toISOString()
+            : new Date().toISOString();
+          const endDate = subscription.current_period_end
+            ? new Date(subscription.current_period_end * 1000).toISOString()
+            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // Default to 7 days from now
+
+          console.log('[WEBHOOK] Converted start_date:', startDate);
+          console.log('[WEBHOOK] Converted end_date:', endDate);
 
           const subscriptionData = {
             subscription_id: subscription.id,
             user_id: userId,
             plan: subscription.items.data[0].price.recurring.interval, // 'month' or 'year' or 'week'
             status: subscription.status,
-            start_date: new Date(subscription.current_period_start * 1000),
-            end_date: new Date(subscription.current_period_end * 1000),
+            start_date: startDate,
+            end_date: endDate,
             stripe_customer_id: subscription.customer,
             stripe_price_id: subscription.items.data[0].price.id,
           };
