@@ -18,9 +18,9 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// IMPORTANT: Stripe webhook MUST come before express.json() middleware
+// because it needs the raw body to verify the signature
 app.use(cors());
-app.use(express.json());
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -75,64 +75,8 @@ function fileToGenerativePart(path, mimeType) {
   };
 }
 
-// Health check endpoints
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'FitOnMe API Server is running' });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
-});
-
-// Stripe: Create checkout session
-app.post('/api/create-checkout-session', express.json(), async (req, res) => {
-  try {
-    console.log('[CHECKOUT] Creating checkout session...');
-    console.log('[CHECKOUT] Request body:', req.body);
-
-    const { priceId, userId, userEmail } = req.body;
-
-    if (!priceId) {
-      console.log('[CHECKOUT] ERROR: No priceId provided');
-      return res.status(400).json({ error: 'Price ID is required' });
-    }
-
-    console.log('[CHECKOUT] Creating session with priceId:', priceId);
-
-    // Create Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/try-on?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/try-on`,
-      customer_email: userEmail,
-      metadata: {
-        userId: userId || 'guest',
-      },
-      subscription_data: {
-        metadata: {
-          userId: userId || 'guest',
-        },
-      },
-    });
-
-    console.log('[CHECKOUT] Session created successfully:', session.id);
-    res.json({ sessionId: session.id, url: session.url });
-  } catch (error) {
-    console.error('[CHECKOUT] Error creating checkout session:', error.message);
-    console.error('[CHECKOUT] Error type:', error.type);
-    console.error('[CHECKOUT] Status code:', error.statusCode);
-    res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
-  }
-});
-
-// Stripe: Webhook endpoint for subscription events
+// STRIPE WEBHOOK - Must be defined BEFORE express.json() middleware
+// Webhook needs raw body for signature verification
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -144,9 +88,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    console.error('[WEBHOOK] Signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+
+  console.log('[WEBHOOK] Event received:', event.type);
 
   // Handle the event
   switch (event.type) {
@@ -227,81 +173,136 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
-      const subscription = event.data.object;
-      console.log('Subscription updated:', subscription.id);
+      const subscriptionUpdate = event.data.object;
+      console.log('[WEBHOOK] Subscription updated:', subscriptionUpdate.id);
 
       try {
-        // We need to find the user_id. It might be in metadata of the subscription if we passed it,
-        // or we can look it up by stripe_customer_id if we stored it.
-        // For created/updated, we rely on the checkout.session.completed for the initial link,
-        // but for updates we should update the status.
-
         const { data: existingSub } = await supabase
           .from('subscriptions')
           .select('user_id')
-          .eq('subscription_id', subscription.id)
+          .eq('subscription_id', subscriptionUpdate.id)
           .single();
 
         if (existingSub) {
           await supabase.from('subscriptions').upsert({
-            subscription_id: subscription.id,
+            subscription_id: subscriptionUpdate.id,
             user_id: existingSub.user_id,
-            plan: subscription.items.data[0].price.recurring.interval,
-            status: subscription.status,
-            start_date: new Date(subscription.current_period_start * 1000),
-            end_date: new Date(subscription.current_period_end * 1000),
-            stripe_customer_id: subscription.customer,
-            stripe_price_id: subscription.items.data[0].price.id,
+            plan: subscriptionUpdate.items.data[0].price.recurring.interval,
+            status: subscriptionUpdate.status,
+            start_date: new Date(subscriptionUpdate.current_period_start * 1000),
+            end_date: new Date(subscriptionUpdate.current_period_end * 1000),
+            stripe_customer_id: subscriptionUpdate.customer,
+            stripe_price_id: subscriptionUpdate.items.data[0].price.id,
           });
+          console.log('[WEBHOOK] Subscription updated in database');
         }
       } catch (err) {
-        console.error('Error handling subscription update:', err);
+        console.error('[WEBHOOK] Error handling subscription update:', err);
       }
       break;
 
     case 'customer.subscription.deleted':
       const deletedSubscription = event.data.object;
-      console.log('Subscription cancelled:', deletedSubscription.id);
+      console.log('[WEBHOOK] Subscription cancelled:', deletedSubscription.id);
 
       try {
-        const { data: sub } = await supabase
+        const { data: existingSub } = await supabase
           .from('subscriptions')
-          .update({ status: 'canceled' })
-          .eq('subscription_id', deletedSubscription.id)
           .select('user_id')
+          .eq('subscription_id', deletedSubscription.id)
           .single();
 
-        if (sub) {
-          // Revert user to free plan
+        if (existingSub) {
+          await supabase.from('subscriptions').update({
+            status: 'cancelled'
+          }).eq('subscription_id', deletedSubscription.id);
+
           await supabase.from('users').update({
-            plan_type: 'free',
-            // We don't reset credits here, maybe they keep what they had or get default?
-            // Let's leave credits alone or set to 0? 
-            // Usually free tier has 2 credits.
-          }).eq('id', sub.user_id);
+            plan_type: 'free'
+          }).eq('id', existingSub.user_id);
+
+          console.log('[WEBHOOK] Subscription cancelled in database');
         }
       } catch (err) {
-        console.error('Error handling subscription deletion:', err);
+        console.error('[WEBHOOK] Error handling subscription cancellation:', err);
       }
       break;
 
     case 'invoice.payment_succeeded':
       const invoice = event.data.object;
-      console.log('Payment succeeded:', invoice.id);
-      // Already handled by subscription update usually
+      console.log('[WEBHOOK] Payment succeeded:', invoice.id);
       break;
 
     case 'invoice.payment_failed':
       const failedInvoice = event.data.object;
-      console.log('Payment failed:', failedInvoice.id);
-      // Could notify user
+      console.log('[WEBHOOK] Payment failed:', failedInvoice.id);
       break;
 
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      console.log('[WEBHOOK] Unhandled event type:', event.type);
   }
 
   res.json({ received: true });
+});
+
+// NOW apply express.json() middleware for all other routes
+app.use(express.json());
+
+// Health check endpoints
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'FitOnMe API Server is running' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Stripe: Create checkout session
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    console.log('[CHECKOUT] Creating checkout session...');
+    console.log('[CHECKOUT] Request body:', req.body);
+
+    const { priceId, userId, userEmail } = req.body;
+
+    if (!priceId) {
+      console.log('[CHECKOUT] ERROR: No priceId provided');
+      return res.status(400).json({ error: 'Price ID is required' });
+    }
+
+    console.log('[CHECKOUT] Creating session with priceId:', priceId);
+
+    // Create Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/try-on?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/try-on`,
+      customer_email: userEmail,
+      metadata: {
+        userId: userId || 'guest',
+      },
+      subscription_data: {
+        metadata: {
+          userId: userId || 'guest',
+        },
+      },
+    });
+
+    console.log('[CHECKOUT] Session created successfully:', session.id);
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error('[CHECKOUT] Error creating checkout session:', error.message);
+    console.error('[CHECKOUT] Error type:', error.type);
+    console.error('[CHECKOUT] Status code:', error.statusCode);
+    res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
+  }
 });
 
 // Main endpoint for virtual try-on (accepts file uploads)
