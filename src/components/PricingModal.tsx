@@ -11,10 +11,24 @@ interface PricingModalProps {
 }
 
 const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
   const [pendingCheckout, setPendingCheckout] = useState<{ priceId: string; planName: string } | null>(null);
+
+  // Map user's plan_type to tier name
+  const getCurrentPlanName = () => {
+    if (!userData?.plan_type) return 'Free Preview';
+    switch (userData.plan_type) {
+      case 'free': return 'Free Preview';
+      case 'weekly': return 'Weekly Pass';
+      case 'monthly': return 'Monthly Plan';
+      case 'annual': return 'Annual Pro Closet';
+      default: return 'Free Preview';
+    }
+  };
+
+  const currentPlanName = getCurrentPlanName();
 
   // When user signs in and we have a pending checkout, proceed automatically
   useEffect(() => {
@@ -204,18 +218,34 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
             {/* Pricing Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {tiers.map((tier, index) => (
+            {tiers.map((tier, index) => {
+              const isCurrentPlan = tier.name === currentPlanName;
+              const isUpgrade = !isCurrentPlan && tier.name !== 'Free Preview' && (
+                (currentPlanName === 'Free Preview') ||
+                (currentPlanName === 'Weekly Pass' && (tier.name === 'Monthly Plan' || tier.name === 'Annual Pro Closet')) ||
+                (currentPlanName === 'Monthly Plan' && tier.name === 'Annual Pro Closet')
+              );
+              const shouldDisable = isCurrentPlan || !isUpgrade && tier.name !== 'Free Preview';
+
+              return (
               <div
                 key={index}
                 className={`relative bg-white rounded-xl p-4 transition-all duration-300 flex flex-col ${
-                  tier.popular
+                  isCurrentPlan || tier.popular
                     ? 'border-2 shadow-xl'
                     : 'border border-gray-200 shadow-md'
                 }`}
-                style={tier.popular ? { borderColor: '#ff6b5a' } : {}}
+                style={isCurrentPlan || tier.popular ? { borderColor: '#ff6b5a' } : {}}
               >
-                {/* Popular Badge */}
-                {tier.popular && (
+                {/* Current Plan or Popular Badge */}
+                {isCurrentPlan ? (
+                  <div
+                    className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold whitespace-nowrap"
+                    style={{ backgroundColor: '#4CAF50' }}
+                  >
+                    Current Plan
+                  </div>
+                ) : tier.popular && (
                   <div
                     className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold whitespace-nowrap"
                     style={{ backgroundColor: '#ff6b5a' }}
@@ -256,7 +286,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
                 {/* CTA Button */}
                 <button
                   onClick={() => handleCheckout(tier.stripePriceId, tier.name)}
-                  disabled={loadingPriceId === tier.stripePriceId}
+                  disabled={shouldDisable || loadingPriceId === tier.stripePriceId}
                   className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${
                     tier.variant === 'filled'
                       ? 'text-white shadow-md hover:shadow-lg'
@@ -268,10 +298,12 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
                       : { borderColor: '#ff6b5a', color: '#ff6b5a' }
                   }
                   onMouseEnter={(e) => {
-                    if (tier.variant === 'filled') {
-                      e.currentTarget.style.backgroundColor = '#ff5544';
-                    } else {
-                      e.currentTarget.style.backgroundColor = '#ff6b5a10';
+                    if (!isCurrentPlan && isUpgrade) {
+                      if (tier.variant === 'filled') {
+                        e.currentTarget.style.backgroundColor = '#ff5544';
+                      } else {
+                        e.currentTarget.style.backgroundColor = '#ff6b5a10';
+                      }
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -282,10 +314,17 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
                     }
                   }}
                 >
-                  {loadingPriceId === tier.stripePriceId ? 'Loading...' : tier.cta}
+                  {loadingPriceId === tier.stripePriceId
+                    ? 'Loading...'
+                    : isCurrentPlan
+                    ? 'Current Plan'
+                    : isUpgrade
+                    ? `Upgrade to ${tier.name.split(' ')[0]}`
+                    : tier.cta}
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Bottom Note */}
