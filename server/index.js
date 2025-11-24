@@ -441,17 +441,32 @@ app.post('/api/cancel-subscription', async (req, res) => {
       return res.status(400).json({ error: 'userId is required' });
     }
 
-    // Get user's active subscription from database
-    const { data: subscription, error: subError } = await supabase
+    // Get user's subscription from database (active, trialing, past_due, etc.)
+    const { data: subscriptions, error: subError } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', userId)
-      .eq('status', 'active')
-      .single();
+      .order('created_at', { ascending: false });
 
-    if (subError || !subscription) {
-      console.log('[CANCEL] No active subscription found for user:', userId);
-      return res.status(404).json({ error: 'No active subscription found' });
+    console.log('[CANCEL] Found subscriptions:', subscriptions);
+    console.log('[CANCEL] Query error:', subError);
+
+    if (subError || !subscriptions || subscriptions.length === 0) {
+      console.log('[CANCEL] No subscription found for user:', userId);
+      return res.status(404).json({ error: 'No subscription found' });
+    }
+
+    // Find the first active or trialing subscription
+    const subscription = subscriptions.find(sub =>
+      sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due'
+    );
+
+    if (!subscription) {
+      console.log('[CANCEL] No cancellable subscription found. Statuses:', subscriptions.map(s => s.status));
+      return res.status(404).json({
+        error: 'No active subscription found',
+        details: `Found ${subscriptions.length} subscription(s) but none are active`
+      });
     }
 
     console.log('[CANCEL] Found subscription:', subscription.subscription_id);
