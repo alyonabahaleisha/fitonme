@@ -203,6 +203,31 @@ export const onAuthStateChange = (callback) => {
 // ============================================
 
 /**
+ * Create user in database (called after auth signup)
+ */
+export const createUser = async (userId, email) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        id: userId,
+        email: email,
+        plan_type: 'free',
+        credits_remaining: 2
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    console.log('[CREATE_USER] User created successfully:', userId);
+    return data;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+};
+
+/**
  * Get user data from database
  */
 export const getUserData = async (userId) => {

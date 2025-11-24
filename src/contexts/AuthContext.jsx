@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, getUserData, onAuthStateChange } from '../lib/supabase';
+import { getCurrentUser, getUserData, createUser, onAuthStateChange } from '../lib/supabase';
 import { identifyUser } from '../services/analytics';
 
 const AuthContext = createContext({
@@ -23,11 +23,18 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshUserData = async (userId) => {
+  const refreshUserData = async (userId, userEmail) => {
     if (!userId) return;
 
     try {
-      const data = await getUserData(userId);
+      let data = await getUserData(userId);
+
+      // If user doesn't exist in database, create them
+      if (!data) {
+        console.log('[AUTH] User not found in database, creating new user:', userId);
+        data = await createUser(userId, userEmail);
+      }
+
       setUserData(data);
 
       // Identify user in Google Analytics
@@ -52,7 +59,7 @@ export const AuthProvider = ({ children }) => {
         setUser(currentUser);
 
         if (currentUser) {
-          await refreshUserData(currentUser.id);
+          await refreshUserData(currentUser.id, currentUser.email);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -70,7 +77,7 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        await refreshUserData(session.user.id);
+        await refreshUserData(session.user.id, session.user.email);
       } else {
         setUserData(null);
       }
@@ -89,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     userData,
     loading,
     isAuthenticated: !!user,
-    refreshUserData: () => refreshUserData(user?.id),
+    refreshUserData: () => refreshUserData(user?.id, user?.email),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
