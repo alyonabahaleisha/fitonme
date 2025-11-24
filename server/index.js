@@ -543,33 +543,35 @@ app.post('/api/delete-account', async (req, res) => {
       }
     }
 
-    // Delete subscriptions from database (will cascade delete related records)
-    await supabase
-      .from('subscriptions')
-      .delete()
-      .eq('user_id', userId);
-    console.log('[DELETE] Deleted subscriptions from database');
-
-    // Delete user data from users table
-    const { error: userDeleteError } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId);
-
-    if (userDeleteError) {
-      console.error('[DELETE] Error deleting user data:', userDeleteError);
-      throw userDeleteError;
-    }
-    console.log('[DELETE] Deleted user data from database');
-
-    // Delete user from Supabase Auth
+    // Delete user from Supabase Auth first (this will cascade to related tables)
+    console.log('[DELETE] Deleting user from Supabase Auth...');
     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
 
     if (authDeleteError) {
       console.error('[DELETE] Error deleting user from auth:', authDeleteError);
-      // Don't throw error here - user data is already deleted
+      console.log('[DELETE] Continuing with manual data deletion...');
+
+      // If auth deletion fails, manually delete data
+      // Delete subscriptions from database
+      await supabase
+        .from('subscriptions')
+        .delete()
+        .eq('user_id', userId);
+      console.log('[DELETE] Deleted subscriptions from database');
+
+      // Delete user data from users table
+      const { error: userDeleteError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (userDeleteError) {
+        console.error('[DELETE] Error deleting user data:', userDeleteError);
+        throw userDeleteError;
+      }
+      console.log('[DELETE] Deleted user data from database');
     } else {
-      console.log('[DELETE] Deleted user from Supabase Auth');
+      console.log('[DELETE] Successfully deleted user from Supabase Auth (data cascaded)');
     }
 
     console.log('[DELETE] SUCCESS: Account deleted for user', userId);
