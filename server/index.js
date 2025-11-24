@@ -137,10 +137,19 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           console.log('[WEBHOOK] Converted start_date:', startDate);
           console.log('[WEBHOOK] Converted end_date:', endDate);
 
+          // Map Stripe interval to database plan values
+          const interval = subscription.items.data[0].price.recurring.interval;
+          let planValue = 'weekly'; // default
+          if (interval === 'week') planValue = 'weekly';
+          if (interval === 'month') planValue = 'monthly';
+          if (interval === 'year') planValue = 'annual';
+
+          console.log('[WEBHOOK] Stripe interval:', interval, '-> DB plan:', planValue);
+
           const subscriptionData = {
             subscription_id: subscription.id,
             user_id: userId,
-            plan: subscription.items.data[0].price.recurring.interval, // 'month' or 'year' or 'week'
+            plan: planValue,
             status: subscription.status,
             start_date: startDate,
             end_date: endDate,
@@ -158,16 +167,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           console.log('[WEBHOOK] Subscription saved successfully:', subData);
 
           // Update user's plan_type in users table
-          // Map interval to plan_type: week -> weekly, month -> monthly, year -> annual
-          const interval = subscription.items.data[0].price.recurring.interval;
-          let planType = 'free';
-          if (interval === 'week') planType = 'weekly';
-          if (interval === 'month') planType = 'monthly';
-          if (interval === 'year') planType = 'annual';
-
-          console.log('[WEBHOOK] Updating user plan_type to:', planType);
+          // The planValue we just mapped is what we use for plan_type
+          console.log('[WEBHOOK] Updating user plan_type to:', planValue);
           const { error: userError } = await supabase.from('users').update({
-            plan_type: planType,
+            plan_type: planValue,
             credits_remaining: 999999 // Unlimited
           }).eq('id', userId);
 
@@ -176,7 +179,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             throw userError;
           }
 
-          console.log('[WEBHOOK] SUCCESS: Updated subscription for user', userId, 'to', planType);
+          console.log('[WEBHOOK] SUCCESS: Updated subscription for user', userId, 'to', planValue);
         } catch (err) {
           console.error('[WEBHOOK] ERROR updating subscription in Supabase:', err);
           console.error('[WEBHOOK] Error details:', JSON.stringify(err, null, 2));
@@ -197,13 +200,27 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           .single();
 
         if (existingSub) {
+          // Map Stripe interval to database plan values
+          const updateInterval = subscriptionUpdate.items.data[0].price.recurring.interval;
+          let updatePlanValue = 'weekly';
+          if (updateInterval === 'week') updatePlanValue = 'weekly';
+          if (updateInterval === 'month') updatePlanValue = 'monthly';
+          if (updateInterval === 'year') updatePlanValue = 'annual';
+
+          const startDate = subscriptionUpdate.current_period_start
+            ? new Date(subscriptionUpdate.current_period_start * 1000).toISOString()
+            : new Date().toISOString();
+          const endDate = subscriptionUpdate.current_period_end
+            ? new Date(subscriptionUpdate.current_period_end * 1000).toISOString()
+            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
           await supabase.from('subscriptions').upsert({
             subscription_id: subscriptionUpdate.id,
             user_id: existingSub.user_id,
-            plan: subscriptionUpdate.items.data[0].price.recurring.interval,
+            plan: updatePlanValue,
             status: subscriptionUpdate.status,
-            start_date: new Date(subscriptionUpdate.current_period_start * 1000),
-            end_date: new Date(subscriptionUpdate.current_period_end * 1000),
+            start_date: startDate,
+            end_date: endDate,
             stripe_customer_id: subscriptionUpdate.customer,
             stripe_price_id: subscriptionUpdate.items.data[0].price.id,
           });
