@@ -52,8 +52,11 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
         }),
       });
 
+      const data = await response.json();
+      console.log('Cancel subscription response:', data);
+
       if (!response.ok) {
-        throw new Error('Failed to cancel subscription');
+        throw new Error(data.error || 'Failed to cancel subscription');
       }
 
       alert('Your subscription has been cancelled. You can continue to use it until the end of your billing period.');
@@ -63,7 +66,7 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
       window.location.reload();
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      alert('Failed to cancel subscription. Please try again or contact support.');
+      alert(`Failed to cancel subscription: ${error.message}\nPlease try again or contact support.`);
     } finally {
       setIsProcessing(false);
     }
@@ -84,8 +87,11 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
         }),
       });
 
+      const data = await response.json();
+      console.log('Delete account response:', data);
+
       if (!response.ok) {
-        throw new Error('Failed to delete account');
+        throw new Error(data.error || 'Failed to delete account');
       }
 
       alert('Your account has been deleted. You will be logged out.');
@@ -93,7 +99,7 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
       window.location.href = '/';
     } catch (error) {
       console.error('Error deleting account:', error);
-      alert('Failed to delete account. Please try again or contact support.');
+      alert(`Failed to delete account: ${error.message}\nPlease try again or contact support.`);
     } finally {
       setIsProcessing(false);
     }
