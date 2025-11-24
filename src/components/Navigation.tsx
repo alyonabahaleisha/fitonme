@@ -4,6 +4,7 @@ import { Heart, User, LogOut } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
 import SignUpModal from "./SignUpModal";
+import AccountSettings from "./AccountSettings";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/supabase";
 import { trackPricingModalOpened, trackFeedbackModalOpened, trackLogout } from "../services/analytics";
@@ -16,6 +17,7 @@ const Navigation = () => {
   const [showPricing, setShowPricing] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -136,11 +138,11 @@ const Navigation = () => {
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
-                        setShowPricing(true);
+                        setShowAccountSettings(true);
                       }}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Manage Subscription
+                      Account Settings
                     </button>
                     <button
                       onClick={handleSignOut}
@@ -174,6 +176,10 @@ const Navigation = () => {
       />
       <SignUpModal isOpen={showSignUpModal} onClose={() => setShowSignUpModal(false)} onShowPricing={() => setShowPricing(true)} />
       <PricingModal isOpen={showPricing} onClose={() => setShowPricing(false)} />
+      <AccountSettings
+        isOpen={showAccountSettings}
+        onClose={() => setShowAccountSettings(false)}
+      />
     </nav>
   );
 };

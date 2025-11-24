@@ -431,6 +431,147 @@ CRITICAL INSTRUCTIONS:
   }
 });
 
+// Cancel subscription endpoint
+app.post('/api/cancel-subscription', async (req, res) => {
+  try {
+    console.log('[CANCEL] Processing subscription cancellation...');
+    const { userId, reason } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    // Get user's active subscription from database
+    const { data: subscription, error: subError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (subError || !subscription) {
+      console.log('[CANCEL] No active subscription found for user:', userId);
+      return res.status(404).json({ error: 'No active subscription found' });
+    }
+
+    console.log('[CANCEL] Found subscription:', subscription.subscription_id);
+    console.log('[CANCEL] Cancellation reason:', reason || 'Not provided');
+
+    // Cancel the subscription in Stripe (at period end)
+    const cancelledSubscription = await stripe.subscriptions.update(
+      subscription.subscription_id,
+      {
+        cancel_at_period_end: true,
+        metadata: {
+          cancellation_reason: reason || 'not_provided'
+        }
+      }
+    );
+
+    console.log('[CANCEL] Stripe subscription cancelled at period end:', cancelledSubscription.id);
+
+    // Update subscription status in database
+    await supabase
+      .from('subscriptions')
+      .update({
+        status: 'cancelled',
+        updated_at: new Date().toISOString()
+      })
+      .eq('subscription_id', subscription.subscription_id);
+
+    console.log('[CANCEL] SUCCESS: Subscription cancelled for user', userId);
+
+    res.json({
+      success: true,
+      message: 'Subscription cancelled successfully',
+      end_date: subscription.end_date
+    });
+  } catch (error) {
+    console.error('[CANCEL] Error cancelling subscription:', error);
+    res.status(500).json({
+      error: 'Failed to cancel subscription',
+      details: error.message
+    });
+  }
+});
+
+// Delete account endpoint
+app.post('/api/delete-account', async (req, res) => {
+  try {
+    console.log('[DELETE] Processing account deletion...');
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    // Get all user's subscriptions from database
+    const { data: subscriptions, error: subsError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (!subsError && subscriptions && subscriptions.length > 0) {
+      console.log('[DELETE] Found', subscriptions.length, 'subscription(s) to cancel');
+
+      // Cancel all active Stripe subscriptions immediately
+      for (const sub of subscriptions) {
+        if (sub.status === 'active') {
+          try {
+            await stripe.subscriptions.cancel(sub.subscription_id);
+            console.log('[DELETE] Cancelled Stripe subscription:', sub.subscription_id);
+          } catch (stripeError) {
+            console.error('[DELETE] Error cancelling Stripe subscription:', stripeError.message);
+            // Continue with deletion even if Stripe cancellation fails
+          }
+        }
+      }
+    }
+
+    // Delete subscriptions from database (will cascade delete related records)
+    await supabase
+      .from('subscriptions')
+      .delete()
+      .eq('user_id', userId);
+    console.log('[DELETE] Deleted subscriptions from database');
+
+    // Delete user data from users table
+    const { error: userDeleteError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (userDeleteError) {
+      console.error('[DELETE] Error deleting user data:', userDeleteError);
+      throw userDeleteError;
+    }
+    console.log('[DELETE] Deleted user data from database');
+
+    // Delete user from Supabase Auth
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (authDeleteError) {
+      console.error('[DELETE] Error deleting user from auth:', authDeleteError);
+      // Don't throw error here - user data is already deleted
+    } else {
+      console.log('[DELETE] Deleted user from Supabase Auth');
+    }
+
+    console.log('[DELETE] SUCCESS: Account deleted for user', userId);
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+  } catch (error) {
+    console.error('[DELETE] Error deleting account:', error);
+    res.status(500).json({
+      error: 'Failed to delete account',
+      details: error.message
+    });
+  }
+});
+
 // TEMPORARY: Admin endpoint to manually update user subscription
 // Remove this after webhooks are working properly
 app.post('/api/admin/update-subscription', express.json(), async (req, res) => {
