@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, getUserData, createUser, onAuthStateChange } from '../lib/supabase';
+import { getSession, getUserData, createUser, onAuthStateChange } from '../lib/supabase';
 import { identifyUser } from '../services/analytics';
 
 const AuthContext = createContext({
@@ -7,7 +7,7 @@ const AuthContext = createContext({
   userData: null,
   loading: true,
   isAuthenticated: false,
-  refreshUserData: async () => {},
+  refreshUserData: async () => { },
 });
 
 export const useAuth = () => {
@@ -53,13 +53,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check active session on mount
+    // Check active session on mount
     const initAuth = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        setUser(currentUser);
+        const session = await getSession();
+        setUser(session?.user ?? null);
 
-        if (currentUser) {
-          await refreshUserData(currentUser.id, currentUser.email);
+        if (session?.user) {
+          await refreshUserData(session.user.id, session.user.email);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
