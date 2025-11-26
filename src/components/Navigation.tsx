@@ -64,6 +64,14 @@ const Navigation = () => {
         </button>
 
         <div className="flex items-center gap-4 md:gap-6">
+          {isAuthenticated && (
+            <button
+              onClick={() => navigate('/closet')}
+              className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full text-gray-700 hover:bg-gray-100"
+            >
+              My Closet
+            </button>
+          )}
           <button
             onClick={() => {
               trackPricingModalOpened('navigation', user?.id);
@@ -174,7 +182,7 @@ const Navigation = () => {
         isOpen={showFeedback}
         onClose={() => setShowFeedback(false)}
       />
-      <SignUpModal isOpen={showSignUpModal} onClose={() => setShowSignUpModal(false)} onShowPricing={() => setShowPricing(true)} />
+      <SignUpModal isOpen={showSignUpModal} onClose={() => setShowSignUpModal(false)} onShowPricing={() => setShowPricing(true)} tryOnsUsed={0} />
       <PricingModal isOpen={showPricing} onClose={() => setShowPricing(false)} />
       <AccountSettings
         isOpen={showAccountSettings}

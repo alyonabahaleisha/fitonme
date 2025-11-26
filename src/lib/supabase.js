@@ -365,6 +365,24 @@ export const getTryOnHistory = async (userId, limit = 20) => {
   }
 };
 
+/**
+ * Delete a try-on record
+ */
+export const deleteTryOn = async (tryOnId) => {
+  try {
+    const { error } = await supabase
+      .from('try_on_history')
+      .delete()
+      .eq('id', tryOnId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting try-on:', error);
+    throw error;
+  }
+};
+
 // ============================================
 // Subscription Helper Functions
 // ============================================

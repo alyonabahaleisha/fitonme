@@ -76,10 +76,12 @@ const SignUpModal = ({ isOpen, onClose, onShowPricing, tryOnsUsed = 2 }) => {
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-3xl font-display font-bold text-gray-900 mb-2">
-                  You've Used Your Free Try-Ons!
+                  {tryOnsUsed >= 2 ? "You've Used Your Free Try-Ons!" : "Unlock Your Style Journey"}
                 </h2>
                 <p className="text-gray-600">
-                  You've tried {tryOnsUsed} outfits. Sign up to continue your fashion journey!
+                  {tryOnsUsed >= 2
+                    ? `You've tried ${tryOnsUsed} outfits. Sign up to continue your fashion journey!`
+                    : "Sign up to save your favorite looks and get personalized recommendations."}
                 </p>
               </div>
 

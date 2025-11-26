@@ -92,7 +92,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Start Free Trial",
       popular: true,
       variant: "filled" as const,
-      stripePriceId: "price_monthly_placeholder", // Replace with your Stripe Price ID
+      stripePriceId: "price_monthly_placeholder", // TODO: REPLACE WITH ACTUAL STRIPE PRICE ID FOR MONTHLY PLAN
     },
     {
       name: "Annual Pro Closet",
@@ -109,7 +109,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Go Pro",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_annual_placeholder", // Replace with your Stripe Price ID
+      stripePriceId: "price_annual_placeholder", // TODO: REPLACE WITH ACTUAL STRIPE PRICE ID FOR ANNUAL PLAN
     },
   ];
 
@@ -130,8 +130,8 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
     // Track plan selection
     const planType = planName.toLowerCase().includes('weekly') ? 'weekly' :
-                     planName.toLowerCase().includes('monthly') ? 'monthly' :
-                     planName.toLowerCase().includes('annual') ? 'annual' : 'unknown';
+      planName.toLowerCase().includes('monthly') ? 'monthly' :
+        planName.toLowerCase().includes('annual') ? 'annual' : 'unknown';
     trackPlanSelected(planType, priceId, user.id);
 
     setLoadingPriceId(priceId);
@@ -218,123 +218,126 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
             {/* Pricing Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {tiers.map((tier, index) => {
-              const isCurrentPlan = tier.name === currentPlanName;
-              const isUpgrade = !isCurrentPlan && tier.name !== 'Free Preview' && (
-                (currentPlanName === 'Free Preview') ||
-                (currentPlanName === 'Weekly Pass' && (tier.name === 'Monthly Plan' || tier.name === 'Annual Pro Closet')) ||
-                (currentPlanName === 'Monthly Plan' && tier.name === 'Annual Pro Closet')
-              );
-              const shouldDisable = isCurrentPlan || !isUpgrade && tier.name !== 'Free Preview';
+              {tiers.map((tier, index) => {
+                const isCurrentPlan = tier.name === currentPlanName;
+                const isUpgrade = !isCurrentPlan && tier.name !== 'Free Preview' && (
+                  (currentPlanName === 'Free Preview') ||
+                  (currentPlanName === 'Weekly Pass' && (tier.name === 'Monthly Plan' || tier.name === 'Annual Pro Closet')) ||
+                  (currentPlanName === 'Monthly Plan' && tier.name === 'Annual Pro Closet')
+                );
+                const shouldDisable = isCurrentPlan || !isUpgrade && tier.name !== 'Free Preview';
 
-              return (
-              <div
-                key={index}
-                className={`relative bg-white rounded-xl p-4 transition-all duration-300 flex flex-col ${
-                  isCurrentPlan || tier.popular
-                    ? 'border-2 shadow-xl'
-                    : 'border border-gray-200 shadow-md'
-                }`}
-                style={isCurrentPlan || tier.popular ? { borderColor: '#ff6b5a' } : {}}
-              >
-                {/* Current Plan or Popular Badge */}
-                {isCurrentPlan ? (
+                return (
                   <div
-                    className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold whitespace-nowrap"
-                    style={{ backgroundColor: '#4CAF50' }}
+                    key={index}
+                    className={`relative bg-white rounded-xl p-4 transition-all duration-300 flex flex-col ${isCurrentPlan || tier.popular
+                      ? 'border-2 shadow-xl'
+                      : 'border border-gray-200 shadow-md'
+                      }`}
+                    style={isCurrentPlan || tier.popular ? { borderColor: '#ff6b5a' } : {}}
                   >
-                    Current Plan
-                  </div>
-                ) : tier.popular && (
-                  <div
-                    className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold whitespace-nowrap"
-                    style={{ backgroundColor: '#ff6b5a' }}
-                  >
-                    Most Popular
-                  </div>
-                )}
+                    {/* Current Plan or Popular Badge */}
+                    {isCurrentPlan ? (
+                      <div
+                        className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold whitespace-nowrap"
+                        style={{ backgroundColor: '#4CAF50' }}
+                      >
+                        Current Plan
+                      </div>
+                    ) : tier.popular && (
+                      <div
+                        className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold whitespace-nowrap"
+                        style={{ backgroundColor: '#ff6b5a' }}
+                      >
+                        Most Popular
+                      </div>
+                    )}
 
-                {/* Tier Name */}
-                <h3 className="text-xl font-serif font-semibold text-gray-900 mb-1 mt-1">
-                  {tier.name}
-                </h3>
+                    {/* Tier Name */}
+                    <h3 className="text-xl font-serif font-semibold text-gray-900 mb-1 mt-1">
+                      {tier.name}
+                    </h3>
 
-                {/* Description */}
-                <p className="text-gray-500 text-sm mb-4">{tier.description}</p>
+                    {/* Description */}
+                    <p className="text-gray-500 text-sm mb-4">{tier.description}</p>
 
-                {/* Price */}
-                <div className="mb-4">
-                  <span className="text-4xl font-semibold text-gray-900">{tier.price}</span>
-                  {tier.period && (
-                    <span className="text-gray-500 text-base ml-1">{tier.period}</span>
-                  )}
-                </div>
+                    {/* Price */}
+                    <div className="mb-4">
+                      <span className="text-4xl font-semibold text-gray-900">{tier.price}</span>
+                      {tier.period && (
+                        <span className="text-gray-500 text-base ml-1">{tier.period}</span>
+                      )}
+                    </div>
 
-                {/* Features */}
-                <ul className="space-y-2.5 mb-6 flex-grow">
-                  {tier.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2.5">
-                      <Check
-                        className="w-5 h-5 flex-shrink-0 mt-0.5"
-                        style={{ color: '#ff6b5a' }}
-                      />
-                      <span className="text-gray-600 text-sm leading-relaxed">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                    {/* Features */}
+                    <ul className="space-y-2.5 mb-6 flex-grow">
+                      {tier.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2.5">
+                          <Check
+                            className="w-5 h-5 flex-shrink-0 mt-0.5"
+                            style={{ color: '#ff6b5a' }}
+                          />
+                          <span className="text-gray-600 text-sm leading-relaxed">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                {/* CTA Button */}
-                <button
-                  onClick={() => handleCheckout(tier.stripePriceId, tier.name)}
-                  disabled={shouldDisable || loadingPriceId === tier.stripePriceId}
-                  className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${
-                    tier.variant === 'filled'
-                      ? 'text-white shadow-md hover:shadow-lg'
-                      : 'border-2 bg-white hover:bg-opacity-5'
-                  }`}
-                  style={
-                    tier.variant === 'filled'
-                      ? { backgroundColor: '#ff6b5a' }
-                      : { borderColor: '#ff6b5a', color: '#ff6b5a' }
-                  }
-                  onMouseEnter={(e) => {
-                    if (!isCurrentPlan && isUpgrade) {
-                      if (tier.variant === 'filled') {
-                        e.currentTarget.style.backgroundColor = '#ff5544';
-                      } else {
-                        e.currentTarget.style.backgroundColor = '#ff6b5a10';
+                    {/* CTA Button */}
+                    <button
+                      onClick={() => handleCheckout(tier.stripePriceId, tier.name)}
+                      disabled={shouldDisable || loadingPriceId === tier.stripePriceId}
+                      className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${tier.variant === 'filled'
+                        ? 'text-white shadow-md hover:shadow-lg'
+                        : 'border-2 bg-white hover:bg-opacity-5'
+                        }`}
+                      style={
+                        tier.variant === 'filled'
+                          ? { backgroundColor: '#ff6b5a' }
+                          : { borderColor: '#ff6b5a', color: '#ff6b5a' }
                       }
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (tier.variant === 'filled') {
-                      e.currentTarget.style.backgroundColor = '#ff6b5a';
-                    } else {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  {loadingPriceId === tier.stripePriceId
-                    ? 'Loading...'
-                    : isCurrentPlan
-                    ? 'Current Plan'
-                    : isUpgrade
-                    ? `Upgrade to ${tier.name.split(' ')[0]}`
-                    : tier.cta}
-                </button>
-              </div>
-              );
-            })}
-          </div>
+                      onMouseEnter={(e) => {
+                        if (!isCurrentPlan && isUpgrade) {
+                          if (tier.variant === 'filled') {
+                            e.currentTarget.style.backgroundColor = '#ff5544';
+                          } else {
+                            e.currentTarget.style.backgroundColor = '#ff6b5a10';
+                          }
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (tier.variant === 'filled') {
+                          e.currentTarget.style.backgroundColor = '#ff6b5a';
+                        } else {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      {loadingPriceId === tier.stripePriceId
+                        ? 'Loading...'
+                        : isCurrentPlan
+                          ? 'Current Plan'
+                          : isUpgrade
+                            ? `Upgrade to ${tier.name.split(' ')[0]}`
+                            : tier.cta}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
 
-          {/* Bottom Note */}
-          <div className="text-center mt-6 pb-4">
-            <p className="text-gray-600 text-sm">
-              All plans include secure payment processing and can be cancelled anytime.
-            </p>
+            {/* Bottom Note */}
+            <div className="text-center mt-6 pb-4">
+              <p className="text-gray-600 text-sm mb-2">
+                All plans include secure payment processing and can be cancelled anytime.
+              </p>
+              <p className="text-xs text-gray-500">
+                <strong>Subscription Terms:</strong> Plans auto-renew at the end of each period.
+                <br />
+                <strong>Refund Policy:</strong> If you're not satisfied, contact us within 7 days of your first purchase for a full refund.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       {/* Sign Up Modal - shown when user tries to checkout without authentication */}

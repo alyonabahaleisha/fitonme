@@ -9,6 +9,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { verifyAuth, optionalAuth } from './middleware/auth.js';
 import { createClient } from '@supabase/supabase-js';
+import { sendOutfitReadyEmail } from './services/email.js';
+import logger from './utils/logger.js';
+import { apiLimiter, strictLimiter } from './middleware/rateLimiter.js';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,16 +21,33 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const port = process.env.PORT || 3001;
+
+// Initialize Sentry (only if DSN is present)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      nodeProfilingIntegration(),
+    ],
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
+  });
+  logger.info('Sentry initialized');
+}
+
+// Middleware
+app.use(cors());
+// Apply global rate limiter to all requests
+app.use(apiLimiter);
 
 // IMPORTANT: Stripe webhook MUST come before express.json() middleware
 // because it needs the raw body to verify the signature
-app.use(cors());
 
 // Request logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.path}`);
+  logger.info(`[${timestamp}] ${req.method} ${req.path}`);
   next();
 });
 
@@ -52,14 +74,14 @@ const upload = multer({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Initialize Stripe
-console.log('[STARTUP] Initializing Stripe...');
-console.log('[STARTUP] STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-console.log('[STARTUP] STRIPE_SECRET_KEY length:', process.env.STRIPE_SECRET_KEY?.length);
-console.log('[STARTUP] STRIPE_SECRET_KEY starts with:', process.env.STRIPE_SECRET_KEY?.substring(0, 130));
+logger.info('[STARTUP] Initializing Stripe...');
+logger.info('[STARTUP] STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+logger.info('[STARTUP] STRIPE_SECRET_KEY length:', process.env.STRIPE_SECRET_KEY?.length);
+logger.info('[STARTUP] STRIPE_SECRET_KEY starts with:', process.env.STRIPE_SECRET_KEY?.substring(0, 130));
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Initialize Supabase
-console.log('[STARTUP] Initializing Supabase...');
+logger.info('[STARTUP] Initializing Supabase...');
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -88,43 +110,43 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('[WEBHOOK] Signature verification failed:', err.message);
+    logger.error('[WEBHOOK] Signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log('[WEBHOOK] Event received:', event.type);
+  logger.info('[WEBHOOK] Event received:', event.type);
 
   // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
-      console.log('[WEBHOOK] Checkout session completed:', session.id);
-      console.log('[WEBHOOK] Session metadata:', session.metadata);
-      console.log('[WEBHOOK] Customer email:', session.customer_email);
+      logger.info('[WEBHOOK] Checkout session completed:', session.id);
+      // logger.info('[WEBHOOK] Session metadata:', session.metadata);
+      // logger.info('[WEBHOOK] Customer email:', session.customer_email);
 
       // Update user's subscription in Supabase
       // We stored userId in metadata
       const userId = session.metadata.userId;
       const subscriptionId = session.subscription;
 
-      console.log('[WEBHOOK] userId from metadata:', userId);
-      console.log('[WEBHOOK] subscriptionId:', subscriptionId);
+      logger.info('[WEBHOOK] userId from metadata:', userId);
+      logger.info('[WEBHOOK] subscriptionId:', subscriptionId);
 
       if (!userId || userId === 'guest') {
-        console.error('[WEBHOOK] ERROR: Invalid userId - cannot save subscription for guest user');
-        console.error('[WEBHOOK] Customer email:', session.customer_email);
-        console.error('[WEBHOOK] Please ensure userId is passed when creating checkout session');
+        logger.error('[WEBHOOK] ERROR: Invalid userId - cannot save subscription for guest user');
+        // logger.error('[WEBHOOK] Customer email:', session.customer_email);
+        logger.error('[WEBHOOK] Please ensure userId is passed when creating checkout session');
         break;
       }
 
       if (userId && subscriptionId) {
         try {
-          console.log('[WEBHOOK] Retrieving subscription from Stripe:', subscriptionId);
+          logger.info('[WEBHOOK] Retrieving subscription from Stripe:', subscriptionId);
           // Retrieve the subscription details from Stripe to get the plan info
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          console.log('[WEBHOOK] Subscription retrieved:', subscription.id);
-          console.log('[WEBHOOK] current_period_start:', subscription.current_period_start);
-          console.log('[WEBHOOK] current_period_end:', subscription.current_period_end);
+          logger.info('[WEBHOOK] Subscription retrieved:', subscription.id);
+          logger.info('[WEBHOOK] current_period_start:', subscription.current_period_start);
+          logger.info('[WEBHOOK] current_period_end:', subscription.current_period_end);
 
           // Validate and convert timestamps
           const startDate = subscription.current_period_start
@@ -134,8 +156,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             ? new Date(subscription.current_period_end * 1000).toISOString()
             : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // Default to 7 days from now
 
-          console.log('[WEBHOOK] Converted start_date:', startDate);
-          console.log('[WEBHOOK] Converted end_date:', endDate);
+          logger.info('[WEBHOOK] Converted start_date:', startDate);
+          logger.info('[WEBHOOK] Converted end_date:', endDate);
 
           // Map Stripe interval to database plan values
           const interval = subscription.items.data[0].price.recurring.interval;
@@ -144,7 +166,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           if (interval === 'month') planValue = 'monthly';
           if (interval === 'year') planValue = 'annual';
 
-          console.log('[WEBHOOK] Stripe interval:', interval, '-> DB plan:', planValue);
+          logger.info('[WEBHOOK] Stripe interval:', interval, '-> DB plan:', planValue);
 
           const subscriptionData = {
             subscription_id: subscription.id,
@@ -157,32 +179,32 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             stripe_price_id: subscription.items.data[0].price.id,
           };
 
-          console.log('[WEBHOOK] Upserting subscription to database:', subscriptionData);
+          logger.info('[WEBHOOK] Upserting subscription to database:', subscriptionData);
           const { data: subData, error: subError } = await supabase.from('subscriptions').upsert(subscriptionData);
 
           if (subError) {
-            console.error('[WEBHOOK] ERROR saving subscription:', subError);
+            logger.error('[WEBHOOK] ERROR saving subscription:', subError);
             throw subError;
           }
-          console.log('[WEBHOOK] Subscription saved successfully:', subData);
+          logger.info('[WEBHOOK] Subscription saved successfully:', subData);
 
           // Update user's plan_type in users table
           // The planValue we just mapped is what we use for plan_type
-          console.log('[WEBHOOK] Updating user plan_type to:', planValue);
+          logger.info('[WEBHOOK] Updating user plan_type to:', planValue);
           const { error: userError } = await supabase.from('users').update({
             plan_type: planValue,
             credits_remaining: 999999 // Unlimited
           }).eq('id', userId);
 
           if (userError) {
-            console.error('[WEBHOOK] ERROR updating user:', userError);
+            logger.error('[WEBHOOK] ERROR updating user:', userError);
             throw userError;
           }
 
-          console.log('[WEBHOOK] SUCCESS: Updated subscription for user', userId, 'to', planValue);
+          logger.info('[WEBHOOK] SUCCESS: Updated subscription for user', userId, 'to', planValue);
         } catch (err) {
-          console.error('[WEBHOOK] ERROR updating subscription in Supabase:', err);
-          console.error('[WEBHOOK] Error details:', JSON.stringify(err, null, 2));
+          logger.error('[WEBHOOK] ERROR updating subscription in Supabase:', err);
+          logger.error('[WEBHOOK] Error details:', JSON.stringify(err, null, 2));
         }
       }
       break;
@@ -190,7 +212,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
       const subscriptionUpdate = event.data.object;
-      console.log('[WEBHOOK] Subscription updated:', subscriptionUpdate.id);
+      logger.info('[WEBHOOK] Subscription updated:', subscriptionUpdate.id);
 
       try {
         const { data: existingSub } = await supabase
@@ -224,16 +246,16 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             stripe_customer_id: subscriptionUpdate.customer,
             stripe_price_id: subscriptionUpdate.items.data[0].price.id,
           });
-          console.log('[WEBHOOK] Subscription updated in database');
+          logger.info('[WEBHOOK] Subscription updated in database');
         }
       } catch (err) {
-        console.error('[WEBHOOK] Error handling subscription update:', err);
+        logger.error('[WEBHOOK] Error handling subscription update:', err);
       }
       break;
 
     case 'customer.subscription.deleted':
       const deletedSubscription = event.data.object;
-      console.log('[WEBHOOK] Subscription cancelled:', deletedSubscription.id);
+      logger.info('[WEBHOOK] Subscription cancelled:', deletedSubscription.id);
 
       try {
         const { data: existingSub } = await supabase
@@ -251,29 +273,35 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             plan_type: 'free'
           }).eq('id', existingSub.user_id);
 
-          console.log('[WEBHOOK] Subscription cancelled in database');
+          logger.info('[WEBHOOK] Subscription cancelled in database');
         }
       } catch (err) {
-        console.error('[WEBHOOK] Error handling subscription cancellation:', err);
+        logger.error('[WEBHOOK] Error handling subscription cancellation:', err);
       }
       break;
 
     case 'invoice.payment_succeeded':
       const invoice = event.data.object;
-      console.log('[WEBHOOK] Payment succeeded:', invoice.id);
+      logger.info('[WEBHOOK] Payment succeeded:', invoice.id);
       break;
 
     case 'invoice.payment_failed':
       const failedInvoice = event.data.object;
-      console.log('[WEBHOOK] Payment failed:', failedInvoice.id);
+      logger.info('[WEBHOOK] Payment failed:', failedInvoice.id);
       break;
 
     default:
-      console.log('[WEBHOOK] Unhandled event type:', event.type);
+      logger.info('[WEBHOOK] Unhandled event type:', event.type);
   }
 
   res.json({ received: true });
 });
+
+// Apply stricter rate limiting to sensitive endpoints
+app.use('/api/create-checkout-session', strictLimiter);
+app.use('/api/try-on', strictLimiter);
+app.use('/api/cancel-subscription', strictLimiter);
+app.use('/api/delete-account', strictLimiter);
 
 // NOW apply express.json() middleware for all other routes
 app.use(express.json());
@@ -290,17 +318,17 @@ app.get('/api/health', (req, res) => {
 // Stripe: Create checkout session
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
-    console.log('[CHECKOUT] Creating checkout session...');
-    console.log('[CHECKOUT] Request body:', req.body);
+    logger.info('[CHECKOUT] Creating checkout session...');
+    // logger.info('[CHECKOUT] Request body:', req.body);
 
     const { priceId, userId, userEmail } = req.body;
 
     if (!priceId) {
-      console.log('[CHECKOUT] ERROR: No priceId provided');
+      logger.warn('[CHECKOUT] ERROR: No priceId provided');
       return res.status(400).json({ error: 'Price ID is required' });
     }
 
-    console.log('[CHECKOUT] Creating session with priceId:', priceId);
+    logger.info('[CHECKOUT] Creating session with priceId:', priceId);
 
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -325,12 +353,15 @@ app.post('/api/create-checkout-session', async (req, res) => {
       },
     });
 
-    console.log('[CHECKOUT] Session created successfully:', session.id);
+    // NOTE: Enable "Email customers about successful payments" in Stripe Dashboard > Settings > Emails
+    // for automatic receipt emails.
+
+    logger.info('[CHECKOUT] Session created successfully:', session.id);
     res.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('[CHECKOUT] Error creating checkout session:', error.message);
-    console.error('[CHECKOUT] Error type:', error.type);
-    console.error('[CHECKOUT] Status code:', error.statusCode);
+    logger.error('[CHECKOUT] Error creating checkout session:', error.message);
+    logger.error('[CHECKOUT] Error type:', error.type);
+    logger.error('[CHECKOUT] Status code:', error.statusCode);
     res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
   }
 });
@@ -354,15 +385,15 @@ app.post('/api/try-on', optionalAuth, upload.fields([
 
     // Log authentication status
     if (req.user) {
-      console.log(`[AUTH] Authenticated try-on request from user: ${req.user.email} (${req.user.id})`);
+      logger.info(`[AUTH] Authenticated try-on request from user: ${req.user.email} (${req.user.id})`);
     } else {
-      console.log('[AUTH] Unauthenticated try-on request (guest user)');
+      logger.info('[AUTH] Unauthenticated try-on request (guest user)');
     }
 
-    console.log('Processing images...');
-    console.log('Person image:', personImagePath);
-    console.log('Clothing image:', clothingImagePath);
-    console.log('Description:', description);
+    logger.info('Processing images...');
+    logger.info('Person image:', personImagePath);
+    logger.info('Clothing image:', clothingImagePath);
+    logger.info('Description:', description);
 
     // Use Gemini 2.5 Flash Image model for image generation
     const model = genAI.getGenerativeModel({
@@ -402,7 +433,7 @@ CRITICAL INSTRUCTIONS:
       throw new Error('No image generated in response');
     }
 
-    console.log('Image generated successfully');
+    logger.info('Image generated successfully');
 
     // Clean up uploaded files
     fs.unlinkSync(personImagePath);
@@ -415,8 +446,14 @@ CRITICAL INSTRUCTIONS:
       message: 'Virtual try-on generated successfully'
     });
 
+    // Send email notification (async, don't wait)
+    if (req.user && req.user.email) {
+      sendOutfitReadyEmail(req.user.email, currentOutfit?.name || 'Outfit', generatedImage.data)
+        .catch(err => logger.error('Failed to send email:', err));
+    }
+
   } catch (error) {
-    console.error('Error processing try-on:', error);
+    logger.error('Error processing try-on:', error);
 
     // Clean up files on error
     if (req.files) {
@@ -434,7 +471,7 @@ CRITICAL INSTRUCTIONS:
 // Cancel subscription endpoint
 app.post('/api/cancel-subscription', async (req, res) => {
   try {
-    console.log('[CANCEL] Processing subscription cancellation...');
+    logger.info('[CANCEL] Processing subscription cancellation...');
     const { userId, reason } = req.body;
 
     if (!userId) {
@@ -448,11 +485,11 @@ app.post('/api/cancel-subscription', async (req, res) => {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    console.log('[CANCEL] Found subscriptions:', subscriptions);
-    console.log('[CANCEL] Query error:', subError);
+    logger.info('[CANCEL] Found subscriptions:', subscriptions);
+    logger.info('[CANCEL] Query error:', subError);
 
     if (subError || !subscriptions || subscriptions.length === 0) {
-      console.log('[CANCEL] No subscription found for user:', userId);
+      logger.warn('[CANCEL] No subscription found for user:', userId);
       return res.status(404).json({ error: 'No subscription found' });
     }
 
@@ -462,15 +499,15 @@ app.post('/api/cancel-subscription', async (req, res) => {
     );
 
     if (!subscription) {
-      console.log('[CANCEL] No cancellable subscription found. Statuses:', subscriptions.map(s => s.status));
+      logger.warn('[CANCEL] No cancellable subscription found. Statuses:', subscriptions.map(s => s.status));
       return res.status(404).json({
         error: 'No active subscription found',
         details: `Found ${subscriptions.length} subscription(s) but none are active`
       });
     }
 
-    console.log('[CANCEL] Found subscription:', subscription.subscription_id);
-    console.log('[CANCEL] Cancellation reason:', reason || 'Not provided');
+    logger.info('[CANCEL] Found subscription:', subscription.subscription_id);
+    logger.info('[CANCEL] Cancellation reason:', reason || 'Not provided');
 
     // Cancel the subscription in Stripe (at period end)
     const cancelledSubscription = await stripe.subscriptions.update(
@@ -483,7 +520,7 @@ app.post('/api/cancel-subscription', async (req, res) => {
       }
     );
 
-    console.log('[CANCEL] Stripe subscription cancelled at period end:', cancelledSubscription.id);
+    logger.info('[CANCEL] Stripe subscription cancelled at period end:', cancelledSubscription.id);
 
     // Update subscription status in database
     await supabase
@@ -494,7 +531,7 @@ app.post('/api/cancel-subscription', async (req, res) => {
       })
       .eq('subscription_id', subscription.subscription_id);
 
-    console.log('[CANCEL] SUCCESS: Subscription cancelled for user', userId);
+    logger.info('[CANCEL] SUCCESS: Subscription cancelled for user', userId);
 
     res.json({
       success: true,
@@ -502,7 +539,7 @@ app.post('/api/cancel-subscription', async (req, res) => {
       end_date: subscription.end_date
     });
   } catch (error) {
-    console.error('[CANCEL] Error cancelling subscription:', error);
+    logger.error('[CANCEL] Error cancelling subscription:', error);
     res.status(500).json({
       error: 'Failed to cancel subscription',
       details: error.message
@@ -513,7 +550,7 @@ app.post('/api/cancel-subscription', async (req, res) => {
 // Delete account endpoint
 app.post('/api/delete-account', async (req, res) => {
   try {
-    console.log('[DELETE] Processing account deletion...');
+    logger.info('[DELETE] Processing account deletion...');
     const { userId } = req.body;
 
     if (!userId) {
@@ -527,16 +564,16 @@ app.post('/api/delete-account', async (req, res) => {
       .eq('user_id', userId);
 
     if (!subsError && subscriptions && subscriptions.length > 0) {
-      console.log('[DELETE] Found', subscriptions.length, 'subscription(s) to cancel');
+      logger.info('[DELETE] Found', subscriptions.length, 'subscription(s) to cancel');
 
       // Cancel all active Stripe subscriptions immediately
       for (const sub of subscriptions) {
         if (sub.status === 'active') {
           try {
             await stripe.subscriptions.cancel(sub.subscription_id);
-            console.log('[DELETE] Cancelled Stripe subscription:', sub.subscription_id);
+            logger.info('[DELETE] Cancelled Stripe subscription:', sub.subscription_id);
           } catch (stripeError) {
-            console.error('[DELETE] Error cancelling Stripe subscription:', stripeError.message);
+            logger.error('[DELETE] Error cancelling Stripe subscription:', stripeError.message);
             // Continue with deletion even if Stripe cancellation fails
           }
         }
@@ -550,9 +587,9 @@ app.post('/api/delete-account', async (req, res) => {
       .eq('user_id', userId);
 
     if (subsDeleteError) {
-      console.error('[DELETE] Error deleting subscriptions:', subsDeleteError);
+      logger.error('[DELETE] Error deleting subscriptions:', subsDeleteError);
     } else {
-      console.log('[DELETE] Deleted subscriptions from database');
+      logger.info('[DELETE] Deleted subscriptions from database');
     }
 
     // Delete user data from users table
@@ -562,29 +599,29 @@ app.post('/api/delete-account', async (req, res) => {
       .eq('id', userId);
 
     if (userDeleteError) {
-      console.error('[DELETE] Error deleting user data:', userDeleteError);
+      logger.error('[DELETE] Error deleting user data:', userDeleteError);
       throw userDeleteError;
     }
-    console.log('[DELETE] Deleted user data from database');
+    logger.info('[DELETE] Deleted user data from database');
 
     // Delete user from Supabase Auth (best effort)
     // Note: This may fail due to database constraints, but data is already cleaned up
     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
 
     if (authDeleteError) {
-      console.log('[DELETE] Note: Auth user deletion skipped (data already cleaned up)');
+      logger.warn('[DELETE] Note: Auth user deletion skipped (data already cleaned up)');
     } else {
-      console.log('[DELETE] Successfully deleted user from Supabase Auth');
+      logger.info('[DELETE] Successfully deleted user from Supabase Auth');
     }
 
-    console.log('[DELETE] SUCCESS: Account deleted for user', userId);
+    logger.info('[DELETE] SUCCESS: Account deleted for user', userId);
 
     res.json({
       success: true,
       message: 'Account deleted successfully'
     });
   } catch (error) {
-    console.error('[DELETE] Error deleting account:', error);
+    logger.error('[DELETE] Error deleting account:', error);
     res.status(500).json({
       error: 'Failed to delete account',
       details: error.message
@@ -615,17 +652,19 @@ app.post('/api/admin/update-subscription', express.json(), async (req, res) => {
 
     if (error) throw error;
 
-    console.log(`[ADMIN] Manually updated user ${userId} to ${planType} plan`);
+    logger.info(`[ADMIN] Manually updated user ${userId} to ${planType} plan`);
     res.json({ success: true, data });
   } catch (error) {
-    console.error('[ADMIN] Error updating subscription:', error);
+    logger.error('[ADMIN] Error updating subscription:', error);
     res.status(500).json({ error: 'Failed to update subscription', details: error.message });
   }
 });
 
+// The error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-  console.log(`API endpoint: http://0.0.0.0:${PORT}/api/try-on`);
-  console.log(`Health check: http://0.0.0.0:${PORT}/api/health`);
+app.listen(port, '0.0.0.0', () => {
+  logger.info(`Server running on http://0.0.0.0:${port}`);
+  logger.info(`API endpoint: http://0.0.0.0:${port}/api/try-on`);
+  logger.info(`Health check: http://0.0.0.0:${port}/api/health`);
 });

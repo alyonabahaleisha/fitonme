@@ -95,6 +95,18 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
       }
 
       alert('Your account has been deleted. You will be logged out.');
+
+      // Clear local storage and IndexedDB
+      localStorage.clear();
+      try {
+        const databases = await window.indexedDB.databases();
+        for (const db of databases) {
+          if (db.name) window.indexedDB.deleteDatabase(db.name);
+        }
+      } catch (e) {
+        console.error('Error clearing IndexedDB:', e);
+      }
+
       // Sign out will be handled by the auth context
       window.location.href = '/';
     } catch (error) {
@@ -199,6 +211,40 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
                     Delete Account
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* Troubleshooting */}
+            <div className="border-t border-gray-200 pt-6 mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Troubleshooting
+              </h3>
+              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-gray-900">Clear Local Cache</h4>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Fix issues by clearing stored photos and settings from this device.
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (confirm('This will clear your local cache and reload the page. Continue?')) {
+                      localStorage.clear();
+                      try {
+                        const databases = await window.indexedDB.databases();
+                        for (const db of databases) {
+                          if (db.name) window.indexedDB.deleteDatabase(db.name);
+                        }
+                      } catch (e) {
+                        console.error('Error clearing IndexedDB:', e);
+                      }
+                      window.location.reload();
+                    }
+                  }}
+                  className="text-sm text-gray-600 hover:text-gray-900 font-medium border border-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Clear Cache
+                </button>
               </div>
             </div>
           </div>
