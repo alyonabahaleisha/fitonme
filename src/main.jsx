@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Sentry from "@sentry/react";
 import App from './App.jsx';
+import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
 // Initialize Sentry (optional)
@@ -22,6 +23,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </StrictMode>,
 );
