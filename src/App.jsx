@@ -8,6 +8,8 @@ import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
 import { initGA, trackPageView } from './services/analytics';
 
+import Layout from './components/Layout';
+
 // Component to track page views
 function PageViewTracker() {
   const location = useLocation();
@@ -50,9 +52,11 @@ function App() {
     <Router>
       <PageViewTracker />
       <Routes>
-        <Route path="/" element={<Index />} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Index />} />
+          <Route path="/closet" element={<Closet />} />
+        </Route>
         <Route path="/try-on" element={<TryOn />} />
-        <Route path="/closet" element={<Closet />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
     </Router>

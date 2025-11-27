@@ -67,6 +67,17 @@ const useAppStore = create(
       // Sign-up modal state
       showSignUpModal: false,
       setShowSignUpModal: (show) => set({ showSignUpModal: show }),
+
+      // Reset state (for sign out)
+      resetState: () => set({
+        userPhoto: null,
+        currentOutfit: null,
+        processedImages: {},
+        favorites: [],
+        guestTryOns: 0,
+        showShareModal: false,
+        showSignUpModal: false,
+      }),
     }),
     {
       name: 'godlovesme-storage',

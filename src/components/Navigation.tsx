@@ -8,6 +8,7 @@ import AccountSettings from "./AccountSettings";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/supabase";
 import { trackPricingModalOpened, trackFeedbackModalOpened, trackLogout } from "../services/analytics";
+import useAppStore from "../store/useAppStore";
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ const Navigation = () => {
   const handleSignOut = async () => {
     try {
       trackLogout(user?.id);
+      const { resetState } = useAppStore.getState();
+      resetState();
       await signOut();
       navigate('/');
     } catch (error) {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Navigation from "@/components/Navigation";
+import { useNavigate } from "react-router-dom";
 import HeroModelCanvas from "@/components/HeroModelCanvas";
 import PlayfulCarousel from "@/components/PlayfulCarousel";
 import UploadButton from "@/components/UploadButton";
@@ -8,7 +8,6 @@ import NudgeOverlay from "@/components/NudgeOverlay";
 import TrustRow from "@/components/TrustRow";
 import HowItWorks from "@/components/HowItWorks";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
 
 import modelBase from "@/assets/model-base.jpg";
 import outfit1 from "@/assets/outfit-1.png";
@@ -102,8 +101,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navigation />
-
       {/* Hero Section - Balanced Side by Side Layout */}
       <section className="relative pt-20 pb-16 px-4 overflow-hidden bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
         {/* Gradient orbs */}
@@ -152,7 +149,7 @@ const Index = () => {
                   appliedOutfitImage={selectedOutfit}
                   alt="Fashion model"
                 />
-                
+
                 {showNudge && (
                   <NudgeOverlay
                     onClose={() => setShowNudge(false)}
@@ -185,7 +182,7 @@ const Index = () => {
                   appliedOutfitImage={selectedOutfit}
                   alt="Fashion model"
                 />
-                
+
                 {showNudge && (
                   <NudgeOverlay
                     onClose={() => setShowNudge(false)}
@@ -245,22 +242,8 @@ const Index = () => {
       <TrustRow />
       <HowItWorks />
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-accent flex items-center justify-center shadow-md">
-                <Heart className="w-5 h-5 text-white fill-white" />
-              </div>
-              <span className="font-serif font-semibold text-2xl text-brand tracking-tight">ILovMe</span>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              © 2025 ILovMe. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <TrustRow />
+      <HowItWorks />
     </div>
   );
 };
