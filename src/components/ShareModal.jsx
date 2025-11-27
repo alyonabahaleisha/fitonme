@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Download, Twitter, Facebook, Instagram, Link2, Check } from 'lucide-react';
 import { addWatermark } from '../lib/image-processor';
 import useAppStore from '../store/useAppStore';
@@ -61,103 +62,106 @@ const ShareModal = ({ imageToShare, outfitName }) => {
   if (!showShareModal) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div
-        className="glass-card w-full sm:w-auto sm:max-w-lg rounded-t-3xl sm:rounded-2xl p-6 animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-display font-bold text-gray-900">
-            Share Your Look
-          </h2>
-          <button
-            onClick={() => setShowShareModal(false)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-6 h-6 text-gray-700" />
-          </button>
-        </div>
-
-        {/* Preview */}
-        <div className="mb-6">
-          <div className="relative rounded-xl overflow-hidden">
-            <img
-              src={watermarkedImage || imageToShare}
-              alt="Share preview"
-              className="w-full h-48 object-cover"
-            />
-            {isGenerating && (
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Share options */}
-        <div className="space-y-3">
-          {/* Download */}
-          <button
-            onClick={handleDownload}
-            className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:shadow-lg transition-all"
-          >
-            <Download className="w-5 h-5" />
-            <span className="font-semibold">Download Image</span>
-          </button>
-
-          {/* Social media */}
-          <div className="grid grid-cols-3 gap-3">
+    createPortal(
+      <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div
+          className="glass-card w-full sm:w-auto sm:max-w-lg rounded-t-3xl sm:rounded-2xl p-6 animate-slide-up"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-display font-bold text-gray-900">
+              Share Your Look
+            </h2>
             <button
-              onClick={() => shareToSocial('twitter')}
-              className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 transition-colors"
+              onClick={() => setShowShareModal(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <Twitter className="w-6 h-6 text-blue-400" />
-              <span className="text-xs font-medium text-gray-700">Twitter</span>
-            </button>
-
-            <button
-              onClick={() => shareToSocial('facebook')}
-              className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-600 transition-colors"
-            >
-              <Facebook className="w-6 h-6 text-blue-600" />
-              <span className="text-xs font-medium text-gray-700">Facebook</span>
-            </button>
-
-            <button
-              onClick={() => shareToSocial('instagram')}
-              className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-500 transition-colors"
-            >
-              <Instagram className="w-6 h-6 text-pink-500" />
-              <span className="text-xs font-medium text-gray-700">Instagram</span>
+              <X className="w-6 h-6 text-gray-700" />
             </button>
           </div>
 
-          {/* Copy link */}
-          <button
-            onClick={handleCopyLink}
-            className="w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-primary-500 transition-colors"
-          >
-            {copied ? (
-              <>
-                <Check className="w-5 h-5 text-green-500" />
-                <span className="font-semibold text-green-600">Link Copied!</span>
-              </>
-            ) : (
-              <>
-                <Link2 className="w-5 h-5 text-gray-700" />
-                <span className="font-semibold text-gray-700">Copy Link</span>
-              </>
-            )}
-          </button>
-        </div>
+          {/* Preview */}
+          <div className="mb-6">
+            <div className="relative rounded-xl overflow-hidden">
+              <img
+                src={watermarkedImage || imageToShare}
+                alt="Share preview"
+                className="w-full h-48 object-cover"
+              />
+              {isGenerating && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+              )}
+            </div>
+          </div>
 
-        {/* Footer text */}
-        <p className="mt-4 text-center text-xs text-gray-500">
-          Share your style with the world!
-        </p>
-      </div>
-    </div>
+          {/* Share options */}
+          <div className="space-y-3">
+            {/* Download */}
+            <button
+              onClick={handleDownload}
+              className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:shadow-lg transition-all"
+            >
+              <Download className="w-5 h-5" />
+              <span className="font-semibold">Download Image</span>
+            </button>
+
+            {/* Social media */}
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => shareToSocial('twitter')}
+                className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 transition-colors"
+              >
+                <Twitter className="w-6 h-6 text-blue-400" />
+                <span className="text-xs font-medium text-gray-700">Twitter</span>
+              </button>
+
+              <button
+                onClick={() => shareToSocial('facebook')}
+                className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-600 transition-colors"
+              >
+                <Facebook className="w-6 h-6 text-blue-600" />
+                <span className="text-xs font-medium text-gray-700">Facebook</span>
+              </button>
+
+              <button
+                onClick={() => shareToSocial('instagram')}
+                className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-500 transition-colors"
+              >
+                <Instagram className="w-6 h-6 text-pink-500" />
+                <span className="text-xs font-medium text-gray-700">Instagram</span>
+              </button>
+            </div>
+
+            {/* Copy link */}
+            <button
+              onClick={handleCopyLink}
+              className="w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-primary-500 transition-colors"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span className="font-semibold text-green-600">Link Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Link2 className="w-5 h-5 text-gray-700" />
+                  <span className="font-semibold text-gray-700">Copy Link</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Footer text */}
+          <p className="mt-4 text-center text-xs text-gray-500">
+            Share your style with the world!
+          </p>
+        </div>
+      </div>,
+      document.body
+    )
   );
 };
 

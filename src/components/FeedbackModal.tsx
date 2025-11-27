@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -52,96 +53,99 @@ const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
   };
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    createPortal(
+      <>
+        {/* Backdrop */}
         <div
-          className="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          className="fixed inset-0 bg-black/50 z-[100] backdrop-blur-sm"
+          onClick={onClose}
+        />
+
+        {/* Modal */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5" />
-          </button>
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-          {submitted ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+            {submitted ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
+                <p className="text-gray-600">Your feedback has been submitted successfully.</p>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
-              <p className="text-gray-600">Your feedback has been submitted successfully.</p>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Give Feedback</h2>
-              <p className="text-gray-600 mb-6">We'd love to hear your thoughts!</p>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Give Feedback</h2>
+                <p className="text-gray-600 mb-6">We'd love to hear your thoughts!</p>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="feedback" className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Feedback
-                  </label>
-                  <textarea
-                    id="feedback"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    required
-                    rows={5}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-offset-2 transition-all resize-none"
-                    style={{ focusRingColor: '#ff6b5a' }}
-                    placeholder="Tell us what you think..."
-                  />
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="feedback" className="block text-sm font-medium text-gray-700 mb-2">
+                      Your Feedback
+                    </label>
+                    <textarea
+                      id="feedback"
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      required
+                      rows={5}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-offset-2 transition-all resize-none"
+                      style={{ focusRingColor: '#ff6b5a' }}
+                      placeholder="Tell us what you think..."
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Email (optional)
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-offset-2 transition-all"
-                    style={{ focusRingColor: '#ff6b5a' }}
-                    placeholder="your@email.com"
-                  />
-                </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Your Email (optional)
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-offset-2 transition-all"
+                      style={{ focusRingColor: '#ff6b5a' }}
+                      placeholder="your@email.com"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !feedback.trim()}
-                  className="w-full py-3 px-4 rounded-lg text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: '#ff6b5a' }}
-                  onMouseEnter={(e) => {
-                    if (!isSubmitting && feedback.trim()) {
-                      e.currentTarget.style.backgroundColor = '#ff5544';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ff6b5a';
-                  }}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                </button>
-              </form>
-            </>
-          )}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !feedback.trim()}
+                    className="w-full py-3 px-4 rounded-lg text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: '#ff6b5a' }}
+                    onMouseEnter={(e) => {
+                      if (!isSubmitting && feedback.trim()) {
+                        e.currentTarget.style.backgroundColor = '#ff5544';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ff6b5a';
+                    }}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </>
+      </>,
+      document.body
+    )
   );
 };
 
