@@ -4,12 +4,15 @@ import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
+import { useScrollLock } from "../hooks/useScrollLock";
+
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
+  useScrollLock(isOpen);
   const { user } = useAuth();
   const [feedback, setFeedback] = useState("");
   const [email, setEmail] = useState("");

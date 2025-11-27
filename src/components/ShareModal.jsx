@@ -4,11 +4,15 @@ import { X, Download, Twitter, Facebook, Instagram, Link2, Check } from 'lucide-
 import { addWatermark } from '../lib/image-processor';
 import useAppStore from '../store/useAppStore';
 
+import { useScrollLock } from "../hooks/useScrollLock";
+
 const ShareModal = ({ imageToShare, outfitName }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [watermarkedImage, setWatermarkedImage] = useState(null);
   const [copied, setCopied] = useState(false);
   const { showShareModal, setShowShareModal } = useAppStore();
+
+  useScrollLock(showShareModal);
 
   const generateShareImage = async () => {
     if (watermarkedImage) return watermarkedImage;

@@ -2,6 +2,8 @@ import { X, Check, Camera, Smile } from "lucide-react";
 import { createPortal } from "react-dom";
 import photoReference from "@/assets/photo-reference.png";
 
+import { useScrollLock } from "../hooks/useScrollLock";
+
 interface PhotoGuidelinesModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,6 +11,7 @@ interface PhotoGuidelinesModalProps {
 }
 
 const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuidelinesModalProps) => {
+  useScrollLock(isOpen);
   if (!isOpen) return null;
 
   const guidelines = [

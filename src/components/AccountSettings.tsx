@@ -3,13 +3,17 @@ import { createPortal } from 'react-dom';
 import { X, CreditCard, AlertTriangle, Trash2, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
+import { useScrollLock } from "../hooks/useScrollLock";
+
 interface AccountSettingsProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
+  useScrollLock(isOpen);
   const { user, userData } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');

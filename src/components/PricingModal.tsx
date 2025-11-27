@@ -6,12 +6,15 @@ import { trackPlanSelected, trackCheckoutStarted } from "../services/analytics";
 import SignUpModal from "./SignUpModal";
 import { getStripe } from "../lib/stripe";
 
+import { useScrollLock } from "../hooks/useScrollLock";
+
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
+  useScrollLock(isOpen);
   const { user, userData } = useAuth();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);

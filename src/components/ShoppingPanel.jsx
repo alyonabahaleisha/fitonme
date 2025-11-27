@@ -3,7 +3,13 @@ import { createPortal } from 'react-dom';
 import { trackProductClicked } from '../services/analytics';
 import { useAuth } from '../contexts/AuthContext';
 
+import { useScrollLock } from "../hooks/useScrollLock";
+import { useState } from 'react';
+
 const ShoppingPanel = ({ isOpen, onClose, outfit }) => {
+  useScrollLock(isOpen);
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
   if (!isOpen) return null;
 
