@@ -32,7 +32,12 @@ export const AuthProvider = ({ children }) => {
       // If user doesn't exist in database, create them
       if (!data) {
         console.log('[AUTH] User not found in database, creating new user:', userId);
-        data = await createUser(userId, userEmail);
+        // Determine auth provider from user metadata
+        let provider = user?.app_metadata?.provider || 'magic_link';
+        // Map 'email' to 'magic_link' to match database constraint
+        if (provider === 'email') provider = 'magic_link';
+
+        data = await createUser(userId, userEmail, provider);
       }
 
       setUserData(data);

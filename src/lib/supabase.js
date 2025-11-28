@@ -205,7 +205,7 @@ export const onAuthStateChange = (callback) => {
 /**
  * Create user in database (called after auth signup)
  */
-export const createUser = async (userId, email) => {
+export const createUser = async (userId, email, authProvider = 'magic_link') => {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -213,7 +213,8 @@ export const createUser = async (userId, email) => {
         id: userId,
         email: email,
         plan_type: 'free',
-        credits_remaining: 2
+        credits_remaining: 2,
+        auth_provider: authProvider
       })
       .select()
       .single();
