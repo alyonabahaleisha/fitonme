@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+
 import HeroModelCanvas from "@/components/HeroModelCanvas";
 import PlayfulCarousel from "@/components/PlayfulCarousel";
 import UploadButton from "@/components/UploadButton";
