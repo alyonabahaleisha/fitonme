@@ -13,7 +13,7 @@ import useAppStore from "../store/useAppStore";
 const Navigation = () => {
   const navigate = useNavigate();
   const { user, userData, isAuthenticated } = useAuth();
-  const { hasNewClosetItem } = useAppStore();
+  const { closetCount } = useAppStore();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -106,8 +106,8 @@ const Navigation = () => {
               <button
                 onClick={() => navigate('/try-on')}
                 className={`flex items-center justify-center w-10 h-10 rounded-full border transition-all ${location.pathname === '/try-on'
-                    ? 'bg-brand/10 border-brand'
-                    : 'bg-white border-gray-200 hover:border-gray-300'
+                  ? 'bg-brand/10 border-brand'
+                  : 'bg-white border-gray-200 hover:border-gray-300'
                   }`}
                 title="Try On"
               >
@@ -117,8 +117,8 @@ const Navigation = () => {
               <button
                 onClick={() => navigate('/closet')}
                 className={`relative flex items-center justify-center w-10 h-10 rounded-full border transition-all ${location.pathname === '/closet'
-                    ? 'bg-brand/10 border-brand'
-                    : 'bg-white border-gray-200 hover:border-gray-300'
+                  ? 'bg-brand/10 border-brand'
+                  : 'bg-white border-gray-200 hover:border-gray-300'
                   }`}
                 title="My Closet"
               >

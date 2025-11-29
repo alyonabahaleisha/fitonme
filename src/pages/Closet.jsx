@@ -13,16 +13,11 @@ import Footer from "../components/Footer";
 const Closet = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { setHasNewClosetItem } = useAppStore();
+    const { setClosetCount, decrementClosetCount } = useAppStore();
     const [history, setHistory] = useState([]);
     const [outfitDetails, setOutfitDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
-
-    useEffect(() => {
-        // Clear new item badge when visiting closet
-        setHasNewClosetItem(false);
-    }, [setHasNewClosetItem]);
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -30,6 +25,7 @@ const Closet = () => {
             try {
                 const data = await getTryOnHistory(user.id, 50); // Fetch last 50 items
                 setHistory(data || []);
+                setClosetCount(data?.length || 0);
 
                 // Fetch details for all outfits in history
                 if (data && data.length > 0) {
@@ -61,7 +57,8 @@ const Closet = () => {
         try {
             await deleteTryOn(id);
             setHistory(prev => prev.filter(item => item.id !== id));
-            toast.success('Outfit removed from closet');
+            decrementClosetCount();
+            toast.success('Item deleted successfully');
         } catch (error) {
             console.error('Error deleting outfit:', error);
             toast.error('Failed to delete outfit');
