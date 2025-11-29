@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CreditCard, AlertTriangle, Trash2, Calendar, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
+import ConfirmationModal from './ConfirmationModal';
 
 import { useScrollLock } from "../hooks/useScrollLock";
 
@@ -16,6 +18,7 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showClearCacheModal, setShowClearCacheModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -64,14 +67,14 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
         throw new Error(data.error || 'Failed to cancel subscription');
       }
 
-      alert('Your subscription has been cancelled. You can continue to use it until the end of your billing period.');
+      toast.success('Your subscription has been cancelled. You can continue to use it until the end of your billing period.');
       setShowCancelModal(false);
       onClose();
       // Refresh page to update user data
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error cancelling subscription:', error);
-      alert(`Failed to cancel subscription: ${error.message}\nPlease try again or contact support.`);
+      toast.error(`Failed to cancel subscription: ${error.message || 'Please try again or contact support.'}`);
     } finally {
       setIsProcessing(false);
     }
@@ -99,7 +102,7 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
         throw new Error(data.error || 'Failed to delete account');
       }
 
-      alert('Your account has been deleted. You will be logged out.');
+      toast.success('Your account has been deleted. You will be logged out.');
 
       // Clear local storage and IndexedDB
       localStorage.clear();
@@ -114,12 +117,25 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
 
       // Sign out will be handled by the auth context
       window.location.href = '/';
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting account:', error);
-      alert(`Failed to delete account: ${error.message}\nPlease try again or contact support.`);
+      toast.error(`Failed to delete account: ${error.message || 'Please try again or contact support.'}`);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleClearCache = async () => {
+    localStorage.clear();
+    try {
+      const databases = await window.indexedDB.databases();
+      for (const db of databases) {
+        if (db.name) window.indexedDB.deleteDatabase(db.name);
+      }
+    } catch (e) {
+      console.error('Error clearing IndexedDB:', e);
+    }
+    window.location.reload();
   };
 
   return (
@@ -388,6 +404,16 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
             </div>
           </>
         )}
+        {/* Clear Cache Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showClearCacheModal}
+          onClose={() => setShowClearCacheModal(false)}
+          onConfirm={handleClearCache}
+          title="Clear Local Cache"
+          message="This will clear your local cache and reload the page. Are you sure you want to continue?"
+          confirmText="Clear Cache"
+          isDestructive={true}
+        />
       </>,
       document.body
     )

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import useAppStore from "../store/useAppStore";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const Closet = () => {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Closet = () => {
     const [outfitDetails, setOutfitDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -50,9 +52,7 @@ const Closet = () => {
         loadHistory();
     }, [user]);
 
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this outfit?')) return;
-
+    const confirmDelete = async (id) => {
         setDeletingId(id);
         try {
             await deleteTryOn(id);
@@ -64,7 +64,12 @@ const Closet = () => {
             toast.error('Failed to delete outfit');
         } finally {
             setDeletingId(null);
+            setItemToDelete(null);
         }
+    };
+
+    const handleDeleteClick = (id) => {
+        setItemToDelete(id);
     };
 
     const handleDownload = async (url, filename) => {
@@ -157,10 +162,10 @@ const Closet = () => {
                                                     <Download className="w-5 h-5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(item.id)}
+                                                    onClick={() => handleDeleteClick(item.id)}
                                                     disabled={deletingId === item.id}
-                                                    className="p-2 bg-white rounded-full text-gray-700 hover:text-red-600 hover:bg-white transition-colors shadow-lg disabled:opacity-50"
-                                                    title="Delete"
+                                                    className="p-2 bg-white rounded-full shadow-sm hover:bg-red-50 text-gray-600 hover:text-red-500 transition-colors disabled:opacity-50"
+                                                    title="Remove from closet"
                                                 >
                                                     {deletingId === item.id ? (
                                                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -212,6 +217,15 @@ const Closet = () => {
                         })}
                     </div>
                 )}
+                <ConfirmationModal
+                    isOpen={!!itemToDelete}
+                    onClose={() => setItemToDelete(null)}
+                    onConfirm={() => confirmDelete(itemToDelete)}
+                    title="Remove Item"
+                    message="Are you sure you want to remove this outfit from your closet?"
+                    confirmText="Remove"
+                    isDestructive={true}
+                />
             </div>
         </div>
     );
