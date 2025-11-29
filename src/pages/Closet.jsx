@@ -146,10 +146,8 @@ const Closet = () => {
                                 </div>
 
                                 <div className="p-4">
-                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                        {item.outfit_id || 'Custom Outfit'}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
+
+                                    <p className="text-xs text-gray-500">
                                         {new Date(item.created_at).toLocaleDateString(undefined, {
                                             year: 'numeric',
                                             month: 'short',
