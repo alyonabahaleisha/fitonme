@@ -192,6 +192,7 @@ const TryOn = () => {
       await trackTryOn(currentOutfit.id, result);
 
       // Increment closet count
+      console.log('[TryOn] Incrementing closet count...');
       incrementClosetCount();
     } else {
       console.error('Failed to apply outfit:', currentOutfit.name);

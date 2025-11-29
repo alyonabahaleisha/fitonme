@@ -71,8 +71,11 @@ const useAppStore = create(
       // Closet item count
       closetCount: 0,
       setClosetCount: (count) => set({ closetCount: count }),
-      incrementClosetCount: () => set((state) => ({ closetCount: state.closetCount + 1 })),
-      decrementClosetCount: () => set((state) => ({ closetCount: Math.max(0, state.closetCount - 1) })),
+      incrementClosetCount: () => set((state) => {
+        console.log('[STORE] Incrementing closet count. Current:', state.closetCount);
+        return { closetCount: (state.closetCount || 0) + 1 };
+      }),
+      decrementClosetCount: () => set((state) => ({ closetCount: Math.max(0, (state.closetCount || 0) - 1) })),
 
       // Reset state (for sign out)
       resetState: () => set({

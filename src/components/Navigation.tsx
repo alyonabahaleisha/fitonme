@@ -14,6 +14,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { user, userData, isAuthenticated } = useAuth();
   const { closetCount, setClosetCount } = useAppStore();
+  console.log('[Navigation] Rendered. Closet count:', closetCount);
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
