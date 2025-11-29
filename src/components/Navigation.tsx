@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, User, LogOut, ShoppingBag, Menu, X } from "lucide-react";
+import { Heart, User, LogOut, ShoppingBag, Menu, X, Sparkles } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
 import SignUpModal from "./SignUpModal";
@@ -100,6 +100,14 @@ const Navigation = () => {
           {isAuthenticated ? (
             <div className="relative flex items-center gap-2">
               {/* Subscription Badge */}
+
+              <button
+                onClick={() => navigate('/try-on')}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-all"
+                title="Try On"
+              >
+                <Sparkles className="w-5 h-5" style={{ color: '#ff6b5a' }} />
+              </button>
 
               <button
                 onClick={() => navigate('/closet')}
