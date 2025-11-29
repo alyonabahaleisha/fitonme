@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getTryOnHistory, deleteTryOn, supabase } from '../lib/supabase';
+import { getTryOnHistory, deleteTryOn, supabase, getClosetCount } from '../lib/supabase';
 import { getOutfitsByIds } from '../services/outfitService';
 import { Download, Trash2, Loader2, ShoppingBag, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,9 +25,13 @@ const Closet = () => {
         const loadHistory = async () => {
             if (!user) return;
             try {
-                const data = await getTryOnHistory(user.id, 50); // Fetch last 50 items
+                const [data, count] = await Promise.all([
+                    getTryOnHistory(user.id, 50),
+                    getClosetCount(user.id)
+                ]);
+
                 setHistory(data || []);
-                setClosetCount(data?.length || 0);
+                setClosetCount(count || data?.length || 0);
 
                 // Fetch details for all outfits in history
                 if (data && data.length > 0) {

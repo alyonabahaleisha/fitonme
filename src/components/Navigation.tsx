@@ -6,14 +6,14 @@ import PricingModal from "./PricingModal";
 import SignUpModal from "./SignUpModal";
 import AccountSettings from "./AccountSettings";
 import { useAuth } from "../contexts/AuthContext";
-import { signOut } from "../lib/supabase";
+import { signOut, getClosetCount } from "../lib/supabase";
 import { trackPricingModalOpened, trackFeedbackModalOpened, trackLogout } from "../services/analytics";
 import useAppStore from "../store/useAppStore";
 
 const Navigation = () => {
   const navigate = useNavigate();
   const { user, userData, isAuthenticated } = useAuth();
-  const { closetCount } = useAppStore();
+  const { closetCount, setClosetCount } = useAppStore();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -30,6 +30,17 @@ const Navigation = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Fetch closet count on mount/auth change
+  useEffect(() => {
+    if (user) {
+      getClosetCount(user.id).then(count => {
+        if (count !== null) setClosetCount(count);
+      });
+    } else {
+      setClosetCount(0);
+    }
+  }, [user, setClosetCount]);
 
   // Close mobile menu when route changes
   useEffect(() => {

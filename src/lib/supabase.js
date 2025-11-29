@@ -367,6 +367,24 @@ export const getTryOnHistory = async (userId, limit = 20) => {
 };
 
 /**
+ * Get total count of items in closet
+ */
+export const getClosetCount = async (userId) => {
+  try {
+    const { count, error } = await supabase
+      .from('try_on_history')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return count;
+  } catch (error) {
+    console.error('Error getting closet count:', error);
+    return 0;
+  }
+};
+
+/**
  * Delete a try-on record
  */
 export const deleteTryOn = async (tryOnId) => {
