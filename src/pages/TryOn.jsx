@@ -8,7 +8,36 @@ import ShareModal from '../components/ShareModal';
 import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
 import ShoppingPanel from '../components/ShoppingPanel';
 import SignUpModal from '../components/SignUpModal';
-import PricingModal from '../components/PricingModal';
+import PaymentSuccessModal from '../components/PaymentSuccessModal';
+
+// ... inside component ...
+const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
+const { user, userData, isAuthenticated, refreshUserData } = useAuth();
+
+// ... inside useEffect ...
+useEffect(() => {
+  const sessionId = searchParams.get('session_id');
+  if (sessionId) {
+    console.log('[PAYMENT] Payment successful! Session ID:', sessionId);
+
+    // Refresh user data to get updated subscription status
+    refreshUserData();
+
+    // Show success modal
+    setShowPaymentSuccessModal(true);
+
+    // Remove session_id from URL
+    searchParams.delete('session_id');
+    setSearchParams(searchParams, { replace: true });
+  }
+}, [searchParams, setSearchParams, refreshUserData]);
+
+// ... inside render ...
+<PaymentSuccessModal
+  isOpen={showPaymentSuccessModal}
+  onClose={() => setShowPaymentSuccessModal(false)}
+  planName={userData?.plan_type === 'weekly' ? 'Weekly' : userData?.plan_type === 'monthly' ? 'Monthly' : userData?.plan_type === 'annual' ? 'Annual' : 'Premium'}
+/>
 import ProductRow from '../components/ProductRow';
 import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
