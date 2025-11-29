@@ -123,8 +123,10 @@ const Navigation = () => {
                 title="My Closet"
               >
                 <ShoppingBag className="w-5 h-5" style={{ color: '#ff6b5a' }} />
-                {hasNewClosetItem && (
-                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                {closetCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-white text-[10px] font-bold text-white">
+                    {closetCount}
+                  </span>
                 )}
               </button>
 
@@ -198,6 +200,24 @@ const Navigation = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-100 shadow-lg animate-in slide-in-from-top-5 duration-200">
           <div className="flex flex-col p-4 gap-2">
+            <button
+              onClick={() => {
+                navigate('/try-on');
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
+            >
+              Try On
+            </button>
+            <button
+              onClick={() => {
+                navigate('/closet');
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
+            >
+              My Closet
+            </button>
             <button
               onClick={() => {
                 trackPricingModalOpened('navigation', user?.id);
