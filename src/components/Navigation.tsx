@@ -122,12 +122,9 @@ const Navigation = () => {
 
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-all"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-all"
               >
-                <User className="w-4 h-4" style={{ color: '#ff6b5a' }} />
-                <span className="text-sm font-medium text-gray-700 hidden md:inline">
-                  {user?.email?.split('@')[0] || 'Account'}
-                </span>
+                <User className="w-5 h-5" style={{ color: '#ff6b5a' }} />
               </button>
 
               {showUserMenu && (
