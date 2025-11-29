@@ -61,7 +61,7 @@ const Closet = () => {
             toast.success('Item deleted successfully');
         } catch (error) {
             console.error('Error deleting outfit:', error);
-            toast.error('Failed to delete outfit');
+            toast.error(error.message || 'Failed to delete outfit');
         } finally {
             setDeletingId(null);
             setItemToDelete(null);

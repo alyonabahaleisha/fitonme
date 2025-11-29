@@ -371,12 +371,17 @@ export const getTryOnHistory = async (userId, limit = 20) => {
  */
 export const deleteTryOn = async (tryOnId) => {
   try {
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from('try_on_history')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('id', tryOnId);
 
     if (error) throw error;
+
+    if (count === 0) {
+      throw new Error('Item not found or permission denied');
+    }
+
     return true;
   } catch (error) {
     console.error('Error deleting try-on:', error);
