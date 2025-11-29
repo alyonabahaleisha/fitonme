@@ -21,7 +21,7 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
     },
     {
       title: "Front-facing & straight",
-      description: "Stand straight, facing camera"
+      description: "Stand straight, facing the camera"
     },
     {
       title: "Wearing fitted clothes",
@@ -29,10 +29,10 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
     },
     {
       title: "Good lighting",
-      description: "Clear, well-lit photo works best"
+      description: "A clear, well-lit photo works best"
     },
     {
-      title: "Add smile",
+      title: "Add a smile",
       description: "A smile makes for better results"
     }
   ];
@@ -79,7 +79,7 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                   {/* Smile badge */}
                   <div className="absolute -top-1.5 -left-1.5 md:-top-3 md:-left-3 bg-yellow-400 text-gray-900 rounded-full px-2 py-1 md:px-3 md:py-1.5 shadow-lg flex items-center gap-1">
                     <Smile size={12} className="md:w-4 md:h-4" />
-                    <span className="text-xs md:text-sm font-medium">Add smile</span>
+                    <span className="text-xs md:text-sm font-medium">Add a smile</span>
                   </div>
                 </div>
               </div>

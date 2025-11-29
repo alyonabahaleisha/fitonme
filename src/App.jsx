@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Index from './pages/Index';
 import TryOn from './pages/TryOn';
 import Closet from './pages/Closet';
+import Legal from './pages/Legal';
 import AuthCallback from './pages/AuthCallback';
 import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
@@ -55,6 +56,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
           <Route path="/closet" element={<Closet />} />
+          <Route path="/legal/:slug" element={<Legal />} />
         </Route>
         <Route path="/try-on" element={<TryOn />} />
         <Route path="/auth/callback" element={<AuthCallback />} />

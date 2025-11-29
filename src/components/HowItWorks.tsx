@@ -15,7 +15,7 @@ const HowItWorks = () => {
     {
       icon: ShoppingBag,
       title: "Buy What Works",
-      description: "Shop with confidence knowing exactly how it'll look.",
+      description: "Shop with confidence knowing how it'll look.",
     },
   ];
 
