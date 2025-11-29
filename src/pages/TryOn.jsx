@@ -244,7 +244,7 @@ const TryOn = () => {
 
     if (isDevelopment) {
       console.log('🔧 DEV MODE: Skipping try-on tracking');
-      return true;
+      return;
     }
 
     if (isAuthenticated && user) {
@@ -252,15 +252,12 @@ const TryOn = () => {
       try {
         await decrementUserCredits(user.id);
         await recordTryOn(user.id, outfitId, userPhoto, resultUrl);
-        return true;
       } catch (error) {
         console.error('Error tracking try-on:', error);
-        return false;
       }
     } else {
       // Guest user - increment local counter
       incrementGuestTryOns();
-      return true;
     }
   };
 
