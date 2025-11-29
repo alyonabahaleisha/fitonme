@@ -99,26 +99,7 @@ const Navigation = () => {
           {isAuthenticated ? (
             <div className="relative flex items-center gap-2">
               {/* Subscription Badge */}
-              {userData?.plan_type && (
-                <div
-                  className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${userData.plan_type === 'free'
-                    ? 'bg-gray-100 text-gray-700 border border-gray-300'
-                    : userData.plan_type === 'weekly'
-                      ? 'bg-green-100 text-green-700 border border-green-300'
-                      : userData.plan_type === 'monthly'
-                        ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                        : 'bg-purple-100 text-purple-700 border border-purple-300'
-                    }`}
-                >
-                  {userData.plan_type === 'free'
-                    ? 'Free Preview'
-                    : userData.plan_type === 'weekly'
-                      ? 'Weekly'
-                      : userData.plan_type === 'monthly'
-                        ? 'Monthly'
-                        : 'Annual'}
-                </div>
-              )}
+
 
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
