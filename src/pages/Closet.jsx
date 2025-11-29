@@ -178,30 +178,26 @@ const Closet = () => {
                                     {outfit && outfit.products && outfit.products.length > 0 && (
                                         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                                             <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Shop the Look</h4>
-                                            <div className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-2">
                                                 {outfit.products.map((product, idx) => (
                                                     <a
                                                         key={idx}
                                                         href={product.link}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex items-center gap-3 group/product hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                                                        className="flex flex-col gap-2 group/product hover:bg-gray-50 p-2 rounded-lg transition-colors border border-transparent hover:border-gray-100"
                                                     >
-                                                        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                                                        <div className="w-full aspect-square rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                                                             <img
                                                                 src={product.imageUrl}
                                                                 alt={product.name}
                                                                 className="w-full h-full object-cover"
                                                             />
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium text-gray-900 truncate group-hover/product:text-brand transition-colors">
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-medium text-gray-900 truncate group-hover/product:text-brand transition-colors">
                                                                 {product.name}
                                                             </p>
-                                                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                                                                <span>View Item</span>
-                                                                <ExternalLink className="w-3 h-3" />
-                                                            </div>
                                                         </div>
                                                     </a>
                                                 ))}
