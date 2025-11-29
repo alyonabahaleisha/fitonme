@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getTryOnHistory, deleteTryOn } from '../lib/supabase';
-import { Download, Trash2, Loader2, ShoppingBag } from 'lucide-react';
+import { getOutfitsByIds } from '../services/outfitService';
+import { Download, Trash2, Loader2, ShoppingBag, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const Closet = () => {
     const { user } = useAuth();
     const [history, setHistory] = useState([]);
+    const [outfitDetails, setOutfitDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
 
@@ -17,6 +19,19 @@ const Closet = () => {
             try {
                 const data = await getTryOnHistory(user.id, 50); // Fetch last 50 items
                 setHistory(data || []);
+
+                // Fetch details for all outfits in history
+                if (data && data.length > 0) {
+                    const outfitIds = [...new Set(data.map(item => item.outfit_id))];
+                    const details = await getOutfitsByIds(outfitIds);
+
+                    // Create a map for easy lookup
+                    const detailsMap = {};
+                    details.forEach(outfit => {
+                        detailsMap[outfit.id] = outfit;
+                    });
+                    setOutfitDetails(detailsMap);
+                }
             } catch (error) {
                 console.error('Error loading closet:', error);
                 toast.error('Failed to load your closet');
@@ -106,57 +121,96 @@ const Closet = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {history.map((item) => (
-                            <div key={item.id} className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                                <div className="aspect-[3/4] overflow-hidden bg-gray-100 relative">
-                                    {item.result_url ? (
-                                        <img
-                                            src={item.result_url}
-                                            alt="Virtual Try-On Result"
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                            No Image
+                        {history.map((item) => {
+                            const outfit = outfitDetails[item.outfit_id];
+                            return (
+                                <div key={item.id} className="flex flex-col gap-4">
+                                    <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                                        <div className="aspect-[3/4] overflow-hidden bg-gray-100 relative">
+                                            {item.result_url ? (
+                                                <img
+                                                    src={item.result_url}
+                                                    alt="Virtual Try-On Result"
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                    No Image
+                                                </div>
+                                            )}
+
+                                            {/* Overlay Actions */}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-end justify-between p-4 opacity-0 group-hover:opacity-100">
+                                                <button
+                                                    onClick={() => handleDownload(item.result_url, `fitonme-${item.outfit_id}-${new Date(item.created_at).toISOString().split('T')[0]}.png`)}
+                                                    className="p-2 bg-white rounded-full text-gray-700 hover:text-brand hover:bg-white transition-colors shadow-lg"
+                                                    title="Download"
+                                                >
+                                                    <Download className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(item.id)}
+                                                    disabled={deletingId === item.id}
+                                                    className="p-2 bg-white rounded-full text-gray-700 hover:text-red-600 hover:bg-white transition-colors shadow-lg disabled:opacity-50"
+                                                    title="Delete"
+                                                >
+                                                    {deletingId === item.id ? (
+                                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="w-5 h-5" />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-4 border-t border-gray-50">
+                                            <p className="text-xs text-gray-500">
+                                                {new Date(item.created_at).toLocaleDateString(undefined, {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Shop the Look Section */}
+                                    {outfit && outfit.products && outfit.products.length > 0 && (
+                                        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Shop the Look</h4>
+                                            <div className="space-y-3">
+                                                {outfit.products.map((product, idx) => (
+                                                    <a
+                                                        key={idx}
+                                                        href={product.link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-3 group/product hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                                                    >
+                                                        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                                                            <img
+                                                                src={product.imageUrl}
+                                                                alt={product.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium text-gray-900 truncate group-hover/product:text-brand transition-colors">
+                                                                {product.name}
+                                                            </p>
+                                                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                                                                <span>View Item</span>
+                                                                <ExternalLink className="w-3 h-3" />
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
-
-                                    {/* Overlay Actions */}
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-end justify-between p-4 opacity-0 group-hover:opacity-100">
-                                        <button
-                                            onClick={() => handleDownload(item.result_url, `fitonme-${item.outfit_id}-${new Date(item.created_at).toISOString().split('T')[0]}.png`)}
-                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-brand hover:bg-white transition-colors shadow-lg"
-                                            title="Download"
-                                        >
-                                            <Download className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            disabled={deletingId === item.id}
-                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-red-600 hover:bg-white transition-colors shadow-lg disabled:opacity-50"
-                                            title="Delete"
-                                        >
-                                            {deletingId === item.id ? (
-                                                <Loader2 className="w-5 h-5 animate-spin" />
-                                            ) : (
-                                                <Trash2 className="w-5 h-5" />
-                                            )}
-                                        </button>
-                                    </div>
                                 </div>
-
-                                <div className="p-4">
-
-                                    <p className="text-xs text-gray-500">
-                                        {new Date(item.created_at).toLocaleDateString(undefined, {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric'
-                                        })}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

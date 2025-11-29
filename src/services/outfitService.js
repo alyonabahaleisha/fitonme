@@ -86,3 +86,46 @@ export const getOutfitById = async (id) => {
     throw error;
   }
 };
+
+// Get multiple outfits by IDs (for Closet view)
+export const getOutfitsByIds = async (ids) => {
+  if (!ids || ids.length === 0) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('outfits')
+      .select(`
+        *,
+        products (
+          product_name,
+          product_link,
+          processed_image_url,
+          category
+        )
+      `)
+      .in('id', ids)
+      .eq('is_published', true);
+
+    if (error) throw error;
+
+    return data.map(outfit => ({
+      id: outfit.id,
+      name: outfit.name,
+      description: outfit.description,
+      imageUrl: outfit.combined_image_url,
+      thumbnailUrl: outfit.combined_image_url,
+      createdAt: outfit.created_at,
+      gender: outfit.gender || 'woman',
+      category: outfit.category || 'Casual',
+      products: outfit.products?.map(p => ({
+        name: p.product_name,
+        link: p.product_link,
+        imageUrl: p.processed_image_url,
+        category: p.category,
+      })) || [],
+    }));
+  } catch (error) {
+    console.error('Error fetching outfits by IDs:', error);
+    throw error;
+  }
+};
