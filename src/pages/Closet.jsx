@@ -176,28 +176,23 @@ const Closet = () => {
 
                                     {/* Shop the Look Section */}
                                     {outfit && outfit.products && outfit.products.length > 0 && (
-                                        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-                                            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Shop the Look</h4>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                                            <h4 className="font-serif text-lg text-gray-900 mb-4 tracking-wide">SHOP THE LOOK</h4>
+                                            <div className="grid grid-cols-2 gap-4">
                                                 {outfit.products.map((product, idx) => (
                                                     <a
                                                         key={idx}
                                                         href={product.link}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="flex flex-col gap-2 group/product hover:bg-gray-50 p-2 rounded-lg transition-colors border border-transparent hover:border-gray-100"
+                                                        className="group/product block"
                                                     >
-                                                        <div className="w-full aspect-square rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                                                        <div className="w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 transition-all duration-300 group-hover/product:shadow-md group-hover/product:border-gray-200">
                                                             <img
                                                                 src={product.imageUrl}
                                                                 alt={product.name}
-                                                                className="w-full h-full object-cover"
+                                                                className="w-full h-full object-cover transition-transform duration-500 group-hover/product:scale-110"
                                                             />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-xs font-medium text-gray-900 truncate group-hover/product:text-brand transition-colors">
-                                                                {product.name}
-                                                            </p>
                                                         </div>
                                                     </a>
                                                 ))}
