@@ -629,6 +629,75 @@ app.post('/api/delete-account', async (req, res) => {
   }
 });
 
+// Delete try-on endpoint
+app.post('/api/delete-try-on', async (req, res) => {
+  try {
+    const { userId, tryOnId } = req.body;
+
+    if (!userId || !tryOnId) {
+      return res.status(400).json({ error: 'userId and tryOnId are required' });
+    }
+
+    logger.info(`[DELETE_TRYON] Request to delete try-on ${tryOnId} for user ${userId}`);
+
+    // Check if item exists and belongs to user
+    const { data: item, error: fetchError } = await supabase
+      .from('try_on_history')
+      .select('id, user_id, result_url')
+      .eq('id', tryOnId)
+      .single();
+
+    if (fetchError || !item) {
+      logger.warn(`[DELETE_TRYON] Item ${tryOnId} not found`);
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    if (item.user_id !== userId) {
+      logger.warn(`[DELETE_TRYON] Unauthorized deletion attempt. User ${userId} tried to delete item ${tryOnId} belonging to ${item.user_id}`);
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Delete from storage if result_url exists
+    if (item.result_url) {
+      try {
+        // Extract filename from URL
+        const urlParts = item.result_url.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+
+        const { error: storageError } = await supabase.storage
+          .from('outfit-images')
+          .remove([fileName]);
+
+        if (storageError) {
+          logger.warn(`[DELETE_TRYON] Failed to delete image from storage: ${storageError.message}`);
+        } else {
+          logger.info(`[DELETE_TRYON] Deleted image ${fileName} from storage`);
+        }
+      } catch (e) {
+        logger.error(`[DELETE_TRYON] Error deleting image from storage: ${e.message}`);
+      }
+    }
+
+    // Delete from database
+    const { error: deleteError } = await supabase
+      .from('try_on_history')
+      .delete()
+      .eq('id', tryOnId);
+
+    if (deleteError) {
+      logger.error(`[DELETE_TRYON] Database deletion error: ${deleteError.message}`);
+      throw deleteError;
+    }
+
+    logger.info(`[DELETE_TRYON] Successfully deleted try-on ${tryOnId}`);
+    res.json({ success: true });
+
+  } catch (error) {
+    logger.error('[DELETE_TRYON] Error:', error);
+    res.status(500).json({ error: 'Failed to delete item', details: error.message });
+  }
+});
+
 // TEMPORARY: Admin endpoint to manually update user subscription
 // Remove this after webhooks are working properly
 app.post('/api/admin/update-subscription', express.json(), async (req, res) => {

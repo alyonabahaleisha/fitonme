@@ -55,7 +55,23 @@ const Closet = () => {
     const confirmDelete = async (id) => {
         setDeletingId(id);
         try {
-            await deleteTryOn(id);
+            // Use backend API to delete (bypasses RLS and handles storage cleanup)
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/delete-try-on`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    tryOnId: id
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to delete item');
+            }
+
             setHistory(prev => prev.filter(item => item.id !== id));
             decrementClosetCount();
             toast.success('Item deleted successfully');
