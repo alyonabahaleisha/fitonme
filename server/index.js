@@ -37,7 +37,19 @@ if (process.env.SENTRY_DSN) {
 }
 
 // Middleware
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://fitonme.vercel.app',
+    'https://fitonme.ai',
+    'https://www.fitonme.ai'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 // Apply global rate limiter to all requests
 app.use(apiLimiter);
 
@@ -382,6 +394,7 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     const personImageMime = req.files.personImage[0].mimetype;
     const clothingImageMime = req.files.clothingImage[0].mimetype;
     const description = req.body.description || '';
+    const outfitName = req.body.outfitName || 'Outfit';
 
     // Log authentication status
     if (req.user) {
@@ -448,7 +461,7 @@ CRITICAL INSTRUCTIONS:
 
     // Send email notification (async, don't wait)
     if (req.user && req.user.email) {
-      sendOutfitReadyEmail(req.user.email, currentOutfit?.name || 'Outfit', generatedImage.data)
+      sendOutfitReadyEmail(req.user.email, outfitName, generatedImage.data)
         .catch(err => logger.error('Failed to send email:', err));
     }
 
