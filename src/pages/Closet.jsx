@@ -109,10 +109,11 @@ const Closet = () => {
                     </div>
                     <Link
                         to="/try-on"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-full hover:bg-brand/90 transition-colors font-medium"
+                        className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-brand text-white rounded-full hover:bg-brand/90 transition-colors font-medium whitespace-nowrap"
                     >
                         <ShoppingBag className="w-4 h-4" />
-                        New Try-On
+                        <span className="hidden sm:inline">New Try-On</span>
+                        <span className="sm:hidden">Try On</span>
                     </Link>
                 </div>
 
