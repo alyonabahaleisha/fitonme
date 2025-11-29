@@ -185,13 +185,13 @@ const Closet = () => {
                                                         href={product.link}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="group/product block"
+                                                        className="group/product block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300"
                                                     >
-                                                        <div className="w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 transition-all duration-300 group-hover/product:shadow-md group-hover/product:border-gray-200">
+                                                        <div className="w-full aspect-square bg-gray-100">
                                                             <img
                                                                 src={product.imageUrl}
                                                                 alt={product.name}
-                                                                className="w-full h-full object-cover transition-transform duration-500 group-hover/product:scale-110"
+                                                                className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover/product:scale-110"
                                                             />
                                                         </div>
                                                     </a>
