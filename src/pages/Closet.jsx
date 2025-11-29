@@ -1,17 +1,28 @@
+
 import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getTryOnHistory, deleteTryOn } from '../lib/supabase';
+import { getTryOnHistory, deleteTryOn, supabase } from '../lib/supabase';
 import { getOutfitsByIds } from '../services/outfitService';
 import { Download, Trash2, Loader2, ShoppingBag, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import useAppStore from "../store/useAppStore";
+import Navigation from "../components/Navigation";
+import Footer from "../components/Footer";
 
 const Closet = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
+    const { setHasNewClosetItem } = useAppStore();
     const [history, setHistory] = useState([]);
     const [outfitDetails, setOutfitDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+
+    useEffect(() => {
+        // Clear new item badge when visiting closet
+        setHasNewClosetItem(false);
+    }, [setHasNewClosetItem]);
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -142,7 +153,7 @@ const Closet = () => {
                                             {/* Overlay Actions */}
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-end justify-between p-4 opacity-0 group-hover:opacity-100">
                                                 <button
-                                                    onClick={() => handleDownload(item.result_url, `fitonme-${item.outfit_id}-${new Date(item.created_at).toISOString().split('T')[0]}.png`)}
+                                                    onClick={() => handleDownload(item.result_url, `fitonme - ${item.outfit_id} -${new Date(item.created_at).toISOString().split('T')[0]}.png`)}
                                                     className="p-2 bg-white rounded-full text-gray-700 hover:text-brand hover:bg-white transition-colors shadow-lg"
                                                     title="Download"
                                                 >

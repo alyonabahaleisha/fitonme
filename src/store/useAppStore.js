@@ -68,6 +68,10 @@ const useAppStore = create(
       showSignUpModal: false,
       setShowSignUpModal: (show) => set({ showSignUpModal: show }),
 
+      // New closet item badge
+      hasNewClosetItem: false,
+      setHasNewClosetItem: (hasNew) => set({ hasNewClosetItem: hasNew }),
+
       // Reset state (for sign out)
       resetState: () => set({
         userPhoto: null,
@@ -77,6 +81,7 @@ const useAppStore = create(
         guestTryOns: 0,
         showShareModal: false,
         showSignUpModal: false,
+        hasNewClosetItem: false,
       }),
     }),
     {
@@ -88,6 +93,7 @@ const useAppStore = create(
         guestTryOns: state.guestTryOns,
         currentOutfit: state.currentOutfit,
         processedImages: state.processedImages,
+        hasNewClosetItem: state.hasNewClosetItem,
       }),
       onRehydrateStorage: () => (_state, error) => {
         if (error) {

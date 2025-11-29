@@ -42,6 +42,7 @@ const TryOn = () => {
     showSignUpModal,
     setShowSignUpModal,
     getProcessedImage,
+    setHasNewClosetItem,
   } = useAppStore();
   const { user, userData, isAuthenticated } = useAuth();
   const [displayImage, setDisplayImage] = useState(null);
@@ -160,6 +161,9 @@ const TryOn = () => {
 
       // Track the try-on in database
       await trackTryOn(currentOutfit.id, result);
+
+      // Set new closet item badge
+      setHasNewClosetItem(true);
     } else {
       console.error('Failed to apply outfit:', currentOutfit.name);
 

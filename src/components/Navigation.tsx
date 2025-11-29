@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Heart, User, LogOut, ShoppingBag, Menu, X, Sparkles } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
@@ -13,6 +13,8 @@ import useAppStore from "../store/useAppStore";
 const Navigation = () => {
   const navigate = useNavigate();
   const { user, userData, isAuthenticated } = useAuth();
+  const { hasNewClosetItem } = useAppStore();
+  const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
@@ -103,7 +105,10 @@ const Navigation = () => {
 
               <button
                 onClick={() => navigate('/try-on')}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-all"
+                className={`flex items-center justify-center w-10 h-10 rounded-full border transition-all ${location.pathname === '/try-on'
+                    ? 'bg-brand/10 border-brand'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}
                 title="Try On"
               >
                 <Sparkles className="w-5 h-5" style={{ color: '#ff6b5a' }} />
@@ -111,10 +116,16 @@ const Navigation = () => {
 
               <button
                 onClick={() => navigate('/closet')}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-all"
+                className={`relative flex items-center justify-center w-10 h-10 rounded-full border transition-all ${location.pathname === '/closet'
+                    ? 'bg-brand/10 border-brand'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}
                 title="My Closet"
               >
                 <ShoppingBag className="w-5 h-5" style={{ color: '#ff6b5a' }} />
+                {hasNewClosetItem && (
+                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                )}
               </button>
 
               <button
