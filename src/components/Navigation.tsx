@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, User, LogOut } from "lucide-react";
+import { Heart, User, LogOut, ShoppingBag } from "lucide-react";
 import FeedbackModal from "./FeedbackModal";
 import PricingModal from "./PricingModal";
 import SignUpModal from "./SignUpModal";
@@ -67,14 +67,6 @@ const Navigation = () => {
         </button>
 
         <div className="flex items-center gap-4 md:gap-6">
-          {isAuthenticated && (
-            <button
-              onClick={() => navigate('/closet')}
-              className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full text-gray-700 hover:bg-gray-100"
-            >
-              My Closet
-            </button>
-          )}
           <button
             onClick={() => {
               trackPricingModalOpened('navigation', user?.id);
@@ -100,6 +92,13 @@ const Navigation = () => {
             <div className="relative flex items-center gap-2">
               {/* Subscription Badge */}
 
+              <button
+                onClick={() => navigate('/closet')}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 hover:border-gray-300 transition-all"
+                title="My Closet"
+              >
+                <ShoppingBag className="w-5 h-5" style={{ color: '#ff6b5a' }} />
+              </button>
 
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
