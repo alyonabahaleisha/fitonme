@@ -4,6 +4,7 @@ import Index from './pages/Index';
 import TryOn from './pages/TryOn';
 import Closet from './pages/Closet';
 import Legal from './pages/Legal';
+import PaymentSuccess from './pages/PaymentSuccess';
 import AuthCallback from './pages/AuthCallback';
 import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
@@ -59,6 +60,7 @@ function App() {
           <Route path="/legal/:slug" element={<Legal />} />
         </Route>
         <Route path="/try-on" element={<TryOn />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
     </Router>
