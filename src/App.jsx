@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
 import TryOn from './pages/TryOn';
 import Closet from './pages/Closet';
@@ -54,14 +54,15 @@ function App() {
     <Router>
       <PageViewTracker />
       <Routes>
+        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Index />} />
           <Route path="/closet" element={<Closet />} />
           <Route path="/legal/:slug" element={<Legal />} />
         </Route>
         <Route path="/try-on" element={<TryOn />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

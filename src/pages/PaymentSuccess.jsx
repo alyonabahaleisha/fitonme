@@ -13,6 +13,7 @@ const PaymentSuccess = () => {
 
     useEffect(() => {
         const sessionId = searchParams.get('session_id');
+
         if (sessionId) {
             // Refresh user data to ensure subscription status is up to date
             refreshUserData();
