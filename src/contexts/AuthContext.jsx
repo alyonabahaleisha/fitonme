@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshUserData = async (userId, userEmail, userObject = null) => {
+  const refreshUserData = useCallback(async (userId, userEmail, userObject = null) => {
     if (!userId) return;
 
     try {
@@ -58,10 +58,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    // Check active session on mount
     // Check active session on mount
     const initAuth = async () => {
       try {
@@ -102,15 +101,15 @@ export const AuthProvider = ({ children }) => {
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [refreshUserData]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     userData,
     loading,
     isAuthenticated: !!user,
     refreshUserData: () => refreshUserData(user?.id, user?.email),
-  };
+  }), [user, userData, loading, refreshUserData]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
