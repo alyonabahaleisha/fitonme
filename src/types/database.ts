@@ -1,7 +1,7 @@
 // Database types for Supabase
 
 export type AuthProvider = 'google' | 'magic_link';
-export type PlanType = 'free' | 'weekly' | 'monthly' | 'annual';
+export type PlanType = 'free' | 'weekly' | 'monthly' | 'annual' | 'day_pass';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trialing' | 'past_due';
 export type PaymentProvider = 'stripe' | 'appstore' | 'googleplay';
 

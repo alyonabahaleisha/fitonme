@@ -192,8 +192,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             status: 'active',
             start_date: startDate,
             end_date: endDate,
-            stripe_customer_id: session.customer,
-            stripe_price_id: 'price_day_pass', // Placeholder or from session
+            stripe_customer_id: session.customer || null,
+            stripe_price_id: 'price_1SZHYFB6P0idJ9t7eIG4oIUM',
           };
 
           logger.info('[WEBHOOK] Saving 1-Day Pass to database:', subscriptionData);
