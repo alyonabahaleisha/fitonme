@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user,
     refreshUserData: boundRefreshUserData,
-  }), [user, userData, loading, isAuthenticated, boundRefreshUserData]);
+  }), [user, userData, loading, boundRefreshUserData]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
