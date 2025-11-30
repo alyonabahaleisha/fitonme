@@ -55,7 +55,6 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       features: [
         "Unlimited AI try-ons for 24 hours",
         "Access to the full outfit catalog",
-        "Lightning-fast processing",
         "No commitment — pay only when you need it",
       ],
       cta: "Get 1-Day Pass",
@@ -72,7 +71,6 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       features: [
         "Unlimited AI try-ons for 7 days",
         "Full access to all collections",
-        "Priority generation speed",
         "New outfits available instantly",
       ],
       cta: "Get 7-Day Pass",
@@ -89,10 +87,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       features: [
         "Unlimited try-ons all month",
         "50+ new outfits added monthly",
-        "Access to all categories & trends",
-        "Save and favorite looks",
-        "Style discovery features",
-        "Fastest generation speed",
+        "Access to all categories & trends"
       ],
       cta: "Get Monthly",
       popular: true,
@@ -107,10 +102,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       description: "Save big, unlock everything, and get the fastest access.",
       features: [
         "Unlimited try-ons all year",
-        "50+ new outfits added monthly",
-        "Priority access to new outfit drops",
-        "Early access to new features",
-        "VIP support",
+        "50+ new outfits added monthly(600+ per year)",
         "Save 17% compared to monthly",
       ],
       cta: "Get Annual",
