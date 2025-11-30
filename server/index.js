@@ -65,8 +65,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-// Apply global rate limiter to all requests
-app.use(apiLimiter);
+// Apply global rate limiter to all requests EXCEPT health checks
+app.use((req, res, next) => {
+  // Skip rate limiting for health check endpoints (used by Render)
+  if (req.path === '/' || req.path === '/api/health') {
+    return next();
+  }
+  return apiLimiter(req, res, next);
+});
 
 // IMPORTANT: Stripe webhook MUST come before express.json() middleware
 // because it needs the raw body to verify the signature
