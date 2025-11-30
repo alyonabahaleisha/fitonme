@@ -103,13 +103,17 @@ export const AuthProvider = ({ children }) => {
     };
   }, [refreshUserData]);
 
+  const boundRefreshUserData = useCallback(() => {
+    return refreshUserData(user?.id, user?.email);
+  }, [refreshUserData, user?.id, user?.email]);
+
   const value = useMemo(() => ({
     user,
     userData,
     loading,
     isAuthenticated: !!user,
-    refreshUserData: () => refreshUserData(user?.id, user?.email),
-  }), [user, userData, loading, refreshUserData]);
+    refreshUserData: boundRefreshUserData,
+  }), [user, userData, loading, isAuthenticated, boundRefreshUserData]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
