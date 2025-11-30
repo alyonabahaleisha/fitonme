@@ -164,9 +164,13 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       const mode = session.metadata.mode || 'subscription';
       const subscriptionId = session.subscription;
 
+      logger.info('[WEBHOOK] ========== CHECKOUT SESSION DETAILS ==========');
       logger.info('[WEBHOOK] userId from metadata:', userId);
       logger.info('[WEBHOOK] mode:', mode);
       logger.info('[WEBHOOK] subscriptionId:', subscriptionId);
+      logger.info('[WEBHOOK] session.mode (Stripe):', session.mode);
+      logger.info('[WEBHOOK] Full metadata:', JSON.stringify(session.metadata));
+      logger.info('[WEBHOOK] ==============================================');
 
       if (!userId || userId === 'guest') {
         logger.error('[WEBHOOK] ERROR: Invalid userId - cannot save subscription for guest user');
@@ -177,6 +181,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
       // Handle One-Time Payment (1-Day Pass)
       if (mode === 'payment') {
+        logger.info('[WEBHOOK] >>>>>> ENTERING DAY PASS FLOW <<<<<<');
         try {
           logger.info('[WEBHOOK] Processing one-time payment for 1-Day Pass');
 
@@ -196,22 +201,32 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             stripe_price_id: 'price_1SZHYFB6P0idJ9t7eIG4oIUM',
           };
 
-          logger.info('[WEBHOOK] Saving 1-Day Pass to database:', subscriptionData);
-          const { error: subError } = await supabase.from('subscriptions').upsert(subscriptionData);
+          logger.info('[WEBHOOK] Saving 1-Day Pass subscription to database:', JSON.stringify(subscriptionData));
+          const { data: subData, error: subError } = await supabase.from('subscriptions').upsert(subscriptionData).select();
 
-          if (subError) throw subError;
+          if (subError) {
+            logger.error('[WEBHOOK] ERROR inserting subscription:', JSON.stringify(subError));
+            throw subError;
+          }
+          logger.info('[WEBHOOK] Subscription inserted successfully:', JSON.stringify(subData));
 
           // Update user plan_type
-          const { error: userError } = await supabase.from('users').update({
+          logger.info('[WEBHOOK] Updating user plan_type to day_pass for userId:', userId);
+          const { data: userData, error: userError } = await supabase.from('users').update({
             plan_type: 'day_pass',
             credits_remaining: 999999 // Unlimited for 24h
-          }).eq('id', userId);
+          }).eq('id', userId).select();
 
-          if (userError) throw userError;
+          if (userError) {
+            logger.error('[WEBHOOK] ERROR updating user:', JSON.stringify(userError));
+            throw userError;
+          }
+          logger.info('[WEBHOOK] User updated successfully:', JSON.stringify(userData));
 
-          logger.info('[WEBHOOK] SUCCESS: Activated 1-Day Pass for user', userId);
+          logger.info('[WEBHOOK] >>>>>> SUCCESS: Activated 1-Day Pass for user', userId, '<<<<<<');
         } catch (err) {
-          logger.error('[WEBHOOK] ERROR processing 1-Day Pass:', err);
+          logger.error('[WEBHOOK] >>>>>> ERROR processing 1-Day Pass:', err.message, '<<<<<<');
+          logger.error('[WEBHOOK] Full error:', JSON.stringify(err));
         }
         break;
       }
@@ -395,10 +410,11 @@ app.get('/api/health', (req, res) => {
 // Stripe: Create checkout session
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
-    logger.info('[CHECKOUT] Creating checkout session...');
-    // logger.info('[CHECKOUT] Request body:', req.body);
+    logger.info('[CHECKOUT] ========== CREATING CHECKOUT SESSION ==========');
+    logger.info('[CHECKOUT] Request body:', JSON.stringify(req.body));
 
     const { priceId, userId, userEmail, mode = 'subscription' } = req.body;
+    logger.info('[CHECKOUT] Parsed values - priceId:', priceId, 'userId:', userId, 'mode:', mode);
 
     if (!priceId) {
       logger.warn('[CHECKOUT] ERROR: No priceId provided');
