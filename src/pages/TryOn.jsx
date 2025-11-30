@@ -78,14 +78,27 @@ const TryOn = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night', 'Sport'];
+  const allCategories = ['Casual', 'Work', 'Evening', 'Date Night', 'Sport'];
+
+  // Get outfits for selected gender
+  const genderOutfits = outfits.filter(outfit => outfit.gender === selectedGender);
+
+  // Only show categories that have outfits for the selected gender
+  const availableCategories = allCategories.filter(category =>
+    genderOutfits.some(outfit => outfit.category === category)
+  );
+  const categories = genderOutfits.length > 0 ? ['All', ...availableCategories] : [];
 
   // Filter by gender and category
-  const filteredOutfits = outfits
-    .filter(outfit => outfit.gender === selectedGender)
+  const filteredOutfits = genderOutfits
     .filter(outfit => selectedCategory === 'All' || outfit.category === selectedCategory);
 
-
+  // Reset category to 'All' when switching gender if current category isn't available
+  useEffect(() => {
+    if (selectedCategory !== 'All' && !availableCategories.includes(selectedCategory)) {
+      setSelectedCategory('All');
+    }
+  }, [selectedGender, availableCategories, selectedCategory]);
 
   useEffect(() => {
     console.log('[TryOn] Checking cache restoration:', {
