@@ -10,8 +10,6 @@ services:
     buildCommand: npm install
     startCommand: node index.js
     envVars:
-      - key: PORT
-        value: 3001
       - key: NODE_ENV
         value: production
       - key: GEMINI_API_KEY
@@ -19,6 +17,10 @@ services:
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: VITE_SUPABASE_URL
         sync: false
