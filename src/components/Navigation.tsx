@@ -161,7 +161,9 @@ const Navigation = () => {
                       <p className="text-xs text-gray-500 mt-1">
                         {userData?.plan_type === 'free'
                           ? `${userData?.credits_remaining || 0} try-ons remaining`
-                          : `${userData?.plan_type?.charAt(0).toUpperCase() + userData?.plan_type?.slice(1)} Plan`
+                          : userData?.plan_type === 'day_pass'
+                            ? '24-Hour Pass Active'
+                            : `${userData?.plan_type?.charAt(0).toUpperCase() + userData?.plan_type?.slice(1)} Plan`
                         }
                       </p>
                     </div>

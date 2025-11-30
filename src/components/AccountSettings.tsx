@@ -30,6 +30,8 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
     switch (planType) {
       case 'free':
         return { name: 'Free Preview', price: '$0', features: '2 AI try-ons' };
+      case 'day_pass':
+        return { name: '24-Hour Pass', price: '$2.99', features: 'Unlimited try-ons for 24 hours' };
       case 'weekly':
         return { name: 'Weekly Pass', price: '$6.99/week', features: '30 try-ons per week' };
       case 'monthly':
