@@ -8,14 +8,8 @@ import ShareModal from '../components/ShareModal';
 import PhotoGuidelinesModal from '../components/PhotoGuidelinesModal';
 import ShoppingPanel from '../components/ShoppingPanel';
 import SignUpModal from '../components/SignUpModal';
-import ShoppingPanel from '../components/ShoppingPanel';
-import SignUpModal from '../components/SignUpModal';
-
-// ... inside component ...
-const { user, userData, isAuthenticated, refreshUserData } = useAuth();
-
-// ... inside render ...
 import ProductRow from '../components/ProductRow';
+import PricingModal from '../components/PricingModal';
 import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 import { useAuth } from '../contexts/AuthContext';
