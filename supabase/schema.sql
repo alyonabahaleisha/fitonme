@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   email TEXT UNIQUE,
   auth_provider TEXT NOT NULL CHECK (auth_provider IN ('google', 'magic_link')),
   oauth_id TEXT,
-  plan_type TEXT NOT NULL DEFAULT 'free' CHECK (plan_type IN ('free', 'weekly', 'monthly', 'annual')),
+  plan_type TEXT NOT NULL DEFAULT 'free' CHECK (plan_type IN ('free', 'weekly', 'monthly', 'annual', 'day_pass')),
   plan_expiry TIMESTAMP WITH TIME ZONE,
   credits_remaining INTEGER NOT NULL DEFAULT 2,
   total_try_ons INTEGER NOT NULL DEFAULT 0,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   subscription_id TEXT UNIQUE, -- Stripe subscription ID
-  plan TEXT NOT NULL CHECK (plan IN ('weekly', 'monthly', 'annual')),
+  plan TEXT NOT NULL CHECK (plan IN ('weekly', 'monthly', 'annual', 'day_pass')),
   status TEXT NOT NULL CHECK (status IN ('active', 'cancelled', 'expired', 'trialing', 'past_due')),
   start_date TIMESTAMP WITH TIME ZONE NOT NULL,
   end_date TIMESTAMP WITH TIME ZONE,
@@ -144,7 +144,7 @@ BEGIN
   WHERE id = user_uuid;
 
   -- Paid plans have unlimited credits
-  IF user_plan IN ('weekly', 'monthly', 'annual') THEN
+  IF user_plan IN ('weekly', 'monthly', 'annual', 'day_pass') THEN
     -- Check if plan is still active
     IF user_expiry IS NULL OR user_expiry > NOW() THEN
       RETURN TRUE;
@@ -177,7 +177,7 @@ BEGIN
   WHERE id = user_uuid;
 
   -- Paid plans don't consume credits
-  IF user_plan IN ('weekly', 'monthly', 'annual') THEN
+  IF user_plan IN ('weekly', 'monthly', 'annual', 'day_pass') THEN
     UPDATE public.users
     SET total_try_ons = total_try_ons + 1
     WHERE id = user_uuid;
