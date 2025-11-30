@@ -13,7 +13,8 @@ import useAppStore from "../store/useAppStore";
 const Navigation = () => {
   const navigate = useNavigate();
   const { user, userData, isAuthenticated } = useAuth();
-  const { closetCount, setClosetCount } = useAppStore();
+  const closetCount = useAppStore((state) => state.closetCount);
+  const setClosetCount = useAppStore((state) => state.setClosetCount);
   console.log('[Navigation] Rendered. Closet count:', closetCount);
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
