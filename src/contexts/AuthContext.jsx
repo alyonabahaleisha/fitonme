@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { getSession, getUserData, createUser, onAuthStateChange } from '../lib/supabase';
 import { identifyUser } from '../services/analytics';
 
