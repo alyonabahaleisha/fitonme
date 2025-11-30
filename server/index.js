@@ -568,7 +568,29 @@ app.post('/api/cancel-subscription', async (req, res) => {
     logger.info('[CANCEL] Query error:', subError);
 
     if (subError || !subscriptions || subscriptions.length === 0) {
-      logger.warn('[CANCEL] No subscription found for user:', userId);
+      logger.warn('[CANCEL] No subscription record found for user:', userId);
+
+      // Fallback: Check if user has a plan in 'users' table and reset it if necessary
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('plan_type')
+        .eq('id', userId)
+        .single();
+
+      if (!userError && user && user.plan_type !== 'free') {
+        logger.info('[CANCEL] User has plan in users table but no subscription record. Resetting to free.');
+        await supabase
+          .from('users')
+          .update({ plan_type: 'free' })
+          .eq('id', userId);
+
+        return res.json({
+          success: true,
+          message: 'Subscription cancelled (local cleanup)',
+          end_date: new Date().toISOString()
+        });
+      }
+
       return res.status(404).json({ error: 'No subscription found' });
     }
 
