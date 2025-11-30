@@ -78,7 +78,7 @@ const TryOn = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night'];
+  const categories = ['All', 'Casual', 'Work', 'Evening', 'Date Night', 'Sport'];
 
   // Filter by gender and category
   const filteredOutfits = outfits
