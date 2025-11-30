@@ -14,7 +14,6 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { user, userData, isAuthenticated } = useAuth();
   const closetCount = useAppStore((state) => state.closetCount);
-  const setClosetCount = useAppStore((state) => state.setClosetCount);
   console.log('[Navigation] Rendered. Closet count:', closetCount, 'User ID:', user?.id);
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -37,12 +36,12 @@ const Navigation = () => {
   useEffect(() => {
     if (user) {
       getClosetCount(user.id).then(count => {
-        if (count !== null) setClosetCount(count);
+        if (count !== null) useAppStore.getState().setClosetCount(count);
       });
     } else {
-      setClosetCount(0);
+      useAppStore.getState().setClosetCount(0);
     }
-  }, [user, setClosetCount]);
+  }, [user]);
 
   // Close mobile menu when route changes
   useEffect(() => {

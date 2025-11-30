@@ -14,7 +14,6 @@ import ConfirmationModal from "../components/ConfirmationModal";
 const Closet = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { setClosetCount, decrementClosetCount } = useAppStore();
     const [history, setHistory] = useState([]);
     const [outfitDetails, setOutfitDetails] = useState({});
     const [loading, setLoading] = useState(true);
@@ -31,7 +30,7 @@ const Closet = () => {
                 ]);
 
                 setHistory(data || []);
-                setClosetCount(count || data?.length || 0);
+                useAppStore.getState().setClosetCount(count || data?.length || 0);
 
                 // Fetch details for all outfits in history
                 if (data && data.length > 0) {
@@ -77,7 +76,7 @@ const Closet = () => {
             }
 
             setHistory(prev => prev.filter(item => item.id !== id));
-            decrementClosetCount();
+            useAppStore.getState().decrementClosetCount();
             toast.success('Item deleted successfully');
         } catch (error) {
             console.error('Error deleting outfit:', error);

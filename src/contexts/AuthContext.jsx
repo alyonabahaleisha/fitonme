@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshUserData = useCallback(async (userId, userEmail, userObject = null) => {
+  const refreshUserData = useCallback(async (userId, userEmail, userObject) => {
     if (!userId) return;
 
     try {
@@ -33,11 +33,8 @@ export const AuthProvider = ({ children }) => {
       if (!data) {
         console.log('[AUTH] User not found in database, creating new user:', userId);
 
-        // Use passed userObject or fall back to state user
-        const currentUser = userObject || user;
-
         // Determine auth provider from user metadata
-        let provider = currentUser?.app_metadata?.provider || 'magic_link';
+        let provider = userObject?.app_metadata?.provider || 'magic_link';
         // Map 'email' to 'magic_link' to match database constraint
         if (provider === 'email') provider = 'magic_link';
 
@@ -58,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error refreshing user data:', error);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     // Check active session on mount
@@ -68,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          await refreshUserData(session.user.id, session.user.email);
+          await refreshUserData(session.user.id, session.user.email, session.user);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -104,8 +101,8 @@ export const AuthProvider = ({ children }) => {
   }, [refreshUserData]);
 
   const boundRefreshUserData = useCallback(() => {
-    return refreshUserData(user?.id, user?.email);
-  }, [refreshUserData, user?.id, user?.email]);
+    return refreshUserData(user?.id, user?.email, user);
+  }, [refreshUserData, user]);
 
   const value = useMemo(() => ({
     user,
