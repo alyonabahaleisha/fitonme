@@ -42,7 +42,9 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
   };
 
   const planDetails = getPlanDetails();
-  const hasActiveSubscription = userData?.plan_type && userData.plan_type !== 'free';
+  const hasActiveSubscription = userData?.plan_type &&
+    userData.plan_type !== 'free' &&
+    userData.plan_type !== 'day_pass';
 
   const handleCancelSubscription = async () => {
     if (!user) return;

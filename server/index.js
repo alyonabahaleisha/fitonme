@@ -588,6 +588,25 @@ app.post('/api/cancel-subscription', async (req, res) => {
     logger.info('[CANCEL] Found subscription:', subscription.subscription_id);
     logger.info('[CANCEL] Cancellation reason:', reason || 'Not provided');
 
+    // Check if it's a day pass (one-time payment)
+    if (subscription.plan === 'day_pass') {
+      logger.info('[CANCEL] User attempting to cancel day_pass. Marking as cancelled in DB only.');
+      // Just update DB, don't call Stripe (as it's not a subscription)
+      await supabase
+        .from('subscriptions')
+        .update({
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('subscription_id', subscription.subscription_id);
+
+      return res.json({
+        success: true,
+        message: 'Pass cancelled successfully',
+        end_date: subscription.end_date
+      });
+    }
+
     // Cancel the subscription in Stripe (at period end)
     const cancelledSubscription = await stripe.subscriptions.update(
       subscription.subscription_id,
