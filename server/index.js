@@ -37,7 +37,22 @@ if (process.env.SENTRY_DSN) {
 }
 
 // Middleware
+import helmet from 'helmet';
+
 // Middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://m.stripe.network"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://m.stripe.network", "https://*.supabase.co"],
+      frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+    },
+  },
+}));
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -137,17 +152,61 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       // logger.info('[WEBHOOK] Customer email:', session.customer_email);
 
       // Update user's subscription in Supabase
+      // Update user's subscription in Supabase
       // We stored userId in metadata
       const userId = session.metadata.userId;
+      const mode = session.metadata.mode || 'subscription';
       const subscriptionId = session.subscription;
 
       logger.info('[WEBHOOK] userId from metadata:', userId);
+      logger.info('[WEBHOOK] mode:', mode);
       logger.info('[WEBHOOK] subscriptionId:', subscriptionId);
 
       if (!userId || userId === 'guest') {
         logger.error('[WEBHOOK] ERROR: Invalid userId - cannot save subscription for guest user');
         // logger.error('[WEBHOOK] Customer email:', session.customer_email);
         logger.error('[WEBHOOK] Please ensure userId is passed when creating checkout session');
+        break;
+      }
+
+      // Handle One-Time Payment (1-Day Pass)
+      if (mode === 'payment') {
+        try {
+          logger.info('[WEBHOOK] Processing one-time payment for 1-Day Pass');
+
+          // Calculate 24-hour access
+          const startDate = new Date().toISOString();
+          const endDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+          // Use session ID as pseudo-subscription ID for tracking
+          const subscriptionData = {
+            subscription_id: session.id, // Use session ID for one-time payments
+            user_id: userId,
+            plan: 'day_pass',
+            status: 'active',
+            start_date: startDate,
+            end_date: endDate,
+            stripe_customer_id: session.customer,
+            stripe_price_id: 'price_day_pass', // Placeholder or from session
+          };
+
+          logger.info('[WEBHOOK] Saving 1-Day Pass to database:', subscriptionData);
+          const { error: subError } = await supabase.from('subscriptions').upsert(subscriptionData);
+
+          if (subError) throw subError;
+
+          // Update user plan_type
+          const { error: userError } = await supabase.from('users').update({
+            plan_type: 'day_pass',
+            credits_remaining: 999999 // Unlimited for 24h
+          }).eq('id', userId);
+
+          if (userError) throw userError;
+
+          logger.info('[WEBHOOK] SUCCESS: Activated 1-Day Pass for user', userId);
+        } catch (err) {
+          logger.error('[WEBHOOK] ERROR processing 1-Day Pass:', err);
+        }
         break;
       }
 
@@ -333,18 +392,18 @@ app.post('/api/create-checkout-session', async (req, res) => {
     logger.info('[CHECKOUT] Creating checkout session...');
     // logger.info('[CHECKOUT] Request body:', req.body);
 
-    const { priceId, userId, userEmail } = req.body;
+    const { priceId, userId, userEmail, mode = 'subscription' } = req.body;
 
     if (!priceId) {
       logger.warn('[CHECKOUT] ERROR: No priceId provided');
       return res.status(400).json({ error: 'Price ID is required' });
     }
 
-    logger.info('[CHECKOUT] Creating session with priceId:', priceId);
+    logger.info('[CHECKOUT] Creating session with priceId:', priceId, 'Mode:', mode);
 
     // Create Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+    const sessionConfig = {
+      mode: mode,
       payment_method_types: ['card'],
       line_items: [
         {
@@ -357,13 +416,20 @@ app.post('/api/create-checkout-session', async (req, res) => {
       customer_email: userEmail,
       metadata: {
         userId: userId || 'guest',
+        mode: mode,
       },
-      subscription_data: {
+    };
+
+    // Add subscription_data only if mode is subscription
+    if (mode === 'subscription') {
+      sessionConfig.subscription_data = {
         metadata: {
           userId: userId || 'guest',
         },
-      },
-    });
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     // NOTE: Enable "Email customers about successful payments" in Stripe Dashboard > Settings > Emails
     // for automatic receipt emails.

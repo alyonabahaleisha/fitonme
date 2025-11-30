@@ -30,3 +30,27 @@ services:
         sync: false
     healthCheckPath: /
     autoDeploy: true
+
+  # Frontend Static Site
+  - type: static
+    name: fitonme-frontend
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: .
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: fitonme-backend
+          property: url

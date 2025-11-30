@@ -48,82 +48,81 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
   const tiers = [
     {
-      name: "Free Preview",
-      price: "$0",
+      name: "1-Day Pass",
+      price: "$4.99",
       period: "",
-      description: "Perfect to see the magic",
+      description: "Try outfits instantly. No subscription.",
       features: [
-        "2 AI try-ons",
-        "Browse 10 looks",
-        "Basic outfit recommendations",
-        "Standard quality",
+        "Unlimited AI try-ons for 24 hours",
+        "Access to the full outfit catalog",
+        "Lightning-fast processing",
+        "No commitment — pay only when you need it",
       ],
-      cta: "Get Started",
+      cta: "Get 1-Day Pass",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: null, // Free plan - no Stripe
+      stripePriceId: "price_day_pass_placeholder", // TODO: REPLACE
+      mode: 'payment', // One-time payment
     },
     {
-      name: "Weekly Pass",
+      name: "7-Day Pass",
       price: "$6.99",
-      period: "/week",
-      description: "Ideal for events & trips",
+      period: "",
+      description: "A full week of unlimited outfit try-ons.",
       features: [
-        "30 AI try-ons per week",
-        "Full catalog access",
-        "50 women's looks",
-        "20 men's looks",
-        "Priority support",
+        "Unlimited AI try-ons for 7 days",
+        "Full access to all collections",
+        "Priority generation speed",
+        "New outfits available instantly",
       ],
-      cta: "Try Weekly",
+      cta: "Get 7-Day Pass",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_1SRdKUPdZyXoKKUKezEa0FVG",
+      stripePriceId: "price_weekly_pass_placeholder", // TODO: REPLACE
+      mode: 'subscription',
     },
     {
-      name: "Monthly Plan",
-      price: "$14.99",
+      name: "Monthly",
+      price: "$19.99",
       period: "/month",
-      description: "Best value for regular use",
+      description: "Unlimited AI try-ons + fresh styles added every month.",
       features: [
-        "Unlimited AI try-ons",
-        "Full catalog access",
-        "New looks added weekly",
-        "HD quality renders",
-        "Save favorite looks",
-        "Priority support",
+        "Unlimited try-ons all month",
+        "50+ new outfits added monthly",
+        "Access to all categories & trends",
+        "Save and favorite looks",
+        "Style discovery features",
+        "Fastest generation speed",
       ],
-      cta: "Start Free Trial",
+      cta: "Get Monthly",
       popular: true,
       variant: "filled" as const,
-      stripePriceId: "price_monthly_placeholder", // TODO: REPLACE WITH ACTUAL STRIPE PRICE ID FOR MONTHLY PLAN
+      stripePriceId: "price_monthly_placeholder", // TODO: REPLACE
+      mode: 'subscription',
     },
     {
-      name: "Annual Pro Closet",
-      price: "$59",
+      name: "Annual",
+      price: "$199",
       period: "/year",
-      description: "For power users & influencers",
+      description: "Save big, unlock everything, and get the fastest access.",
       features: [
-        "Everything in Monthly",
-        "Closet sync feature",
-        "AI capsule wardrobe updates",
+        "Unlimited try-ons all year",
+        "50+ new outfits added monthly",
+        "Priority access to new outfit drops",
         "Early access to new features",
-        "Dedicated support",
+        "VIP support",
+        "Save 17% compared to monthly",
       ],
-      cta: "Go Pro",
+      cta: "Get Annual",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_annual_placeholder", // TODO: REPLACE WITH ACTUAL STRIPE PRICE ID FOR ANNUAL PLAN
+      stripePriceId: "price_annual_placeholder", // TODO: REPLACE
+      mode: 'subscription',
     },
   ];
 
-  const handleCheckout = async (priceId: string | null, planName: string) => {
-    if (!priceId) {
-      // Free plan - just close modal
-      trackPlanSelected('free', null, user?.id);
-      onClose();
-      return;
-    }
+  const handleCheckout = async (priceId: string | null, planName: string, mode: string = 'subscription') => {
+    if (!priceId) return;
 
     if (!user) {
       // Store the pending checkout and show sign-up modal
@@ -133,18 +132,18 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
     }
 
     // Track plan selection
-    const planType = planName.toLowerCase().includes('weekly') ? 'weekly' :
-      planName.toLowerCase().includes('monthly') ? 'monthly' :
-        planName.toLowerCase().includes('annual') ? 'annual' : 'unknown';
+    const planType = planName.toLowerCase().includes('day') ? 'day_pass' :
+      planName.toLowerCase().includes('weekly') || planName.includes('7-Day') ? 'weekly' :
+        planName.toLowerCase().includes('monthly') ? 'monthly' :
+          planName.toLowerCase().includes('annual') ? 'annual' : 'unknown';
+
     trackPlanSelected(planType, priceId, user.id);
 
     setLoadingPriceId(priceId);
 
     try {
-      // Track checkout started
       trackCheckoutStarted(planType, priceId, user.id);
-
-      console.log('[CHECKOUT] Starting checkout for priceId:', priceId);
+      console.log('[CHECKOUT] Starting checkout for priceId:', priceId, 'Mode:', mode);
 
       // Create checkout session
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/create-checkout-session`, {
@@ -156,27 +155,19 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
           priceId,
           userId: user.id,
           userEmail: user.email,
+          mode, // Pass the mode (payment or subscription)
         }),
       });
 
-      console.log('[CHECKOUT] Response status:', response.status);
       const data = await response.json();
-      console.log('[CHECKOUT] Response data:', data);
 
       if (!response.ok) {
-        console.error('[CHECKOUT] Response not OK:', data);
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      // Redirect to Stripe Checkout using the URL
-      console.log('[CHECKOUT] Session ID:', data.sessionId);
-      console.log('[CHECKOUT] Checkout URL:', data.url);
-
       if (data.url) {
-        console.log('[CHECKOUT] Redirecting to Stripe Checkout...');
         window.location.href = data.url;
       } else {
-        console.error('[CHECKOUT] No checkout URL in response');
         throw new Error('Invalid checkout response - missing URL');
       }
     } catch (error) {
@@ -289,7 +280,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
 
                       {/* CTA Button */}
                       <button
-                        onClick={() => handleCheckout(tier.stripePriceId, tier.name)}
+                        onClick={() => handleCheckout(tier.stripePriceId, tier.name, tier.mode)}
                         disabled={shouldDisable || loadingPriceId === tier.stripePriceId}
                         className={`w-full py-2.5 px-5 rounded-full text-sm font-semibold transition-all duration-300 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${tier.variant === 'filled'
                           ? 'text-white shadow-md hover:shadow-lg'
