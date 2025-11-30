@@ -60,7 +60,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Get 1-Day Pass",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_day_pass_placeholder", // TODO: REPLACE
+      stripePriceId: "price_1SZHYFB6P0idJ9t7eIG4oIUM",
       mode: 'payment', // One-time payment
     },
     {
