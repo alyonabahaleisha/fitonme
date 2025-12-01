@@ -217,7 +217,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           logger.info(`[WEBHOOK] Updating user plan_type to day_pass for userId: ${userId}`);
           const { data: userData, error: userError } = await supabase.from('users').update({
             plan_type: 'day_pass',
-            credits_remaining: 999999 // Unlimited for 24h
+            credits_remaining: 999999, // Unlimited for 24h
+            plan_expiry: endDate // Set expiration date
           }).eq('id', userId).select();
 
           if (userError) {
@@ -288,7 +289,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           logger.info('[WEBHOOK] Updating user plan_type to:', planValue);
           const { error: userError } = await supabase.from('users').update({
             plan_type: planValue,
-            credits_remaining: 999999 // Unlimited
+            credits_remaining: 999999, // Unlimited
+            plan_expiry: endDate // Set expiration date
           }).eq('id', userId);
 
           if (userError) {
@@ -342,6 +344,12 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             stripe_price_id: subscriptionUpdate.items.data[0].price.id,
           });
           logger.info('[WEBHOOK] Subscription updated in database');
+
+          // Update user's plan_expiry in users table
+          await supabase.from('users').update({
+            plan_expiry: endDate
+          }).eq('id', existingSub.user_id);
+          logger.info('[WEBHOOK] Updated user plan_expiry');
         }
       } catch (err) {
         logger.error('[WEBHOOK] Error handling subscription update:', err);
@@ -498,6 +506,44 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     logger.info('Person image:', personImagePath);
     logger.info('Clothing image:', clothingImagePath);
     logger.info('Description:', description);
+
+    // Enforce credits/plan limits for authenticated users
+    if (req.user) {
+      const { data: hasCredits, error: creditError } = await supabase.rpc('check_user_credits', {
+        user_uuid: req.user.id
+      });
+
+      if (creditError) {
+        logger.error('Error checking user credits:', creditError);
+        // Fail safe: if we can't check, assume no credits to prevent abuse, or allow?
+        // Let's allow but log error to be safe, OR return 500.
+        // Returning 500 is safer.
+        throw new Error('Failed to verify user credits');
+      }
+
+      if (!hasCredits) {
+        logger.warn(`[AUTH] User ${req.user.id} attempted try-on without credits/active plan`);
+
+        // Clean up files
+        fs.unlinkSync(personImagePath);
+        fs.unlinkSync(clothingImagePath);
+
+        return res.status(403).json({
+          error: 'Insufficient credits or expired plan',
+          code: 'NO_CREDITS'
+        });
+      }
+
+      // Decrement credits (or just log usage for unlimited plans)
+      const { error: decrementError } = await supabase.rpc('decrement_user_credits', {
+        user_uuid: req.user.id
+      });
+
+      if (decrementError) {
+        logger.error('Error decrementing user credits:', decrementError);
+        // We continue anyway since they had credits
+      }
+    }
 
     // Use Gemini 2.5 Flash Image model for image generation
     const model = genAI.getGenerativeModel({
