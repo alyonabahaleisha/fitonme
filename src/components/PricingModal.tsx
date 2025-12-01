@@ -60,7 +60,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Get 1-Day Pass",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_1SZHYFB6P0idJ9t7eIG4oIUM",
+      stripePriceId: "price_1SZHIxB6P0idJ9t78DYrfpdm",
       mode: 'payment', // One-time payment
     },
     {
@@ -76,8 +76,8 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Get 7-Day Pass",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_weekly_pass_placeholder", // TODO: REPLACE
-      mode: 'subscription',
+      stripePriceId: "price_1SZOhVB6P0idJ9t7YAUC8B3g",
+      mode: 'payment', // One-time payment
     },
     {
       name: "Monthly",
@@ -92,7 +92,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Get Monthly",
       popular: true,
       variant: "filled" as const,
-      stripePriceId: "price_monthly_placeholder", // TODO: REPLACE
+      stripePriceId: "price_1SZOiaB6P0idJ9t7BElcuhU1",
       mode: 'subscription',
     },
     {
@@ -108,7 +108,7 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       cta: "Get Annual",
       popular: false,
       variant: "outlined" as const,
-      stripePriceId: "price_annual_placeholder", // TODO: REPLACE
+      stripePriceId: "price_1SZOjiB6P0idJ9t7xjYKuwHl",
       mode: 'subscription',
     },
   ];

@@ -182,29 +182,42 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         break;
       }
 
-      // Handle One-Time Payment (1-Day Pass)
+      // Handle One-Time Payment (1-Day Pass OR 7-Day Pass)
       if (mode === 'payment') {
-        logger.info('[WEBHOOK] >>>>>> ENTERING DAY PASS FLOW <<<<<<');
+        logger.info('[WEBHOOK] >>>>>> ENTERING ONE-TIME PAYMENT FLOW <<<<<<');
         try {
-          logger.info('[WEBHOOK] Processing one-time payment for 1-Day Pass');
+          const priceId = session.metadata?.priceId;
+          logger.info(`[WEBHOOK] Processing one-time payment for Price ID: ${priceId}`);
 
-          // Calculate 24-hour access
+          let planType = 'day_pass';
+          let durationDays = 1;
+
+          // Determine plan based on Price ID
+          if (priceId === 'price_1SZOhVB6P0idJ9t7YAUC8B3g') {
+            planType = 'weekly'; // 7-Day Pass is technically a "weekly" plan but one-time
+            durationDays = 7;
+            logger.info('[WEBHOOK] Identified as 7-Day Pass');
+          } else {
+            logger.info('[WEBHOOK] Defaulting to 1-Day Pass');
+          }
+
+          // Calculate access duration
           const startDate = new Date().toISOString();
-          const endDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+          const endDate = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
           // Use session ID as pseudo-subscription ID for tracking
           const subscriptionData = {
             subscription_id: session.id, // Use session ID for one-time payments
             user_id: userId,
-            plan: 'day_pass',
+            plan: planType,
             status: 'active',
             start_date: startDate,
             end_date: endDate,
             stripe_customer_id: session.customer || null,
-            stripe_price_id: 'price_1SZHYFB6P0idJ9t7eIG4oIUM',
+            stripe_price_id: priceId || 'unknown',
           };
 
-          logger.info(`[WEBHOOK] Saving 1-Day Pass subscription to database: ${JSON.stringify(subscriptionData)}`);
+          logger.info(`[WEBHOOK] Saving ${planType} subscription to database: ${JSON.stringify(subscriptionData)}`);
           const { data: subData, error: subError } = await supabase.from('subscriptions').upsert(subscriptionData).select();
 
           if (subError) {
@@ -214,10 +227,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           logger.info(`[WEBHOOK] Subscription inserted successfully: ${JSON.stringify(subData)}`);
 
           // Update user plan_type
-          logger.info(`[WEBHOOK] Updating user plan_type to day_pass for userId: ${userId}`);
+          logger.info(`[WEBHOOK] Updating user plan_type to ${planType} for userId: ${userId}`);
           const { data: userData, error: userError } = await supabase.from('users').update({
-            plan_type: 'day_pass',
-            credits_remaining: 999999, // Unlimited for 24h
+            plan_type: planType,
+            credits_remaining: 999999, // Unlimited
             plan_expiry: endDate // Set expiration date
           }).eq('id', userId).select();
 
@@ -227,9 +240,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           }
           logger.info(`[WEBHOOK] User updated successfully: ${JSON.stringify(userData)}`);
 
-          logger.info(`[WEBHOOK] >>>>>> SUCCESS: Activated 1-Day Pass for user ${userId} <<<<<<`);
+          logger.info(`[WEBHOOK] >>>>>> SUCCESS: Activated ${planType} for user ${userId} <<<<<<`);
         } catch (err) {
-          logger.error(`[WEBHOOK] >>>>>> ERROR processing 1-Day Pass: ${err.message} <<<<<<`);
+          logger.error(`[WEBHOOK] >>>>>> ERROR processing one-time payment: ${err.message} <<<<<<`);
           logger.error(`[WEBHOOK] Full error: ${JSON.stringify(err)}`);
         }
         break;
@@ -450,6 +463,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
       metadata: {
         userId: userId || 'guest',
         mode: mode,
+        priceId: priceId, // Pass priceId to metadata so webhook knows which plan it is
       },
     };
 
