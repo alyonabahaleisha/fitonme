@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { trackPlanSelected, trackCheckoutStarted } from "../services/analytics";
 import SignUpModal from "./SignUpModal";
 import { getStripe } from "../lib/stripe";
+import { API_URL } from "../config";
 
 import { useScrollLock } from "../hooks/useScrollLock";
 
@@ -137,8 +138,10 @@ const PricingModal = ({ isOpen, onClose }: PricingModalProps) => {
       trackCheckoutStarted(planType, priceId, user.id);
       console.log('[CHECKOUT] Starting checkout for priceId:', priceId, 'Mode:', mode);
 
+
+
       // Create checkout session
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/create-checkout-session`, {
+      const response = await fetch(`${API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

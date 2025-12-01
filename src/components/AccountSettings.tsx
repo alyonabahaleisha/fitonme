@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CreditCard, AlertTriangle, Trash2, Calendar, CheckCircle } from 'lucide-react';
+import { API_URL } from "../config";
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import ConfirmationModal from './ConfirmationModal';
@@ -53,8 +54,11 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
     if (!user) return;
 
     setIsProcessing(true);
+
+
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/cancel-subscription`, {
+      const response = await fetch(`${API_URL}/api/cancel-subscription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,7 +94,7 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
 
     setIsProcessing(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/delete-account`, {
+      const response = await fetch(`${API_URL}/api/delete-account`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
