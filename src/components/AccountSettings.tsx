@@ -45,8 +45,9 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
 
   const planDetails = getPlanDetails();
   const hasActiveSubscription = userData?.plan_type &&
-    userData.plan_type !== 'free' &&
-    userData.plan_type !== 'day_pass';
+    userData.plan_type !== 'free';
+
+  const isDayPass = userData?.plan_type === 'day_pass';
 
   const handleCancelSubscription = async () => {
     if (!user) return;
@@ -191,12 +192,20 @@ const AccountSettings = ({ isOpen, onClose }: AccountSettingsProps) => {
                       {hasActiveSubscription && (
                         <div className="flex items-center gap-2 mt-2">
                           <CheckCircle className="w-4 h-4 text-green-600" />
-                          <span className="text-sm text-green-600">Active subscription</span>
+                          <span className="text-sm text-green-600">
+                            {isDayPass ? 'Active Pass' : 'Active subscription'}
+                          </span>
                         </div>
+                      )}
+
+                      {isDayPass && userData?.plan_expiry && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Expires: {new Date(userData.plan_expiry).toLocaleString()}
+                        </p>
                       )}
                     </div>
 
-                    {hasActiveSubscription && (
+                    {hasActiveSubscription && !isDayPass && (
                       <button
                         onClick={() => setShowCancelModal(true)}
                         className="text-sm text-red-600 hover:text-red-700 font-medium"
