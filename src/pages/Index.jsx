@@ -117,7 +117,7 @@ const Index = () => {
               </div>
 
               <h1 className="text-3xl md:text-4xl font-serif font-semibold text-foreground leading-tight tracking-tight">
-                See Yourself in Every Outfit — Instantly.
+                Level up your look — Instantly.
               </h1>
 
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
@@ -200,7 +200,7 @@ const Index = () => {
                 </div>
 
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-semibold text-foreground leading-tight tracking-tight">
-                  See Yourself in Every Outfit — Instantly.
+                  Level up your look — Instantly.
                 </h1>
 
                 <p className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed">

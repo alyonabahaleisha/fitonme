@@ -18,7 +18,7 @@ const Home = () => {
 
             {/* Heading */}
             <h1 className="text-5xl md:text-7xl font-display font-bold text-gray-900 leading-tight">
-              See Yourself in Every Outfit — Instantly.
+              Level up your look — Instantly.
             </h1>
 
             {/* Description */}
