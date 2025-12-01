@@ -62,7 +62,9 @@ app.use(cors({
     'http://localhost:3000',
     'https://fitonme.vercel.app',
     'https://fitonme.ai',
-    'https://www.fitonme.ai'
+    'https://www.fitonme.ai',
+    'https://ilovme.ai',
+    'https://www.ilovme.ai'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
