@@ -20,6 +20,20 @@ export const getAllOutfits = async () => {
 
     if (error) throw error;
 
+    // Custom sort: Evening and Date Night first
+    data.sort((a, b) => {
+      const priority = ['evening', 'date night'];
+      const catA = (a.category || '').toLowerCase();
+      const catB = (b.category || '').toLowerCase();
+
+      const aIsPriority = priority.some(p => catA.includes(p));
+      const bIsPriority = priority.some(p => catB.includes(p));
+
+      if (aIsPriority && !bIsPriority) return -1;
+      if (!aIsPriority && bIsPriority) return 1;
+      return 0; // Preserve existing order (created_at) for others
+    });
+
     // Convert snake_case to camelCase for frontend
     return data.map(outfit => ({
       id: outfit.id,
