@@ -12,11 +12,14 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         // Get the auth code from URL
+        console.log('[AuthCallback] Starting auth callback handling...');
         const { data, error } = await supabase.auth.getSession();
+        console.log('[AuthCallback] getSession result:', { data, error });
 
         if (error) throw error;
 
         if (data.session) {
+          console.log('[AuthCallback] Session found, redirecting...');
           setStatus('success');
 
           // Wait a moment to show success message
@@ -25,6 +28,7 @@ const AuthCallback = () => {
             navigate('/try-on');
           }, 1500);
         } else {
+          console.error('[AuthCallback] No session found in data');
           throw new Error('No session found');
         }
       } catch (err) {
