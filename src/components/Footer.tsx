@@ -25,6 +25,9 @@ const Footer = () => {
                         <p className="text-muted-foreground text-sm max-w-xs">
                             Your personal AI stylist. Try on clothes virtually and find your perfect look.
                         </p>
+                        <a href="mailto:support@ilovme.ai" className="text-muted-foreground text-sm hover:text-brand transition-colors">
+                            support@ilovme.ai
+                        </a>
                         <p className="text-muted-foreground text-sm mt-4">
                             © 2025 ILovMe. All rights reserved.
                         </p>
@@ -43,7 +46,7 @@ const Footer = () => {
                     </div>
                 </div>
             </div>
-        </footer>
+        </footer >
     );
 };
 
