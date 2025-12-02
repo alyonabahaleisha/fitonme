@@ -24,8 +24,8 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
       description: "Stand straight, facing the camera"
     },
     {
-      title: "Wearing fitted clothes",
-      description: "Helps us match your body shape"
+      title: "Wear minimal clothing",
+      description: "Expose arms and legs for better shape detection"
     },
     {
       title: "Good lighting",
