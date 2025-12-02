@@ -514,7 +514,7 @@ const TryOn = () => {
                       Try On Outfits
                     </h1>
                   </div>
-                  <p className="text-gray-600 text-sm md:text-base max-w-2xl">
+                  <p className="sr-only">
                     Experience our AI stylist and virtual try-on technology. Upload your photo to see how different fashion styles and outfits look on you instantly. The perfect outfit generator for your next look.
                   </p>
                 </div>
