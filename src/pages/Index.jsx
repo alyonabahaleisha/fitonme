@@ -242,8 +242,7 @@ const Index = () => {
       <TrustRow />
       <HowItWorks />
 
-      <TrustRow />
-      <HowItWorks />
+
     </div>
   );
 };
