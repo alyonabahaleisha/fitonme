@@ -13,7 +13,18 @@ const AuthCallback = () => {
       try {
         // Get the auth code from URL
         console.log('[AuthCallback] Starting auth callback handling...');
-        const { data, error } = await supabase.auth.getSession();
+
+        // Check if Supabase is configured
+        const sbUrl = supabase.supabaseUrl;
+        console.log('[AuthCallback] Supabase URL configured:', sbUrl ? (sbUrl.substring(0, 15) + '...') : 'MISSING');
+
+        // Race getSession with a timeout to detect hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('getSession timed out after 10s')), 10000)
+        );
+
+        const { data, error } = await Promise.race([sessionPromise, timeoutPromise]);
         console.log('[AuthCallback] getSession result:', { data, error });
 
         if (error) throw error;
