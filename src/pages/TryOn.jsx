@@ -507,11 +507,16 @@ const TryOn = () => {
             {/* Right Side - Outfit Grid */}
             <div className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="h-6 w-6 text-accent" />
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900">
-                    Try On Outfits
-                  </h2>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="h-6 w-6 text-accent" />
+                    <h1 className="text-2xl md:text-3xl font-display font-bold text-gray-900">
+                      Try On Outfits
+                    </h1>
+                  </div>
+                  <p className="text-gray-600 text-sm md:text-base max-w-2xl">
+                    Experience our AI stylist and virtual try-on technology. Upload your photo to see how different fashion styles and outfits look on you instantly. The perfect outfit generator for your next look.
+                  </p>
                 </div>
 
                 {/* Gender Filter Switch */}
