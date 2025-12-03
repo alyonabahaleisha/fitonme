@@ -90,7 +90,7 @@ const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
               </div>
             ) : (
               <>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Give Feedback</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Leave Feedback</h2>
                 <p className="text-gray-600 mb-6">We'd love to hear your thoughts!</p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">

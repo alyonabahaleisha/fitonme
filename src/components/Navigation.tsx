@@ -107,7 +107,7 @@ const Navigation = () => {
               className="text-sm font-medium hover:opacity-80 transition-opacity px-4 py-2 rounded-full"
               style={{ color: '#ff6b5a' }}
             >
-              Give Feedback
+              Leave Feedback
             </button>
           </div>
 
@@ -250,7 +250,7 @@ const Navigation = () => {
               }}
               className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
             >
-              Give Feedback
+              Leave Feedback
             </button>
           </div>
         </div>
