@@ -23,7 +23,7 @@ const Home = () => {
 
             {/* Description */}
             <p className="text-xl md:text-2xl text-gray-700 max-w-2xl mx-auto">
-              Start Free Try-On to preview styles on your real body.
+              Upload your photo to preview styles on your real body.
               Fast, personal, and powered by AI. <span className="font-semibold text-gray-900">50+ premium curated outfits.</span>
             </p>
 
