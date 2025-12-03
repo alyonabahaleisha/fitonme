@@ -121,7 +121,7 @@ const Index = () => {
               </h1>
 
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                Upload your photo to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">50+ premium curated outfits.</span>
+                Start Free Try-On to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">50+ premium curated outfits.</span>
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
@@ -204,7 +204,7 @@ const Index = () => {
                 </h1>
 
                 <p className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed">
-                  Upload your photo to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">50+ premium curated outfits.</span>
+                  Start Free Try-On to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">50+ premium curated outfits.</span>
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>

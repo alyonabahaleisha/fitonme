@@ -138,7 +138,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
           className={fullWidth ? "w-full" : ""}
         >
           <Camera className="w-5 h-5" />
-          Upload Your Photo
+          Start Free Try-On
         </Button>
       )}
 

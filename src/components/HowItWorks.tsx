@@ -4,7 +4,7 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: Upload,
-      title: "Upload Your Photo",
+      title: "Start Free Try-On",
       description: "Take or upload a clear photo. We keep it private and secure.",
     },
     {
