@@ -67,7 +67,7 @@ const Home = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                 1
               </div>
-              <h3 className="text-xl font-semibold mb-2">Upload Your Photo</h3>
+              <h3 className="text-xl font-semibold mb-2">Start Free Try-On</h3>
               <p className="text-gray-600">Choose a full-body photo for the best results</p>
             </div>
 
