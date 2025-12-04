@@ -214,7 +214,7 @@ export const createUser = async (userId, email, authProvider = 'magic_link') => 
         id: userId,
         email: email,
         plan_type: 'free',
-        credits_remaining: 2,
+        credits_remaining: 5,
         auth_provider: authProvider
       })
       .select()

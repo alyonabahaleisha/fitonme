@@ -920,7 +920,7 @@ app.post('/api/admin/update-subscription', express.json(), async (req, res) => {
       .from('users')
       .update({
         plan_type: planType,
-        credits_remaining: planType === 'free' ? 2 : 999999
+        credits_remaining: planType === 'free' ? 5 : 999999
       })
       .eq('id', userId)
       .select()

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { trackSignUpCompleted, trackLoginCompleted } from '../services/analytics';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -32,6 +33,21 @@ const AuthCallback = () => {
         if (data.session) {
           console.log('[AuthCallback] Session found, redirecting...');
           setStatus('success');
+
+          // Track authentication event
+          const user = data.session.user;
+          const provider = user?.app_metadata?.provider || 'magic_link';
+          const createdAt = new Date(user?.created_at);
+          const now = new Date();
+          const isNewUser = (now - createdAt) < 60000; // Created within last minute = new signup
+
+          if (isNewUser) {
+            trackSignUpCompleted(provider, user?.id);
+            console.log('[Analytics] Sign-up tracked:', provider);
+          } else {
+            trackLoginCompleted(provider, user?.id);
+            console.log('[Analytics] Login tracked:', provider);
+          }
 
           // Wait a moment to show success message
           setTimeout(() => {

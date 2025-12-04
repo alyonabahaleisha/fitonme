@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   oauth_id TEXT,
   plan_type TEXT NOT NULL DEFAULT 'free' CHECK (plan_type IN ('free', 'weekly', 'monthly', 'annual', 'day_pass')),
   plan_expiry TIMESTAMP WITH TIME ZONE,
-  credits_remaining INTEGER NOT NULL DEFAULT 2,
+  credits_remaining INTEGER NOT NULL DEFAULT 5,
   total_try_ons INTEGER NOT NULL DEFAULT 0,
   outfits_saved JSONB DEFAULT '[]'::jsonb,
   last_photo_url TEXT,

@@ -4,12 +4,24 @@ import { Check, Sparkles, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '../contexts/AuthContext';
 import Navigation from '../components/Navigation';
+import { trackCheckoutCompleted } from '../services/analytics';
 
 const PaymentSuccess = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { refreshUserData, userData } = useAuth();
+    const { refreshUserData, userData, user } = useAuth();
     const [countdown, setCountdown] = useState(10);
+    const [hasTrackedPurchase, setHasTrackedPurchase] = useState(false);
+
+    // Track purchase conversion when userData is loaded
+    useEffect(() => {
+        if (userData && user && !hasTrackedPurchase) {
+            const planType = userData.plan_type || 'unknown';
+            trackCheckoutCompleted(planType, null, null, user.id);
+            setHasTrackedPurchase(true);
+            console.log('[Analytics] Purchase tracked:', planType);
+        }
+    }, [userData, user, hasTrackedPurchase]);
 
     useEffect(() => {
         const sessionId = searchParams.get('session_id');

@@ -5,6 +5,8 @@ import { Upload, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoGuidelinesModal from "./PhotoGuidelinesModal";
 import useAppStore from "@/store/useAppStore";
+import { trackPhotoUploaded } from "@/services/analytics";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UploadButtonProps {
   variant?: "default" | "hero" | "secondary";
@@ -21,6 +23,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
   const [showGuidelines, setShowGuidelines] = useState(false);
   const { toast } = useToast();
   const { setUserPhoto } = useAppStore();
+  const { user } = useAuth();
 
   const handleClick = () => {
     setShowGuidelines(true);
@@ -82,6 +85,9 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
         setUserPhoto(photoData);
         onUpload?.(file);
 
+        // Track photo upload
+        trackPhotoUploaded(user?.id);
+
         toast({
           title: "Photo uploaded!",
           description: "Preparing your personalized try-on experience...",
@@ -138,7 +144,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
           className={fullWidth ? "w-full" : ""}
         >
           <Camera className="w-5 h-5" />
-          Start Free Try-On
+          Upload your photo
         </Button>
       )}
 
