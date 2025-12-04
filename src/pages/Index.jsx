@@ -128,7 +128,7 @@ const Index = () => {
                 <UploadButton variant="hero" size="default" />
                 <div className="relative w-full sm:w-auto inline-block">
                   <Button variant="secondary" size="default" onClick={() => navigate('/try-on')} className="w-full sm:w-auto">
-                    Browse Outfits
+                    5 Free Outfits Try-Ons
                   </Button>
                   <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
                     New
@@ -211,7 +211,7 @@ const Index = () => {
                   <UploadButton variant="hero" size="default" />
                   <div className="relative w-full sm:w-auto inline-block">
                     <Button variant="secondary" size="default" onClick={() => navigate('/try-on')} className="w-full sm:w-auto">
-                      Browse Outfits
+                      Try any 5 outfits for free
                     </Button>
                     <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
                       New
