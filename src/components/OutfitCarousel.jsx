@@ -22,7 +22,7 @@ const MiniProductCard = ({ product, outfitId, userId }) => {
   if (!product.imageUrl) return null;
 
   const CardContent = (
-    <div className="w-11 h-11 overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:shadow-md transition-all">
+    <div className="w-7 h-7 rounded overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:scale-110 transition-all cursor-pointer">
       <img
         src={product.imageUrl}
         alt={product.name || 'Product'}
@@ -133,8 +133,8 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate,
 
           {/* Product Cards - Below the outfit card */}
           {outfit.products && outfit.products.length > 0 && (
-            <div className="flex gap-1.5 flex-wrap">
-              {outfit.products.slice(0, 4).map((product, index) => (
+            <div className="flex gap-1 items-center justify-center">
+              {outfit.products.slice(0, 5).map((product, index) => (
                 <MiniProductCard
                   key={index}
                   product={product}
@@ -142,9 +142,9 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate,
                   userId={user?.id}
                 />
               ))}
-              {outfit.products.length > 4 && (
-                <div className="w-11 h-11 bg-gray-100 flex-shrink-0 flex items-center justify-center text-xs text-gray-500 font-medium border border-gray-200">
-                  +{outfit.products.length - 4}
+              {outfit.products.length > 5 && (
+                <div className="w-7 h-7 rounded bg-gray-100 flex-shrink-0 flex items-center justify-center text-[10px] text-gray-500 font-medium">
+                  +{outfit.products.length - 5}
                 </div>
               )}
             </div>
