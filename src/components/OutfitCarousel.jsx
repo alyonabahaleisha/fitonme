@@ -22,7 +22,7 @@ const MiniProductCard = ({ product, outfitId, userId }) => {
   if (!product.imageUrl) return null;
 
   const CardContent = (
-    <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0 hover:border-gray-400 transition-colors">
+    <div className="w-11 h-11 overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:shadow-md transition-all">
       <img
         src={product.imageUrl}
         alt={product.name || 'Product'}
@@ -65,85 +65,88 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate,
       {outfits.map((outfit) => (
         <div
           key={outfit.id}
-          onClick={() => onSelectOutfit(outfit)}
-          className={`group relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer w-[calc((100%-1rem)/2)] lg:w-[calc((100%-4rem)/5)] ${
-            selectedOutfit?.id === outfit.id
-              ? 'border-2 shadow-lg'
-              : 'border border-gray-200'
-          }`}
-          style={selectedOutfit?.id === outfit.id ? { borderColor: '#ff6b5a' } : {}}
+          className="w-[calc((100%-1rem)/2)] lg:w-[calc((100%-4rem)/5)] flex flex-col gap-2"
         >
-          {/* Outfit Image */}
-          <div className="aspect-[3/4] overflow-hidden bg-white relative p-[5px]">
-            <img
-              src={outfit.thumbnailUrl || outfit.imageUrl}
-              alt={outfit.name}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
+          {/* Outfit Card */}
+          <div
+            onClick={() => onSelectOutfit(outfit)}
+            className={`group relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-[var(--shadow-hover)] transition-all duration-300 cursor-pointer ${
+              selectedOutfit?.id === outfit.id
+                ? 'border-2 shadow-lg'
+                : 'border border-gray-200'
+            }`}
+            style={selectedOutfit?.id === outfit.id ? { borderColor: '#ff6b5a' } : {}}
+          >
+            {/* Outfit Image */}
+            <div className="aspect-[3/4] overflow-hidden bg-white relative p-[5px]">
+              <img
+                src={outfit.thumbnailUrl || outfit.imageUrl}
+                alt={outfit.name}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
 
-            {/* Try On Button Overlay - Shows on Hover */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <button
-                className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  selectedOutfit?.id === outfit.id
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-white text-gray-900 hover:bg-primary-500 hover:text-white'
-                }`}
-              >
-                {selectedOutfit?.id === outfit.id && hasAppliedOutfit ? (
-                  <>
-                    <RefreshCw className="h-4 w-4" />
-                    Regenerate
-                  </>
-                ) : selectedOutfit?.id === outfit.id ? (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Selected
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Try On
-                  </>
-                )}
-              </button>
+              {/* Try On Button Overlay - Shows on Hover */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <button
+                  className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    selectedOutfit?.id === outfit.id
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-white text-gray-900 hover:bg-primary-500 hover:text-white'
+                  }`}
+                >
+                  {selectedOutfit?.id === outfit.id && hasAppliedOutfit ? (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Regenerate
+                    </>
+                  ) : selectedOutfit?.id === outfit.id ? (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Selected
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Try On
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Retry Button - Shows on selected and applied outfit */}
+              {selectedOutfit?.id === outfit.id && hasAppliedOutfit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRegenerate();
+                  }}
+                  className="absolute top-2 right-2 z-10 bg-white/95 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
+                  style={{ color: '#ff6b5a' }}
+                  aria-label="Regenerate outfit"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </button>
+              )}
             </div>
-
-            {/* Retry Button - Shows on selected and applied outfit */}
-            {selectedOutfit?.id === outfit.id && hasAppliedOutfit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRegenerate();
-                }}
-                className="absolute top-2 right-2 z-10 bg-white/95 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
-                style={{ color: '#ff6b5a' }}
-                aria-label="Regenerate outfit"
-              >
-                <RotateCw className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
-          {/* Mini Product Cards */}
+          {/* Product Cards - Below the outfit card */}
           {outfit.products && outfit.products.length > 0 && (
-            <div className="px-1.5 py-1.5 bg-gray-50 border-t border-gray-100">
-              <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-                {outfit.products.slice(0, 4).map((product, index) => (
-                  <MiniProductCard
-                    key={index}
-                    product={product}
-                    outfitId={outfit.id}
-                    userId={user?.id}
-                  />
-                ))}
-                {outfit.products.length > 4 && (
-                  <div className="w-8 h-8 rounded-md bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs text-gray-500 font-medium">
-                    +{outfit.products.length - 4}
-                  </div>
-                )}
-              </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {outfit.products.slice(0, 4).map((product, index) => (
+                <MiniProductCard
+                  key={index}
+                  product={product}
+                  outfitId={outfit.id}
+                  userId={user?.id}
+                />
+              ))}
+              {outfit.products.length > 4 && (
+                <div className="w-11 h-11 bg-gray-100 flex-shrink-0 flex items-center justify-center text-xs text-gray-500 font-medium border border-gray-200">
+                  +{outfit.products.length - 4}
+                </div>
+              )}
             </div>
           )}
         </div>
