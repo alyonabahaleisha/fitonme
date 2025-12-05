@@ -1,6 +1,57 @@
 import { Sparkles, RefreshCw, RotateCw } from 'lucide-react';
+import { trackProductClicked } from '../services/analytics';
+import { useAuth } from '../contexts/AuthContext';
+
+// Mini product card component for outfit grid
+const MiniProductCard = ({ product, outfitId, userId }) => {
+  // Add Amazon affiliate tag to product links
+  const getAffiliateLink = (link) => {
+    if (!link) return link;
+    try {
+      const url = new URL(link);
+      if (url.hostname.includes('amazon.com')) {
+        url.searchParams.set('tag', 'alvalgrace-20');
+        return url.toString();
+      }
+      return link;
+    } catch (e) {
+      return link;
+    }
+  };
+
+  if (!product.imageUrl) return null;
+
+  const CardContent = (
+    <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0 hover:border-gray-400 transition-colors">
+      <img
+        src={product.imageUrl}
+        alt={product.name || 'Product'}
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+
+  if (product.link) {
+    return (
+      <a
+        href={getAffiliateLink(product.link)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => {
+          e.stopPropagation();
+          trackProductClicked(product.name, product.link, outfitId, userId);
+        }}
+      >
+        {CardContent}
+      </a>
+    );
+  }
+
+  return CardContent;
+};
 
 const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate, hasAppliedOutfit }) => {
+  const { user } = useAuth();
   if (!outfits || outfits.length === 0) {
     return (
       <div className="text-center py-12">
@@ -74,6 +125,27 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate,
               </button>
             )}
           </div>
+
+          {/* Mini Product Cards */}
+          {outfit.products && outfit.products.length > 0 && (
+            <div className="px-1.5 py-1.5 bg-gray-50 border-t border-gray-100">
+              <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+                {outfit.products.slice(0, 4).map((product, index) => (
+                  <MiniProductCard
+                    key={index}
+                    product={product}
+                    outfitId={outfit.id}
+                    userId={user?.id}
+                  />
+                ))}
+                {outfit.products.length > 4 && (
+                  <div className="w-8 h-8 rounded-md bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs text-gray-500 font-medium">
+                    +{outfit.products.length - 4}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       ))}
     </div>
