@@ -22,7 +22,7 @@ const MiniProductCard = ({ product, outfitId, userId }) => {
   if (!product.imageUrl) return null;
 
   const CardContent = (
-    <div className="w-11 h-11 rounded-sm overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:shadow-md transition-all cursor-pointer p-1">
+    <div className="w-14 h-14 rounded overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:shadow-md transition-all cursor-pointer p-1.5">
       <img
         src={product.imageUrl}
         alt={product.name || 'Product'}
