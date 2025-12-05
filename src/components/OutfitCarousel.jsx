@@ -22,11 +22,11 @@ const MiniProductCard = ({ product, outfitId, userId }) => {
   if (!product.imageUrl) return null;
 
   const CardContent = (
-    <div className="w-9 h-9 rounded overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:scale-105 transition-all cursor-pointer">
+    <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-200 flex-shrink-0 hover:border-gray-400 hover:shadow-md transition-all cursor-pointer p-1">
       <img
         src={product.imageUrl}
         alt={product.name || 'Product'}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
       />
     </div>
   );
@@ -133,17 +133,15 @@ const OutfitCarousel = ({ outfits, selectedOutfit, onSelectOutfit, onRegenerate,
 
           {/* Product Cards - Below the outfit card */}
           {outfit.products && outfit.products.length > 0 && (
-            <div className="bg-white rounded-lg p-1.5 shadow-sm border border-gray-100">
-              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-                {outfit.products.map((product, index) => (
-                  <MiniProductCard
-                    key={index}
-                    product={product}
-                    outfitId={outfit.id}
-                    userId={user?.id}
-                  />
-                ))}
-              </div>
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+              {outfit.products.map((product, index) => (
+                <MiniProductCard
+                  key={index}
+                  product={product}
+                  outfitId={outfit.id}
+                  userId={user?.id}
+                />
+              ))}
             </div>
           )}
         </div>
