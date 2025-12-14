@@ -108,41 +108,17 @@ const Index = () => {
         <div className="absolute bottom-20 left-10 w-[400px] h-[400px] bg-gradient-to-tr from-accent/12 to-brand/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="container mx-auto max-w-6xl relative">
-          {/* Mobile: Stacked layout with model above carousel */}
-          <div className="lg:hidden space-y-8">
-            {/* Text Content */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-brand/15 to-accent/15 border border-brand/30 backdrop-blur-sm">
-                <span className="text-brand text-xs font-medium tracking-wider uppercase">✨ AI-Powered Virtual Fitting</span>
-              </div>
-
-              <h1 className="text-3xl md:text-4xl font-serif font-semibold text-foreground leading-tight tracking-tight">
+          {/* Mobile: Stacked layout - Heading, Model, Carousel, Button */}
+          <div className="lg:hidden space-y-6">
+            {/* 1. Heading */}
+            <div className="text-center">
+              <h1 className="text-3xl font-serif font-semibold text-foreground leading-tight tracking-tight">
                 Level up your look — Instantly.
               </h1>
-
-              <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                Upload your photo to preview styles on your real body. Fast, personal, and powered by AI. <span className="font-semibold text-foreground">100+ premium curated outfits.</span>
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3" ref={uploadButtonRef}>
-                <UploadButton variant="hero" size="default" />
-                <div className="relative w-full sm:w-auto inline-block">
-                  <Button variant="secondary" size="default" onClick={() => navigate('/try-on')} className="w-full sm:w-auto">
-                    5 Free Outfits Try-Ons
-                  </Button>
-                  <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-full shadow-lg">
-                    New
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-muted-foreground flex items-center gap-2">
-                🔒 Your photo is processed securely. Delete anytime.
-              </p>
             </div>
 
-            {/* Model Image */}
-            <div className="relative flex justify-center mb-16">
+            {/* 2. Model Image */}
+            <div className="relative flex justify-center">
               <div className="w-full max-w-sm">
                 <HeroModelCanvas
                   modelImage={modelBase}
@@ -159,8 +135,8 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Carousel */}
-            <div className="pt-12">
+            {/* 3. Carousel */}
+            <div className="pt-4">
               <PlayfulCarousel
                 outfits={outfits}
                 autoPlayMs={1000}
@@ -169,6 +145,14 @@ const Index = () => {
                 onHoverChange={setIsCarouselHovered}
                 imagesLoaded={imagesLoaded}
               />
+            </div>
+
+            {/* 4. Upload Button */}
+            <div className="flex flex-col gap-3 pt-4" ref={uploadButtonRef}>
+              <UploadButton variant="hero" size="default" />
+              <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
+                🔒 Your photo is processed securely. Delete anytime.
+              </p>
             </div>
           </div>
 
