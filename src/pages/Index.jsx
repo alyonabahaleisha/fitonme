@@ -109,7 +109,7 @@ const Index = () => {
 
         <div className="container mx-auto max-w-6xl relative">
           {/* Mobile: Stacked layout - Heading, Model, Carousel, Button */}
-          <div className="lg:hidden space-y-2">
+          <div className="lg:hidden space-y-0">
             {/* 1. Heading */}
             <div className="text-center">
               <h1 className="text-3xl font-serif font-semibold text-foreground leading-tight tracking-tight">
