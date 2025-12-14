@@ -136,7 +136,7 @@ const Index = () => {
             </div>
 
             {/* 3. Carousel */}
-            <div className="pt-4">
+            <div>
               <PlayfulCarousel
                 outfits={outfits}
                 autoPlayMs={1000}
