@@ -125,11 +125,11 @@ const BeforeAfterSlider = () => {
   }
 
   return (
-    <div className="w-full max-w-sm mx-auto">
+    <div className="w-full h-full flex flex-col items-center justify-center">
       {/* Slider Container */}
       <div
         ref={containerRef}
-        className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-lg cursor-ew-resize select-none touch-none"
+        className="relative w-full max-w-[280px] aspect-[3/4] rounded-3xl overflow-hidden shadow-lg cursor-ew-resize select-none touch-none"
         onMouseDown={handleInteractionStart}
         onMouseUp={handleInteractionEnd}
         onMouseLeave={handleInteractionEnd}

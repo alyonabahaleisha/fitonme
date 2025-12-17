@@ -315,10 +315,10 @@ const TryOn = () => {
     switch (currentStep) {
       case STEPS.UPLOAD:
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-            <div className="w-full max-w-md space-y-8 text-center">
+          <div className="h-[100dvh] flex flex-col items-center justify-center px-4 py-6">
+            <div className="w-full max-w-md space-y-6 text-center">
               {/* Photo preview or placeholder */}
-              <div className="aspect-[3/4] max-w-xs mx-auto rounded-3xl overflow-hidden bg-secondary/50 flex items-center justify-center">
+              <div className="aspect-[3/4] max-w-[240px] mx-auto rounded-3xl overflow-hidden bg-secondary/50 flex items-center justify-center">
                 {userPhoto ? (
                   <img
                     src={userPhoto}
@@ -360,7 +360,7 @@ const TryOn = () => {
 
       case STEPS.GENERATING:
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center px-4">
+          <div className="h-[100dvh] flex flex-col items-center justify-center px-4">
             <div className="text-center space-y-6">
               <div className="relative">
                 <Sparkles className="w-16 h-16 text-brand mx-auto animate-pulse" />
@@ -438,7 +438,7 @@ const TryOn = () => {
       />
 
       {/* Main content */}
-      <div className="min-h-screen bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
+      <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
         {/* Back button (shown during flow, not on upload) */}
         {currentStep !== STEPS.UPLOAD && currentStep !== STEPS.GENERATING && (
           <div className="fixed top-4 left-4 z-40">

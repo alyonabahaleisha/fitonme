@@ -61,13 +61,13 @@ const MoreLooks = ({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background safe-top">
+    <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="px-4 pt-6 pb-4 text-center">
-        <h2 className="text-xl font-serif font-semibold text-foreground">
-          We picked a few more options for you
+      <div className="px-4 pt-4 pb-2 text-center flex-shrink-0">
+        <h2 className="text-lg font-serif font-semibold text-foreground">
+          More options for you
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground">
           {currentIndex + 1} of {looks.length} looks
         </p>
       </div>
@@ -149,45 +149,46 @@ const MoreLooks = ({
         </button>
       </div>
 
-      {/* Dot indicators */}
-      <div className="flex justify-center gap-2 py-4">
-        {looks.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => scrollTo(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? 'bg-brand w-6'
-                : 'bg-border hover:bg-muted-foreground'
-            }`}
-            aria-label={`Go to look ${index + 1}`}
-          />
-        ))}
-      </div>
+      {/* Bottom section */}
+      <div className="flex-shrink-0 px-4 pb-4 space-y-2">
+        {/* Dot indicators */}
+        <div className="flex justify-center gap-1.5">
+          {looks.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => scrollTo(index)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                index === currentIndex
+                  ? 'bg-brand w-5'
+                  : 'bg-border w-1.5 hover:bg-muted-foreground'
+              }`}
+              aria-label={`Go to look ${index + 1}`}
+            />
+          ))}
+        </div>
 
-      {/* Generate more button */}
-      {canGenerateMore && looks.length < 7 && (
-        <div className="px-4 pb-6 safe-bottom">
+        {/* Generate more button */}
+        {canGenerateMore && looks.length < 7 && (
           <Button
             onClick={onGenerateMore}
             disabled={isGeneratingMore}
             variant="outline"
-            className="w-full py-4 rounded-2xl"
+            className="w-full py-3 rounded-xl text-sm"
           >
             {isGeneratingMore ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Generating more looks...
+                Generating...
               </>
             ) : (
               <>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Show me more options
+                More options
               </>
             )}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Saved feedback toast */}
       {showSavedFeedback && (
