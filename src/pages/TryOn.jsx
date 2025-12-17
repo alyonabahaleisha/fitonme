@@ -17,7 +17,7 @@ import useAppStore from '../store/useAppStore';
 import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 import { useAuth } from '../contexts/AuthContext';
 import { checkUserCredits, decrementUserCredits, recordTryOn } from '../lib/supabase';
-import { compressImage } from '../lib/image-processor';
+import { compressImage, prefetchOutfitImages } from '../lib/image-processor';
 import {
   trackPhotoUploaded,
   trackTryOnStarted,
@@ -276,6 +276,12 @@ const TryOn = () => {
   // Handle style selection
   const handleStyleSelect = (style) => {
     setStylePreference(style);
+
+    // Pre-fetch outfit images in the background while generating
+    const filteredOutfits = getFilteredOutfits(style);
+    const outfitUrls = filteredOutfits.slice(0, 5).map(o => o.imageUrl);
+    prefetchOutfitImages(outfitUrls); // Fire and forget
+
     // Generate just the first look for instant gratification
     generateFirstLook(style);
   };

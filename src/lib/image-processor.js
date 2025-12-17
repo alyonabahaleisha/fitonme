@@ -1,69 +1,89 @@
-// Helper function to convert image URL to base64
-const urlToBase64 = async (url) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
+import { supabase } from './supabase';
 
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL());
-    };
-
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = url;
-  });
+// Convert data URL to Blob (faster than File for FormData)
+const dataURLtoBlob = (dataUrl) => {
+  const arr = dataUrl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
 };
 
-// Convert data URL to File object
-const dataURLtoFile = async (dataUrl, filename) => {
-  const res = await fetch(dataUrl);
-  const blob = await res.blob();
-  return new File([blob], filename, { type: blob.type });
-};
+// Pre-fetch and cache outfit images for faster generation
+const outfitImageCache = new Map();
 
-// Image overlay processor using Gemini API
-export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
+export const prefetchOutfitImage = async (outfitUrl) => {
+  if (outfitImageCache.has(outfitUrl)) {
+    return outfitImageCache.get(outfitUrl);
+  }
+
   try {
-    // Convert images to File objects
-    const userPhotoFile = userPhotoUrl.startsWith('data:')
-      ? await dataURLtoFile(userPhotoUrl, 'user-photo.jpg')
-      : await fetch(userPhotoUrl).then(r => r.blob()).then(blob => new File([blob], 'user-photo.jpg', { type: blob.type }));
+    const response = await fetch(outfitUrl);
+    const blob = await response.blob();
+    outfitImageCache.set(outfitUrl, blob);
+    return blob;
+  } catch (error) {
+    console.warn('[PREFETCH] Failed to prefetch outfit image:', error);
+    return null;
+  }
+};
 
-    const outfitFile = outfitUrl.startsWith('data:')
-      ? await dataURLtoFile(outfitUrl, 'outfit.png')
-      : await fetch(outfitUrl).then(r => r.blob()).then(blob => new File([blob], 'outfit.png', { type: blob.type }));
+// Pre-fetch multiple outfit images (call this after style selection)
+export const prefetchOutfitImages = async (outfitUrls) => {
+  const promises = outfitUrls.slice(0, 5).map(url => prefetchOutfitImage(url));
+  await Promise.allSettled(promises);
+  console.log(`[PREFETCH] Pre-cached ${outfitImageCache.size} outfit images`);
+};
 
-    // Create FormData
+// Image overlay processor using Gemini API - OPTIMIZED
+export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
+  const startTime = performance.now();
+
+  try {
+    // Run all async operations in parallel for maximum speed
+    const [userPhotoBlob, outfitBlob, authResult] = await Promise.all([
+      // Convert user photo (already a data URL)
+      userPhotoUrl.startsWith('data:')
+        ? Promise.resolve(dataURLtoBlob(userPhotoUrl))
+        : fetch(userPhotoUrl).then(r => r.blob()),
+
+      // Get outfit image (check cache first)
+      outfitImageCache.has(outfitUrl)
+        ? Promise.resolve(outfitImageCache.get(outfitUrl))
+        : fetch(outfitUrl).then(r => r.blob()),
+
+      // Get auth session in parallel
+      supabase.auth.getSession().catch(() => ({ data: { session: null } }))
+    ]);
+
+    console.log(`[PERF] Image prep took ${Math.round(performance.now() - startTime)}ms`);
+
+    // Create FormData with blobs
     const formData = new FormData();
-    formData.append('personImage', userPhotoFile);
-    formData.append('clothingImage', outfitFile);
+    formData.append('personImage', userPhotoBlob, 'user-photo.jpg');
+    formData.append('clothingImage', outfitBlob, 'outfit.png');
 
-    // Get JWT token from Supabase session (if authenticated)
+    // Set auth header if available
     const headers = {};
-    try {
-      const { supabase } = await import('./supabase');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-        console.log('[API] Sending authenticated request with JWT token');
-      } else {
-        console.log('[API] Sending unauthenticated request (no JWT token)');
-      }
-    } catch (error) {
-      console.warn('[API] Could not get auth session:', error.message);
+    if (authResult?.data?.session?.access_token) {
+      headers['Authorization'] = `Bearer ${authResult.data.session.access_token}`;
     }
 
     // Call the backend API
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const apiStart = performance.now();
+
     const response = await fetch(`${apiUrl}/api/try-on`, {
       method: 'POST',
       headers,
       body: formData,
     });
+
+    console.log(`[PERF] API call took ${Math.round(performance.now() - apiStart)}ms`);
 
     if (!response.ok) {
       const error = await response.json();
@@ -71,6 +91,7 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
     }
 
     const data = await response.json();
+    console.log(`[PERF] Total generation took ${Math.round(performance.now() - startTime)}ms`);
 
     // Return the generated image as data URL
     return `data:${data.mimeType};base64,${data.image}`;

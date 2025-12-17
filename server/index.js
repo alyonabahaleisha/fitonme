@@ -89,22 +89,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
-
+// Configure multer for file uploads - USE MEMORY STORAGE for speed
+// Memory storage avoids disk I/O which is much faster for small images
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
@@ -125,11 +113,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Helper function to convert image to base64
-function fileToGenerativePart(path, mimeType) {
+// Helper function to convert buffer to Gemini part (for memory storage)
+function bufferToGenerativePart(buffer, mimeType) {
   return {
     inlineData: {
-      data: Buffer.from(fs.readFileSync(path)).toString('base64'),
+      data: buffer.toString('base64'),
       mimeType
     }
   };
@@ -495,20 +483,23 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
 // Main endpoint for virtual try-on (accepts file uploads)
 // Apply optionalAuth middleware to check JWT if present
+// OPTIMIZED: Uses memory storage for faster processing
 app.post('/api/try-on', optionalAuth, upload.fields([
   { name: 'personImage', maxCount: 1 },
   { name: 'clothingImage', maxCount: 1 }
 ]), async (req, res) => {
+  const startTime = Date.now();
+
   try {
     if (!req.files || !req.files.personImage || !req.files.clothingImage) {
       return res.status(400).json({ error: 'Both person and clothing images are required' });
     }
 
-    const personImagePath = req.files.personImage[0].path;
-    const clothingImagePath = req.files.clothingImage[0].path;
+    // Get buffers directly from memory (no disk I/O)
+    const personImageBuffer = req.files.personImage[0].buffer;
+    const clothingImageBuffer = req.files.clothingImage[0].buffer;
     const personImageMime = req.files.personImage[0].mimetype;
     const clothingImageMime = req.files.clothingImage[0].mimetype;
-    const description = req.body.description || '';
     const outfitName = req.body.outfitName || 'Outfit';
 
     // Log authentication status
@@ -518,32 +509,23 @@ app.post('/api/try-on', optionalAuth, upload.fields([
       logger.info('[AUTH] Unauthenticated try-on request (guest user)');
     }
 
-    logger.info('Processing images...');
-    logger.info('Person image:', personImagePath);
-    logger.info('Clothing image:', clothingImagePath);
-    logger.info('Description:', description);
+    logger.info(`[PERF] Request received, image sizes: person=${personImageBuffer.length}, clothing=${clothingImageBuffer.length}`);
 
     // Enforce credits/plan limits for authenticated users
     if (req.user) {
+      const creditCheckStart = Date.now();
       const { data: hasCredits, error: creditError } = await supabase.rpc('check_user_credits', {
         user_uuid: req.user.id
       });
+      logger.info(`[PERF] Credit check took ${Date.now() - creditCheckStart}ms`);
 
       if (creditError) {
         logger.error('Error checking user credits:', creditError);
-        // Fail safe: if we can't check, assume no credits to prevent abuse, or allow?
-        // Let's allow but log error to be safe, OR return 500.
-        // Returning 500 is safer.
         throw new Error('Failed to verify user credits');
       }
 
       if (!hasCredits) {
         logger.warn(`[AUTH] User ${req.user.id} attempted try-on without credits/active plan`);
-
-        // Clean up files
-        fs.unlinkSync(personImagePath);
-        fs.unlinkSync(clothingImagePath);
-
         return res.status(403).json({
           error: 'Insufficient credits or expired plan',
           code: 'NO_CREDITS'
@@ -557,7 +539,6 @@ app.post('/api/try-on', optionalAuth, upload.fields([
 
       if (decrementError) {
         logger.error('Error decrementing user credits:', decrementError);
-        // We continue anyway since they had credits
       }
     }
 
@@ -566,8 +547,9 @@ app.post('/api/try-on', optionalAuth, upload.fields([
       model: 'gemini-2.5-flash-image'
     });
 
-    const personImagePart = fileToGenerativePart(personImagePath, personImageMime);
-    const clothingImagePart = fileToGenerativePart(clothingImagePath, clothingImageMime);
+    // Convert buffers directly to Gemini parts (no file I/O)
+    const personImagePart = bufferToGenerativePart(personImageBuffer, personImageMime);
+    const clothingImagePart = bufferToGenerativePart(clothingImageBuffer, clothingImageMime);
 
     // Generate image directly with both image inputs
     const generationPrompt = `Generate a photorealistic virtual try-on image.
@@ -582,11 +564,13 @@ CRITICAL INSTRUCTIONS:
 5. MOOD & EXPRESSION: The person should look confident, comfortable, and innerly happy. They should feel good in these clothes.
 6. REALISM: The result must be a seamless, high-quality fashion photo. Natural folds, shadows, and interaction are essential.`;
 
+    const geminiStart = Date.now();
     const result = await model.generateContent([
       generationPrompt,
       personImagePart,
       clothingImagePart
     ]);
+    logger.info(`[PERF] Gemini API took ${Date.now() - geminiStart}ms`);
 
     const response = await result.response;
 
@@ -599,11 +583,7 @@ CRITICAL INSTRUCTIONS:
       throw new Error('No image generated in response');
     }
 
-    logger.info('Image generated successfully');
-
-    // Clean up uploaded files
-    fs.unlinkSync(personImagePath);
-    fs.unlinkSync(clothingImagePath);
+    logger.info(`[PERF] Total request time: ${Date.now() - startTime}ms`);
 
     res.json({
       success: true,
@@ -620,13 +600,6 @@ CRITICAL INSTRUCTIONS:
 
   } catch (error) {
     logger.error('Error processing try-on:', error);
-
-    // Clean up files on error
-    if (req.files) {
-      if (req.files.personImage) fs.unlinkSync(req.files.personImage[0].path);
-      if (req.files.clothingImage) fs.unlinkSync(req.files.clothingImage[0].path);
-    }
-
     res.status(500).json({
       error: 'Failed to process virtual try-on',
       details: error.message
