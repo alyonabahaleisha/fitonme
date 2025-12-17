@@ -114,7 +114,11 @@ const TryOn = () => {
   }, [outfits, stylePreference]);
 
   // Check if user has permission to try on
+  // AUTH DISABLED - always allow
   const checkTryOnPermission = async () => {
+    return true; // Auth disabled for now
+
+    /* Original auth logic - uncomment to re-enable:
     const isDevelopment = import.meta.env.DEV;
     if (isDevelopment) return true;
 
@@ -135,10 +139,15 @@ const TryOn = () => {
     }
 
     return true;
+    */
   };
 
   // Track the try-on attempt
+  // AUTH DISABLED - skip tracking
   const trackTryOnAttempt = async (outfitId, resultUrl) => {
+    return; // Auth disabled for now
+
+    /* Original tracking logic - uncomment to re-enable:
     const isDevelopment = import.meta.env.DEV;
     if (isDevelopment) return;
 
@@ -152,6 +161,7 @@ const TryOn = () => {
     } else {
       incrementGuestTryOns();
     }
+    */
   };
 
   // Generate just ONE look for the initial "wow" moment

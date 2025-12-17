@@ -511,6 +511,8 @@ app.post('/api/try-on', optionalAuth, upload.fields([
 
     logger.info(`[PERF] Request received, image sizes: person=${personImageBuffer.length}, clothing=${clothingImageBuffer.length}`);
 
+    // AUTH DISABLED - Skip credit checks for now
+    /*
     // Enforce credits/plan limits for authenticated users
     if (req.user) {
       const creditCheckStart = Date.now();
@@ -541,6 +543,7 @@ app.post('/api/try-on', optionalAuth, upload.fields([
         logger.error('Error decrementing user credits:', decrementError);
       }
     }
+    */
 
     // Use Gemini 2.5 Flash Image model for image generation
     const model = genAI.getGenerativeModel({
