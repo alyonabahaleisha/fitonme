@@ -7,11 +7,27 @@ const useAppStore = create(
     (set, get) => ({
       // User photo state
       userPhoto: null,
-      setUserPhoto: (photo) => set({ userPhoto: photo, processedImages: {} }), // Clear cache on new photo
+      setUserPhoto: (photo) => set({ userPhoto: photo, processedImages: {}, generatedLooks: [] }), // Clear cache on new photo
 
       // Current outfit
       currentOutfit: null,
       setCurrentOutfit: (outfit) => set({ currentOutfit: outfit }),
+
+      // Style preference (for outfit generation)
+      stylePreference: null, // 'feminine' | 'masculine'
+      setStylePreference: (style) => set({ stylePreference: style }),
+
+      // Flow step management
+      currentStep: 'upload', // 'upload' | 'style' | 'first_look' | 'more_looks' | 'details'
+      setCurrentStep: (step) => set({ currentStep: step }),
+
+      // Generated looks for the current session
+      generatedLooks: [], // Array of { outfitId, image, outfit }
+      addGeneratedLook: (look) => set((state) => ({
+        generatedLooks: [...state.generatedLooks, look]
+      })),
+      setGeneratedLooks: (looks) => set({ generatedLooks: looks }),
+      clearGeneratedLooks: () => set({ generatedLooks: [] }),
 
       // Outfit catalog
       outfits: [],
@@ -90,6 +106,9 @@ const useAppStore = create(
         showShareModal: false,
         showSignUpModal: false,
         closetCount: 0,
+        stylePreference: null,
+        currentStep: 'upload',
+        generatedLooks: [],
       }),
     }),
     {
@@ -102,6 +121,9 @@ const useAppStore = create(
         currentOutfit: state.currentOutfit,
         processedImages: state.processedImages,
         closetCount: state.closetCount,
+        stylePreference: state.stylePreference,
+        generatedLooks: state.generatedLooks,
+        // Note: currentStep intentionally NOT persisted - should reset to 'upload' on page load
       }),
       onRehydrateStorage: () => (_state, error) => {
         if (error) {
