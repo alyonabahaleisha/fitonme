@@ -154,58 +154,53 @@ const TryOn = () => {
     }
   };
 
-  // Generate multiple looks after style selection
-  const generateLooks = async (selectedStyle) => {
-    // Don't check permissions for initial generation - let users see value first
-    // Permission check happens when generating MORE looks or saving
-
+  // Generate just ONE look for the initial "wow" moment
+  const generateFirstLook = async (selectedStyle) => {
     setCurrentStep(STEPS.GENERATING);
     clearGeneratedLooks();
     setGenerationProgress(0);
 
     const filteredOutfits = getFilteredOutfits(selectedStyle);
-    // Select 5 random outfits
+    // Select 1 random outfit for the first look
     const shuffled = [...filteredOutfits].sort(() => Math.random() - 0.5);
-    const selectedOutfits = shuffled.slice(0, 5);
+    const firstOutfit = shuffled[0];
 
-    const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
-    const results = [];
-
-    for (let i = 0; i < selectedOutfits.length; i++) {
-      const outfit = selectedOutfits[i];
-      trackTryOnStarted(outfit.id, outfit.name, user?.id, userType);
-
-      try {
-        const result = await applyOutfit(outfit);
-        if (result) {
-          results.push({
-            outfitId: outfit.id,
-            image: result,
-            outfit: outfit,
-          });
-          trackTryOnCompleted(outfit.id, outfit.name, user?.id, userType, true);
-          // Don't count against free limit for initial generation
-        } else {
-          trackTryOnCompleted(outfit.id, outfit.name, user?.id, userType, false);
-        }
-      } catch (error) {
-        console.error('Error generating look:', error);
-        trackTryOnCompleted(outfit.id, outfit.name, user?.id, userType, false);
-      }
-
-      setGenerationProgress(((i + 1) / selectedOutfits.length) * 100);
+    if (!firstOutfit) {
+      toast.error('No outfits available. Please try again.');
+      setCurrentStep(STEPS.STYLE);
+      return;
     }
 
-    if (results.length > 0) {
-      setGeneratedLooks(results);
-      setCurrentStep(STEPS.FIRST_LOOK);
-    } else {
-      toast.error('Failed to generate looks. Please try again.');
+    const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
+    trackTryOnStarted(firstOutfit.id, firstOutfit.name, user?.id, userType);
+
+    try {
+      setGenerationProgress(50);
+      const result = await applyOutfit(firstOutfit);
+      setGenerationProgress(100);
+
+      if (result) {
+        setGeneratedLooks([{
+          outfitId: firstOutfit.id,
+          image: result,
+          outfit: firstOutfit,
+        }]);
+        trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, true);
+        setCurrentStep(STEPS.FIRST_LOOK);
+      } else {
+        trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
+        toast.error('Failed to generate look. Please try again.');
+        setCurrentStep(STEPS.STYLE);
+      }
+    } catch (error) {
+      console.error('Error generating first look:', error);
+      trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
+      toast.error('Failed to generate look. Please try again.');
       setCurrentStep(STEPS.STYLE);
     }
   };
 
-  // Generate more looks (up to 7 total)
+  // Generate ONE more look (up to 7 total)
   const generateMoreLooks = async () => {
     if (generatedLooks.length >= 7) return;
 
@@ -218,32 +213,31 @@ const TryOn = () => {
     const existingIds = generatedLooks.map((l) => l.outfitId);
     const availableOutfits = filteredOutfits.filter((o) => !existingIds.includes(o.id));
     const shuffled = [...availableOutfits].sort(() => Math.random() - 0.5);
-    const selectedOutfits = shuffled.slice(0, 2); // Add 2 more
+    const nextOutfit = shuffled[0]; // Just 1 more
 
-    const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
-    const newResults = [];
-
-    for (const outfit of selectedOutfits) {
-      trackTryOnStarted(outfit.id, outfit.name, user?.id, userType);
-
-      try {
-        const result = await applyOutfit(outfit);
-        if (result) {
-          newResults.push({
-            outfitId: outfit.id,
-            image: result,
-            outfit: outfit,
-          });
-          trackTryOnCompleted(outfit.id, outfit.name, user?.id, userType, true);
-          await trackTryOnAttempt(outfit.id, result);
-        }
-      } catch (error) {
-        console.error('Error generating additional look:', error);
-      }
+    if (!nextOutfit) {
+      toast.error('No more outfits available.');
+      setIsGeneratingMore(false);
+      return;
     }
 
-    if (newResults.length > 0) {
-      setGeneratedLooks([...generatedLooks, ...newResults]);
+    const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
+    trackTryOnStarted(nextOutfit.id, nextOutfit.name, user?.id, userType);
+
+    try {
+      const result = await applyOutfit(nextOutfit);
+      if (result) {
+        const newLook = {
+          outfitId: nextOutfit.id,
+          image: result,
+          outfit: nextOutfit,
+        };
+        setGeneratedLooks([...generatedLooks, newLook]);
+        trackTryOnCompleted(nextOutfit.id, nextOutfit.name, user?.id, userType, true);
+        await trackTryOnAttempt(nextOutfit.id, result);
+      }
+    } catch (error) {
+      console.error('Error generating additional look:', error);
     }
 
     setIsGeneratingMore(false);
@@ -282,8 +276,8 @@ const TryOn = () => {
   // Handle style selection
   const handleStyleSelect = (style) => {
     setStylePreference(style);
-    // Pass style directly to avoid closure issues
-    generateLooks(style);
+    // Generate just the first look for instant gratification
+    generateFirstLook(style);
   };
 
   // Handle navigation
@@ -401,7 +395,11 @@ const TryOn = () => {
         return (
           <FirstLook
             image={firstLook.image}
-            onSeeMore={() => setCurrentStep(STEPS.MORE_LOOKS)}
+            onSeeMore={() => {
+              setCurrentStep(STEPS.MORE_LOOKS);
+              // Start generating next look in background
+              generateMoreLooks();
+            }}
             onSave={() => handleSaveLook(firstLook.outfitId)}
             onShare={() => handleShareLook(firstLook)}
             isSaved={favorites.includes(firstLook.outfitId)}
