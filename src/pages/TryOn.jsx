@@ -103,12 +103,12 @@ const TryOn = () => {
   }, []);
 
   // Get outfits filtered by style preference
-  const getFilteredOutfits = useCallback(() => {
+  const getFilteredOutfits = useCallback((style) => {
     const genderMap = {
       feminine: 'woman',
       masculine: 'man',
     };
-    const gender = genderMap[stylePreference] || 'woman';
+    const gender = genderMap[style || stylePreference] || 'woman';
     return outfits.filter((outfit) => outfit.gender === gender);
   }, [outfits, stylePreference]);
 
@@ -154,7 +154,7 @@ const TryOn = () => {
   };
 
   // Generate multiple looks after style selection
-  const generateLooks = async () => {
+  const generateLooks = async (selectedStyle) => {
     const canTryOn = await checkTryOnPermission();
     if (!canTryOn) return;
 
@@ -162,7 +162,7 @@ const TryOn = () => {
     clearGeneratedLooks();
     setGenerationProgress(0);
 
-    const filteredOutfits = getFilteredOutfits();
+    const filteredOutfits = getFilteredOutfits(selectedStyle);
     // Select 5 random outfits
     const shuffled = [...filteredOutfits].sort(() => Math.random() - 0.5);
     const selectedOutfits = shuffled.slice(0, 5);
@@ -281,8 +281,8 @@ const TryOn = () => {
   // Handle style selection
   const handleStyleSelect = (style) => {
     setStylePreference(style);
-    // Start generation after a short delay for UX
-    setTimeout(() => generateLooks(), 300);
+    // Pass style directly to avoid closure issues
+    generateLooks(style);
   };
 
   // Handle navigation
