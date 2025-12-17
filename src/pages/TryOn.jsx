@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Sparkles, ArrowLeft, Upload, User } from 'lucide-react';
 import { toast } from 'sonner';
@@ -63,6 +63,7 @@ const TryOn = () => {
   const { user, userData, isAuthenticated } = useAuth();
   const { applyOutfit, isProcessing } = useOutfitOverlay();
   const fileInputRef = useRef(null);
+  const hasInitialized = useRef(false);
 
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
@@ -85,17 +86,21 @@ const TryOn = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Determine initial step based on state
-  useEffect(() => {
+  // Determine initial step based on state (only on mount)
+  useLayoutEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     if (!userPhoto) {
       setCurrentStep(STEPS.UPLOAD);
     } else if (generatedLooks.length > 0) {
-      // If we have generated looks, show them
+      // If we have generated looks from a previous session, show them
       setCurrentStep(STEPS.MORE_LOOKS);
     } else if (!stylePreference) {
       setCurrentStep(STEPS.STYLE);
     }
-  }, [userPhoto, stylePreference, generatedLooks.length, setCurrentStep]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get outfits filtered by style preference
   const getFilteredOutfits = useCallback(() => {
