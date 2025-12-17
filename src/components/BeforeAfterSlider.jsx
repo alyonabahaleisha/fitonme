@@ -3,13 +3,19 @@ import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle }
 
 import modelBase from '@/assets/model-base.jpg';
 import generated1 from '@/assets/generated-1.png';
+import generated2 from '@/assets/generated-2.png';
+import generated3 from '@/assets/generated-3.png';
+
+// Array of after images to cycle through
+const afterImages = [generated1, generated2, generated3];
 
 const BeforeAfterSlider = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [currentAfterIndex, setCurrentAfterIndex] = useState(0);
 
   // Preload images
   useEffect(() => {
-    const imagesToLoad = [modelBase, generated1];
+    const imagesToLoad = [modelBase, ...afterImages];
     let loadedCount = 0;
 
     imagesToLoad.forEach(src => {
@@ -30,6 +36,17 @@ const BeforeAfterSlider = () => {
     });
   }, []);
 
+  // Cycle through after images every 2 seconds
+  useEffect(() => {
+    if (!imagesLoaded) return;
+
+    const interval = setInterval(() => {
+      setCurrentAfterIndex(prev => (prev + 1) % afterImages.length);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [imagesLoaded]);
+
   if (!imagesLoaded) {
     return (
       <div className="w-full max-w-[260px] mx-auto aspect-[3/4] rounded-3xl bg-secondary/50 animate-pulse" />
@@ -49,7 +66,7 @@ const BeforeAfterSlider = () => {
           }
           itemTwo={
             <ReactCompareSliderImage
-              src={generated1}
+              src={afterImages[currentAfterIndex]}
               alt="After"
               style={{ objectFit: 'cover', width: '100%', height: '100%' }}
             />
@@ -84,6 +101,18 @@ const BeforeAfterSlider = () => {
         </div>
         <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full bg-brand/80 backdrop-blur-sm pointer-events-none">
           <span className="text-white text-xs font-medium">After</span>
+        </div>
+
+        {/* Dots indicator */}
+        <div className="absolute top-4 right-4 flex gap-1.5 pointer-events-none">
+          {afterImages.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentAfterIndex ? 'bg-white scale-110' : 'bg-white/40'
+              }`}
+            />
+          ))}
         </div>
       </div>
     </div>
