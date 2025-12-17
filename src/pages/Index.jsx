@@ -37,8 +37,8 @@ const Index = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="space-y-3 pb-2" ref={uploadButtonRef}>
-          <UploadButton variant="hero" size="default" className="w-full max-w-xs mx-auto" />
+        <div className="space-y-3 pb-2 flex flex-col items-center" ref={uploadButtonRef}>
+          <UploadButton variant="hero" size="default" className="w-full max-w-xs" />
 
           {/* Value proposition */}
           <p className="text-center text-sm text-foreground/80">
