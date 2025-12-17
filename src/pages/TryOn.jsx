@@ -156,8 +156,8 @@ const TryOn = () => {
 
   // Generate multiple looks after style selection
   const generateLooks = async (selectedStyle) => {
-    const canTryOn = await checkTryOnPermission();
-    if (!canTryOn) return;
+    // Don't check permissions for initial generation - let users see value first
+    // Permission check happens when generating MORE looks or saving
 
     setCurrentStep(STEPS.GENERATING);
     clearGeneratedLooks();
@@ -184,7 +184,7 @@ const TryOn = () => {
             outfit: outfit,
           });
           trackTryOnCompleted(outfit.id, outfit.name, user?.id, userType, true);
-          await trackTryOnAttempt(outfit.id, result);
+          // Don't count against free limit for initial generation
         } else {
           trackTryOnCompleted(outfit.id, outfit.name, user?.id, userType, false);
         }
