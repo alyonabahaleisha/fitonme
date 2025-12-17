@@ -19,8 +19,8 @@ const Index = () => {
           <h1 className="text-2xl md:text-4xl font-serif font-semibold text-foreground leading-tight tracking-tight">
             See how you could look — right now
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Upload your photo. Try on outfits instantly.
+          <p className="text-sm text-muted-foreground mt-2">
+            Real outfits. On your photo. In seconds.
           </p>
         </div>
 
@@ -33,14 +33,15 @@ const Index = () => {
         <div className="space-y-3 pb-2" ref={uploadButtonRef}>
           <UploadButton variant="hero" size="default" className="w-full max-w-xs mx-auto" />
 
-          {/* Trust micro-copy */}
-          <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span>No sign-up</span>
-            <span>•</span>
-            <span>~1 minute</span>
-            <span>•</span>
-            <span>Delete anytime</span>
-          </div>
+          {/* Value proposition */}
+          <p className="text-center text-sm text-foreground/80">
+            You'll get 7 personalized outfit looks instantly
+          </p>
+
+          {/* Trust & safety */}
+          <p className="text-center text-xs text-muted-foreground">
+            Your photo is never shared · Safe · Private
+          </p>
         </div>
       </section>
     </div>

@@ -95,21 +95,13 @@ const BeforeAfterSlider = () => {
           }}
         />
 
-        {/* Labels */}
-        <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm pointer-events-none">
-          <span className="text-white text-xs font-medium">Before</span>
-        </div>
-        <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full bg-brand/80 backdrop-blur-sm pointer-events-none">
-          <span className="text-white text-xs font-medium">After</span>
-        </div>
-
-        {/* Dots indicator */}
-        <div className="absolute top-4 right-4 flex gap-1.5 pointer-events-none">
+        {/* Subtle dots indicator - shows outfit variety */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none">
           {afterImages.map((_, index) => (
             <div
               key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentAfterIndex ? 'bg-white scale-110' : 'bg-white/40'
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                index === currentAfterIndex ? 'bg-white' : 'bg-white/30'
               }`}
             />
           ))}
