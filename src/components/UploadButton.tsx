@@ -12,10 +12,11 @@ interface UploadButtonProps {
   variant?: "default" | "hero" | "secondary";
   size?: "default" | "sm" | "lg";
   fullWidth?: boolean;
+  className?: string;
   onUpload?: (file: File) => void;
 }
 
-const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUpload }: UploadButtonProps) => {
+const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, className = "", onUpload }: UploadButtonProps) => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -141,7 +142,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, onUplo
           variant={variant}
           size={size}
           onClick={handleClick}
-          className={fullWidth ? "w-full" : ""}
+          className={`${fullWidth ? "w-full" : ""} ${className}`}
         >
           <Camera className="w-5 h-5" />
           Upload your photo

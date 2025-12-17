@@ -22,9 +22,9 @@ All colors MUST be HSL.
     --brand-foreground: 0 0% 100%;
 
     /* Confident CTA color - deep forest green (premium, fashion) */
-    --cta: 160 25% 28%;
-    --cta-hover: 160 25% 22%;
-    --cta-foreground: 0 0% 98%;
+    --cta: 158 30% 22%;
+    --cta-hover: 158 30% 18%;
+    --cta-foreground: 0 0% 100%;
 
     --primary: 10 75% 65%;
     --primary-foreground: 0 0% 100%;
