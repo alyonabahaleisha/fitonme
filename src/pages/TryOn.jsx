@@ -96,7 +96,8 @@ const TryOn = () => {
     } else if (generatedLooks.length > 0) {
       // If we have generated looks from a previous session, show them
       setCurrentStep(STEPS.MORE_LOOKS);
-    } else if (!stylePreference) {
+    } else {
+      // User has photo but no generated looks - go to style selection
       setCurrentStep(STEPS.STYLE);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
