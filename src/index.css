@@ -9,7 +9,7 @@ All colors MUST be HSL.
 @layer base {
   :root {
     --background: 20 25% 92%;
-    --foreground: 20 30% 20%;
+    --foreground: 20 25% 18%;
 
     --card: 0 0% 100%;
     --card-foreground: 20 30% 20%;
@@ -21,9 +21,9 @@ All colors MUST be HSL.
     --brand-600: 10 75% 58%;
     --brand-foreground: 0 0% 100%;
 
-    /* Confident CTA color - warm cocoa/espresso */
-    --cta: 25 30% 32%;
-    --cta-hover: 25 30% 26%;
+    /* Confident CTA color - deep forest green (premium, fashion) */
+    --cta: 160 25% 28%;
+    --cta-hover: 160 25% 22%;
     --cta-foreground: 0 0% 98%;
 
     --primary: 10 75% 65%;

@@ -55,7 +55,8 @@ const BeforeAfterSlider = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-3xl overflow-hidden shadow-xl">
+      {/* Stronger container with border and shadow */}
+      <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shadow-black/20 ring-1 ring-black/10">
         <ReactCompareSlider
           itemOne={
             <ReactCompareSliderImage
@@ -74,17 +75,17 @@ const BeforeAfterSlider = () => {
           handle={
             <ReactCompareSliderHandle
               buttonStyle={{
-                backdropFilter: 'blur(4px)',
+                backdropFilter: 'blur(8px)',
                 backgroundColor: 'white',
-                border: 0,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                width: 40,
-                height: 40,
+                border: '2px solid rgba(0,0,0,0.1)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                width: 44,
+                height: 44,
               }}
               linesStyle={{
-                width: 2,
+                width: 3,
                 backgroundColor: 'white',
-                boxShadow: '0 0 8px rgba(0,0,0,0.3)',
+                boxShadow: '0 0 12px rgba(0,0,0,0.4)',
               }}
             />
           }

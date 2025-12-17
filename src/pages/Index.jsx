@@ -14,12 +14,19 @@ const Index = () => {
         <div className="absolute top-20 right-10 w-[400px] h-[400px] bg-gradient-to-br from-brand/8 to-accent/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-20 left-10 w-[300px] h-[300px] bg-gradient-to-tr from-accent/8 to-brand/6 rounded-full blur-[100px] pointer-events-none" />
 
+        {/* Simple wordmark logo */}
+        <div className="text-center pt-1">
+          <span className="text-sm font-medium tracking-widest text-foreground/50 uppercase">
+            ilovme
+          </span>
+        </div>
+
         {/* Hero Text */}
-        <div className="text-center pt-2">
-          <h1 className="text-2xl md:text-4xl font-serif font-semibold text-foreground leading-tight tracking-tight">
+        <div className="text-center -mt-2">
+          <h1 className="text-2xl md:text-4xl font-serif font-semibold text-[#2B2B2B] leading-tight tracking-tight">
             See how you could look — right now
           </h1>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-foreground/60 mt-2">
             Real outfits. On your photo. In seconds.
           </p>
         </div>
