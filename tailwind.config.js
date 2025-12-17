@@ -23,6 +23,11 @@ export default {
           600: "hsl(var(--brand-600))",
           foreground: "hsl(var(--brand-foreground))",
         },
+        cta: {
+          DEFAULT: "hsl(var(--cta))",
+          hover: "hsl(var(--cta-hover))",
+          foreground: "hsl(var(--cta-foreground))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

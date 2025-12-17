@@ -21,6 +21,11 @@ All colors MUST be HSL.
     --brand-600: 10 75% 58%;
     --brand-foreground: 0 0% 100%;
 
+    /* Confident CTA color - warm cocoa/espresso */
+    --cta: 25 30% 32%;
+    --cta-hover: 25 30% 26%;
+    --cta-foreground: 0 0% 98%;
+
     --primary: 10 75% 65%;
     --primary-foreground: 0 0% 100%;
 

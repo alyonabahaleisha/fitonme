@@ -56,8 +56,8 @@ function App() {
       <PageViewTracker />
       <Routes>
         <Route path="/payment-success" element={<PaymentSuccess />} />
-        {/* Home page with minimal navigation */}
-        <Route path="/" element={<><MinimalNav /><Index /></>} />
+        {/* Home page - no navigation, clean emotional screen */}
+        <Route path="/" element={<Index />} />
         {/* Pages with full navigation */}
         <Route element={<Layout />}>
           <Route path="/closet" element={<Closet />} />
