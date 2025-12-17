@@ -11,6 +11,7 @@ import { getAllOutfits } from './services/outfitService';
 import { initGA, trackPageView } from './services/analytics';
 
 import Layout from './components/Layout';
+import MinimalNav from './components/MinimalNav';
 
 // Component to track page views
 function PageViewTracker() {
@@ -55,8 +56,10 @@ function App() {
       <PageViewTracker />
       <Routes>
         <Route path="/payment-success" element={<PaymentSuccess />} />
+        {/* Home page with minimal navigation */}
+        <Route path="/" element={<><MinimalNav /><Index /></>} />
+        {/* Pages with full navigation */}
         <Route element={<Layout />}>
-          <Route path="/" element={<Index />} />
           <Route path="/closet" element={<Closet />} />
           <Route path="/legal/:slug" element={<Legal />} />
         </Route>
