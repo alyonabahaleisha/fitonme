@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-brand text-white hover:bg-brand-600 shadow-md hover:shadow-lg font-semibold transition-all",
-        hero: "bg-[#2d4a3e] text-white hover:bg-[#243d33] font-semibold rounded-xl border-none outline-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0",
+        hero: "!bg-[#2d4a3e] text-white hover:!bg-[#243d33] font-semibold rounded-xl border-none outline-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-none shadow-none",
         secondary: "bg-white text-foreground hover:bg-white/90 border border-border/60 shadow-sm backdrop-blur-sm",
         outline: "border-2 border-brand/40 bg-transparent hover:bg-brand/10 text-brand font-medium",
         ghost: "hover:bg-secondary/50 hover:text-foreground",
