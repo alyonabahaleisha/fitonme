@@ -23,34 +23,34 @@ const Index = () => {
           </span>
         </div>
 
-        {/* Hero Text */}
-        <div className="text-center -mt-2">
+        {/* Hero Text - tight connection between brand and headline */}
+        <div className="text-center">
           <h1 className="text-2xl md:text-4xl font-serif font-semibold text-[#1a1a1a] leading-tight tracking-tight">
             See how you could look — right now
           </h1>
-          <p className="text-sm font-medium text-foreground/70 mt-2">
+          <p className="text-sm font-medium text-foreground/70 mt-3">
             Real outfits. On your photo. In seconds.
           </p>
         </div>
 
-        {/* Before/After Slider - takes remaining space with subtle backdrop */}
-        <div className="flex-1 flex items-center justify-center py-2 min-h-0 relative">
+        {/* Before/After Slider - largest spacing above, creates anticipation */}
+        <div className="flex-1 flex items-center justify-center mt-5 mb-2 min-h-0 relative">
           {/* Subtle darkened backdrop behind slider */}
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[85%] bg-black/[0.03] blur-3xl rounded-full pointer-events-none" />
           <BeforeAfterSlider />
         </div>
 
-        {/* CTA Section - reset gradient inheritance */}
-        <div className="space-y-3 pb-2 flex flex-col items-center [--tw-gradient-from:transparent] [--tw-gradient-to:transparent] [--tw-gradient-stops:transparent]" ref={uploadButtonRef}>
-          <UploadButton variant="hero" size="default" className="w-full max-w-xs" />
+        {/* CTA Section - small pause before action */}
+        <div className="pb-2 flex flex-col items-center [--tw-gradient-from:transparent] [--tw-gradient-to:transparent] [--tw-gradient-stops:transparent] pt-3" ref={uploadButtonRef}>
+          <UploadButton variant="hero" size="default" className="w-[92%] max-w-sm" />
 
-          {/* Value proposition */}
-          <p className="text-center text-sm text-foreground/80">
+          {/* Value proposition - medium spacing */}
+          <p className="text-center text-sm text-foreground/80 mt-3">
             You'll get 7 personalized outfit looks instantly
           </p>
 
-          {/* Trust & safety */}
-          <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5 mt-2">
+          {/* Trust & safety - tight whisper under action */}
+          <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5 mt-1.5">
             <span className="text-sm">🔒</span>
             Your photo is never shared · Safe · Private
           </p>
