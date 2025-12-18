@@ -145,7 +145,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
           className={`${fullWidth ? "w-full" : ""} ${className}`}
         >
           <Camera className="w-5 h-5" />
-          Upload your photo
+          Show me my outfits
         </Button>
       )}
 
