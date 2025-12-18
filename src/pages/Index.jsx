@@ -50,7 +50,7 @@ const Index = () => {
           </p>
 
           {/* Trust & safety */}
-          <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5 mt-1">
+          <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5 mt-2">
             <span className="text-sm">🔒</span>
             Your photo is never shared · Safe · Private
           </p>

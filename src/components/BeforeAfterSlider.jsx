@@ -76,14 +76,9 @@ const BeforeAfterSlider = () => {
             <div className="flex flex-col items-center h-full">
               {/* Vertical line */}
               <div className="w-[3px] flex-1 bg-white shadow-[0_0_12px_rgba(0,0,0,0.4)]" />
-              {/* Handle button with arrows */}
-              <div className="w-11 h-11 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center gap-1">
-                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="text-gray-700">
-                  <path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="text-gray-700">
-                  <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+              {/* Handle button with soft arrows */}
+              <div className="w-11 h-11 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center">
+                <span className="text-gray-500 text-lg tracking-tight">↔</span>
               </div>
               {/* Vertical line */}
               <div className="w-[3px] flex-1 bg-white shadow-[0_0_12px_rgba(0,0,0,0.4)]" />
