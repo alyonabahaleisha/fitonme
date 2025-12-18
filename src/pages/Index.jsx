@@ -2,6 +2,7 @@ import { useRef } from 'react';
 
 import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import UploadButton from '@/components/UploadButton';
+import logoHeart from '@/assets/logo.png';
 
 const Index = () => {
   const uploadButtonRef = useRef(null);
@@ -14,9 +15,10 @@ const Index = () => {
         <div className="absolute top-20 right-10 w-[400px] h-[400px] bg-gradient-to-br from-brand/8 to-accent/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-20 left-10 w-[300px] h-[300px] bg-gradient-to-tr from-accent/8 to-brand/6 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* Simple wordmark logo */}
-        <div className="text-center pt-1">
-          <span className="text-sm font-medium tracking-widest text-foreground/50 uppercase">
+        {/* Logo with heart icon */}
+        <div className="flex items-center justify-center gap-1.5 pt-1">
+          <img src={logoHeart} alt="ILovMe" className="w-5 h-5" />
+          <span className="text-sm font-medium tracking-widest text-foreground/60 uppercase">
             ilovme
           </span>
         </div>
