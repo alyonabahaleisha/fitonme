@@ -73,21 +73,21 @@ const BeforeAfterSlider = () => {
             />
           }
           handle={
-            <ReactCompareSliderHandle
-              buttonStyle={{
-                backdropFilter: 'blur(8px)',
-                backgroundColor: 'white',
-                border: '2px solid rgba(0,0,0,0.1)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                width: 44,
-                height: 44,
-              }}
-              linesStyle={{
-                width: 3,
-                backgroundColor: 'white',
-                boxShadow: '0 0 12px rgba(0,0,0,0.4)',
-              }}
-            />
+            <div className="flex flex-col items-center h-full">
+              {/* Vertical line */}
+              <div className="w-[3px] flex-1 bg-white shadow-[0_0_12px_rgba(0,0,0,0.4)]" />
+              {/* Handle button with arrows */}
+              <div className="w-11 h-11 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center gap-1">
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="text-gray-700">
+                  <path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="text-gray-700">
+                  <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              {/* Vertical line */}
+              <div className="w-[3px] flex-1 bg-white shadow-[0_0_12px_rgba(0,0,0,0.4)]" />
+            </div>
           }
           position={50}
           style={{
