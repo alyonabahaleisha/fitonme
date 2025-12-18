@@ -56,7 +56,7 @@ const BeforeAfterSlider = () => {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
       {/* Stronger container with border and shadow */}
-      <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shadow-black/20 ring-1 ring-black/10">
+      <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)] ring-1 ring-black/10">
         <ReactCompareSlider
           itemOne={
             <ReactCompareSliderImage
@@ -108,6 +108,9 @@ const BeforeAfterSlider = () => {
           ))}
         </div>
       </div>
+
+      {/* Hint text for interactivity */}
+      <p className="text-xs text-foreground/40 mt-3 tracking-wide">Drag to compare</p>
     </div>
   );
 };

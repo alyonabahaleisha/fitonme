@@ -33,8 +33,10 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Before/After Slider - takes remaining space */}
-        <div className="flex-1 flex items-center justify-center py-4 min-h-0">
+        {/* Before/After Slider - takes remaining space with subtle backdrop */}
+        <div className="flex-1 flex items-center justify-center py-2 min-h-0 relative">
+          {/* Subtle darkened backdrop behind slider */}
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[85%] bg-black/[0.03] blur-3xl rounded-full pointer-events-none" />
           <BeforeAfterSlider />
         </div>
 
