@@ -1,4 +1,4 @@
-import { X, Check, Camera, Smile } from "lucide-react";
+import { X, Check, Smile } from "lucide-react";
 import { createPortal } from "react-dom";
 import photoReference from "@/assets/photo-reference.png";
 
@@ -124,16 +124,8 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                       onChoosePhoto();
                       onClose();
                     }}
-                    className="w-full py-2.5 md:py-3 px-4 md:px-6 rounded-full text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
-                    style={{ backgroundColor: '#ff6b5a' }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#ff5544';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#ff6b5a';
-                    }}
+                    className="w-full py-2.5 md:py-3 px-4 md:px-6 rounded-xl bg-[#2d4a3e] hover:bg-[#243d33] active:bg-[#243d33] text-white font-semibold flex items-center justify-center gap-2 text-sm md:text-base appearance-none [-webkit-appearance:none] border-none outline-none"
                   >
-                    <Camera className="w-4 h-4 md:w-5 md:h-5" />
                     Choose Photo
                   </button>
                 </div>
