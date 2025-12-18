@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoGuidelinesModal from "./PhotoGuidelinesModal";
 import useAppStore from "@/store/useAppStore";
@@ -144,7 +144,6 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
           onClick={handleClick}
           className={`${fullWidth ? "w-full" : ""} ${className}`}
         >
-          <Camera className="w-5 h-5" />
           Show me my outfits
         </Button>
       )}
