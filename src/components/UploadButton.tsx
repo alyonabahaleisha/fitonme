@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoGuidelinesModal from "./PhotoGuidelinesModal";
@@ -138,14 +137,19 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
           </div>
         </div>
       ) : (
-        <Button
-          variant={variant}
-          size={size}
+        <button
           onClick={handleClick}
-          className={`${fullWidth ? "w-full" : ""} ${className}`}
+          className={`${fullWidth ? "w-full" : ""} ${className} h-11 px-6 py-2.5 text-base rounded-xl font-semibold text-white flex items-center justify-center`}
+          style={{
+            backgroundColor: '#2d4a3e',
+            WebkitAppearance: 'none',
+            appearance: 'none',
+            border: 'none',
+            backgroundImage: 'none',
+          }}
         >
           Show me my outfits
-        </Button>
+        </button>
       )}
 
       <PhotoGuidelinesModal
