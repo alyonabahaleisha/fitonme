@@ -16,19 +16,19 @@ const Index = () => {
         <div className="absolute bottom-20 left-10 w-[300px] h-[300px] bg-gradient-to-tr from-accent/8 to-brand/6 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Logo with heart icon */}
-        <div className="flex items-center justify-center gap-1.5 pt-1">
-          <img src={logoHeart} alt="ILovMe" className="w-5 h-5" />
-          <span className="text-sm font-medium tracking-widest text-foreground/60 uppercase">
+        <div className="flex items-center justify-center gap-2 pt-1">
+          <img src={logoHeart} alt="ILovMe" className="w-7 h-7" />
+          <span className="text-base font-semibold tracking-widest text-[#2B2B2B] uppercase">
             ilovme
           </span>
         </div>
 
         {/* Hero Text */}
         <div className="text-center -mt-2">
-          <h1 className="text-2xl md:text-4xl font-serif font-semibold text-[#2B2B2B] leading-tight tracking-tight">
+          <h1 className="text-2xl md:text-4xl font-serif font-semibold text-[#1a1a1a] leading-tight tracking-tight">
             See how you could look — right now
           </h1>
-          <p className="text-sm text-foreground/60 mt-2">
+          <p className="text-sm font-medium text-foreground/70 mt-2">
             Real outfits. On your photo. In seconds.
           </p>
         </div>
