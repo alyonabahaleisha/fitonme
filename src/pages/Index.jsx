@@ -42,7 +42,7 @@ const Index = () => {
 
         {/* CTA Section - small pause before action */}
         <div className="pb-2 flex flex-col items-center [--tw-gradient-from:transparent] [--tw-gradient-to:transparent] [--tw-gradient-stops:transparent] pt-3" ref={uploadButtonRef}>
-          <UploadButton variant="hero" size="default" className="w-full max-w-[260px]" />
+          <UploadButton variant="hero" size="default" className="w-full max-w-[340px]" />
 
           {/* Value proposition - medium spacing */}
           <p className="text-center text-sm text-foreground/80 mt-3">

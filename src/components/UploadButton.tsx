@@ -148,7 +148,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
               border: 'none',
             }}
           >
-            See my looks
+            Show me my outfits
           </button>
         </div>
       )}
