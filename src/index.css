@@ -66,6 +66,14 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  /* Fix iOS button styling */
+  button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: none;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
