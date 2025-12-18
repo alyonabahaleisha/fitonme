@@ -137,19 +137,20 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
           </div>
         </div>
       ) : (
-        <button
-          onClick={handleClick}
-          className={`${fullWidth ? "w-full" : ""} ${className} h-11 px-6 py-2.5 text-base rounded-xl font-semibold text-white flex items-center justify-center`}
-          style={{
-            backgroundColor: '#2d4a3e',
-            WebkitAppearance: 'none',
-            appearance: 'none',
-            border: 'none',
-            backgroundImage: 'none',
-          }}
-        >
-          Show me my outfits
-        </button>
+        <div className="isolate" style={{ isolation: 'isolate' }}>
+          <button
+            onClick={handleClick}
+            className={`${fullWidth ? "w-full" : ""} ${className} h-11 px-6 py-2.5 text-base rounded-xl font-semibold text-white flex items-center justify-center bg-[#2d4a3e]`}
+            style={{
+              background: '#2d4a3e',
+              WebkitAppearance: 'none',
+              appearance: 'none',
+              border: 'none',
+            }}
+          >
+            Show me my outfits
+          </button>
+        </div>
       )}
 
       <PhotoGuidelinesModal
