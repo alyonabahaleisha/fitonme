@@ -40,8 +40,8 @@ const Index = () => {
           <BeforeAfterSlider />
         </div>
 
-        {/* CTA Section */}
-        <div className="space-y-3 pb-2 flex flex-col items-center" ref={uploadButtonRef}>
+        {/* CTA Section - reset gradient inheritance */}
+        <div className="space-y-3 pb-2 flex flex-col items-center [--tw-gradient-from:transparent] [--tw-gradient-to:transparent] [--tw-gradient-stops:transparent]" ref={uploadButtonRef}>
           <UploadButton variant="hero" size="default" className="w-full max-w-xs" />
 
           {/* Value proposition */}
