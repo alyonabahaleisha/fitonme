@@ -44,12 +44,17 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
   const startTime = performance.now();
 
   try {
-    // Run all async operations in parallel for maximum speed
+    // First, compress user photo for faster API processing
+    const compressStart = performance.now();
+    const compressedUserPhoto = userPhotoUrl.startsWith('data:')
+      ? await compressImageForApi(userPhotoUrl, 400) // Target 400KB
+      : userPhotoUrl;
+    console.log(`[PERF] User photo compression took ${Math.round(performance.now() - compressStart)}ms`);
+
+    // Run remaining async operations in parallel
     const [userPhotoBlob, outfitBlob, authResult] = await Promise.all([
-      // Convert user photo (already a data URL)
-      userPhotoUrl.startsWith('data:')
-        ? Promise.resolve(dataURLtoBlob(userPhotoUrl))
-        : fetch(userPhotoUrl).then(r => r.blob()),
+      // Convert compressed user photo
+      Promise.resolve(dataURLtoBlob(compressedUserPhoto)),
 
       // Get outfit image (check cache first)
       outfitImageCache.has(outfitUrl)
@@ -246,5 +251,53 @@ export const compressImage = (file, maxSizeMB = 3) => {
 
     reader.onerror = reject;
     reader.readAsDataURL(file);
+  });
+};
+
+// Compress image aggressively for API calls (target ~300-400KB)
+// Smaller images = faster Gemini processing
+export const compressImageForApi = (dataUrl, targetSizeKB = 400) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      // Max 1000px on longest side - enough for AI processing
+      const maxDimension = 1000;
+
+      if (width > height && width > maxDimension) {
+        height = Math.round((height * maxDimension) / width);
+        width = maxDimension;
+      } else if (height > maxDimension) {
+        width = Math.round((width * maxDimension) / height);
+        height = maxDimension;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Start with quality 0.8 and reduce until under target
+      let quality = 0.8;
+      let result = canvas.toDataURL('image/jpeg', quality);
+      const targetBytes = targetSizeKB * 1024 * 1.37; // Account for base64 overhead
+
+      while (result.length > targetBytes && quality > 0.4) {
+        quality -= 0.1;
+        result = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      const finalSizeKB = Math.round(result.length / 1024 / 1.37);
+      console.log(`[IMAGE_API] Compressed to ${finalSizeKB}KB (${width}x${height}, quality: ${quality.toFixed(1)})`);
+      resolve(result);
+    };
+
+    img.onerror = () => reject(new Error('Failed to compress image for API'));
+    img.src = dataUrl;
   });
 };
