@@ -287,16 +287,16 @@ const TryOn = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // IMMEDIATELY close modal and show generating state
+    setShowGuidelines(false);
+    setCurrentStep(STEPS.DETECTING);
+    console.log('[TryOn] Step set to DETECTING immediately');
+
     try {
       const compressedBase64 = await compressImage(file);
       setUserPhoto(compressedBase64);
-      setShowGuidelines(false);
 
-      // Set detecting step IMMEDIATELY after photo is set
-      setCurrentStep(STEPS.DETECTING);
-      console.log('[TryOn] Step set to DETECTING');
-
-      // Track analytics (non-blocking, don't let it break the flow)
+      // Track analytics (non-blocking)
       try {
         trackPhotoUploaded(user?.id);
       } catch (e) {
