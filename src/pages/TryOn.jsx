@@ -71,6 +71,7 @@ const TryOn = () => {
   const hasInitialized = useRef(false);
 
   const [showGuidelines, setShowGuidelines] = useState(false);
+  const [isPickingFile, setIsPickingFile] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedLookForDetails, setSelectedLookForDetails] = useState(null);
@@ -273,18 +274,19 @@ const TryOn = () => {
     setIsGeneratingMore(false);
   };
 
-  // Handle photo upload
+  // Handle photo upload - directly open file picker, no modal
   const handlePhotoUpload = () => {
-    trackPhotoGuidelinesModalOpened(user?.id);
-    setShowGuidelines(true);
+    fileInputRef.current?.click();
   };
 
   const handleChoosePhoto = () => {
+    setIsPickingFile(true);
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
+    setIsPickingFile(false);
     if (!file) return;
 
     // IMMEDIATELY close modal and show generating state
@@ -533,7 +535,7 @@ const TryOn = () => {
 
       <PhotoGuidelinesModal
         isOpen={showGuidelines}
-        onClose={() => setShowGuidelines(false)}
+        onClose={() => !isPickingFile && setShowGuidelines(false)}
         onChoosePhoto={handleChoosePhoto}
       />
 
