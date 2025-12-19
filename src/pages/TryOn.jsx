@@ -176,7 +176,16 @@ const TryOn = () => {
     clearGeneratedLooks();
     setGenerationProgress(0);
 
-    const filteredOutfits = getFilteredOutfits(selectedStyle);
+    let filteredOutfits = getFilteredOutfits(selectedStyle);
+
+    // Fallback: if no outfits for selected style, try the other style
+    if (filteredOutfits.length === 0) {
+      const fallbackStyle = selectedStyle === 'masculine' ? 'feminine' : 'masculine';
+      console.log(`[TryOn] No ${selectedStyle} outfits, falling back to ${fallbackStyle}`);
+      filteredOutfits = getFilteredOutfits(fallbackStyle);
+      setStylePreference(fallbackStyle);
+    }
+
     // Select 1 random outfit for the first look
     const shuffled = [...filteredOutfits].sort(() => Math.random() - 0.5);
     const firstOutfit = shuffled[0];
