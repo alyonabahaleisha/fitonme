@@ -26,10 +26,15 @@ import {
   trackCreditsDepletedModalShown,
   trackPhotoGuidelinesModalOpened,
 } from '../services/analytics';
+import {
+  detectCatalogFromPhoto,
+  catalogToStylePreference,
+} from '../services/catalogDecisionService';
 
 // Flow steps
 const STEPS = {
   UPLOAD: 'upload',
+  DETECTING: 'detecting', // AI catalog detection
   STYLE: 'style',
   GENERATING: 'generating',
   FIRST_LOOK: 'first_look',
@@ -72,6 +77,7 @@ const TryOn = () => {
   const [shareImage, setShareImage] = useState(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
+  const [catalogDecisionResult, setCatalogDecisionResult] = useState(null);
 
   // Check for successful payment redirect from Stripe
   useEffect(() => {
@@ -97,8 +103,8 @@ const TryOn = () => {
       // If we have generated looks from a previous session, show them
       setCurrentStep(STEPS.MORE_LOOKS);
     } else {
-      // User has photo but no generated looks - go to style selection
-      setCurrentStep(STEPS.STYLE);
+      // User has photo but no generated looks - go back to upload to re-detect
+      setCurrentStep(STEPS.UPLOAD);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -177,7 +183,7 @@ const TryOn = () => {
 
     if (!firstOutfit) {
       toast.error('No outfits available. Please try again.');
-      setCurrentStep(STEPS.STYLE);
+      setCurrentStep(STEPS.UPLOAD);
       return;
     }
 
@@ -200,13 +206,13 @@ const TryOn = () => {
       } else {
         trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
         toast.error('Failed to generate look. Please try again.');
-        setCurrentStep(STEPS.STYLE);
+        setCurrentStep(STEPS.UPLOAD);
       }
     } catch (error) {
       console.error('Error generating first look:', error);
       trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
       toast.error('Failed to generate look. Please try again.');
-      setCurrentStep(STEPS.STYLE);
+      setCurrentStep(STEPS.UPLOAD);
     }
   };
 
@@ -272,10 +278,39 @@ const TryOn = () => {
       setUserPhoto(compressedBase64);
       trackPhotoUploaded(user?.id);
       setShowGuidelines(false);
-      setCurrentStep(STEPS.STYLE);
+
+      // Try AI catalog detection
+      setCurrentStep(STEPS.DETECTING);
+      setCatalogDecisionResult(null);
+
+      try {
+        const decision = await detectCatalogFromPhoto(compressedBase64);
+        setCatalogDecisionResult(decision);
+
+        console.log('[TryOn] Catalog decision:', decision);
+
+        // Use the catalog decision (AI or fallback) - no style selector needed
+        const style = catalogToStylePreference(decision.catalog);
+        setStylePreference(style);
+
+        // Pre-fetch outfit images
+        const filteredOutfits = getFilteredOutfits(style);
+        const outfitUrls = filteredOutfits.slice(0, 5).map(o => o.imageUrl);
+        prefetchOutfitImages(outfitUrls);
+
+        // Go directly to generation
+        generateFirstLook(style);
+      } catch (detectionError) {
+        console.warn('[TryOn] Catalog detection error, using default:', detectionError);
+        // Use default (feminine) on error
+        const style = 'feminine';
+        setStylePreference(style);
+        generateFirstLook(style);
+      }
     } catch (err) {
       console.error('Failed to process image:', err);
       toast.error('Failed to process image. Please try again.');
+      setCurrentStep(STEPS.UPLOAD);
     } finally {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -299,12 +334,10 @@ const TryOn = () => {
   // Handle navigation
   const handleBack = () => {
     switch (currentStep) {
-      case STEPS.STYLE:
-        setCurrentStep(STEPS.UPLOAD);
-        break;
       case STEPS.FIRST_LOOK:
       case STEPS.MORE_LOOKS:
-        setCurrentStep(STEPS.STYLE);
+        // Go back to upload to start over
+        setCurrentStep(STEPS.UPLOAD);
         break;
       default:
         break;
@@ -362,6 +395,25 @@ const TryOn = () => {
               <p className="text-xs text-muted-foreground">
                 Your photo is processed securely. Delete anytime.
               </p>
+            </div>
+          </div>
+        );
+
+      case STEPS.DETECTING:
+        return (
+          <div className="h-[100dvh] flex flex-col items-center justify-center px-4">
+            <div className="text-center space-y-6">
+              <div className="relative">
+                <Sparkles className="w-16 h-16 text-brand mx-auto animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-serif font-semibold text-foreground">
+                  Analyzing your photo...
+                </h2>
+                <p className="text-muted-foreground">
+                  Finding the perfect outfits for you
+                </p>
+              </div>
             </div>
           </div>
         );

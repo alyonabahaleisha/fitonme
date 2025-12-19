@@ -12,6 +12,11 @@ import { createClient } from '@supabase/supabase-js';
 import { sendOutfitReadyEmail } from './services/email.js';
 import logger from './utils/logger.js';
 import { apiLimiter, strictLimiter } from './middleware/rateLimiter.js';
+import {
+  initCatalogDecisionService,
+  decideCatalogSexFromPhoto,
+  logCatalogDecision
+} from './services/catalogDecision.js';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
@@ -98,6 +103,9 @@ const upload = multer({
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Initialize Catalog Decision Service (uses same Gemini API key)
+initCatalogDecisionService(process.env.GEMINI_API_KEY);
 
 // Initialize Stripe
 logger.info('[STARTUP] Initializing Stripe...');
@@ -419,6 +427,50 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Detect catalog sex from person photo (AI-based)
+// This endpoint analyzes the uploaded photo to decide female/male catalog
+app.post('/api/detect-catalog', upload.single('personImage'), async (req, res) => {
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Person image is required' });
+    }
+
+    const personImageBuffer = req.file.buffer;
+    const personImageMime = req.file.mimetype;
+
+    logger.info(`[DETECT_CATALOG] ${requestId} - Processing catalog detection request`);
+
+    // Make AI decision
+    const decision = await decideCatalogSexFromPhoto(personImageBuffer, personImageMime);
+
+    // Log metrics
+    logCatalogDecision(requestId, decision);
+
+    // Return decision
+    res.json({
+      success: true,
+      requestId,
+      catalog: decision.sex,
+      confidence: decision.confidence,
+      reason: decision.reason,
+      latencyMs: decision.latencyMs,
+    });
+
+  } catch (error) {
+    logger.error(`[DETECT_CATALOG] ${requestId} - Error:`, error);
+    res.status(500).json({
+      error: 'Failed to detect catalog',
+      details: error.message,
+      // Return fallback on error
+      catalog: 'female',
+      confidence: 0,
+      reason: 'fallback_error',
+    });
+  }
 });
 
 // Stripe: Create checkout session
