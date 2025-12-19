@@ -433,7 +433,7 @@ const TryOn = () => {
                   <img
                     src={userPhoto}
                     alt="Your photo"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                 ) : (
                   <div className="text-center p-8">
@@ -471,7 +471,7 @@ const TryOn = () => {
                   <img
                     src={userPhoto}
                     alt="Your photo"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                   <div className="absolute inset-0 bg-brand/10 animate-pulse" />
                 </div>
