@@ -400,58 +400,36 @@ const TryOn = () => {
         );
 
       case STEPS.DETECTING:
-        return (
-          <div className="h-[100dvh] flex flex-col items-center justify-center px-4">
-            <div className="text-center space-y-6">
-              <div className="relative">
-                <Sparkles className="w-16 h-16 text-brand mx-auto animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-serif font-semibold text-foreground">
-                  Analyzing your photo...
-                </h2>
-                <p className="text-muted-foreground">
-                  Finding the perfect outfits for you
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      case STEPS.STYLE:
-        return (
-          <StyleSelector
-            onSelect={handleStyleSelect}
-            selectedStyle={stylePreference}
-          />
-        );
-
       case STEPS.GENERATING:
         return (
           <div className="h-[100dvh] flex flex-col items-center justify-center px-4">
             <div className="text-center space-y-6">
-              <div className="relative">
-                <Sparkles className="w-16 h-16 text-brand mx-auto animate-pulse" />
-              </div>
+              {/* User photo preview */}
+              {userPhoto && (
+                <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-brand/20 shadow-lg">
+                  <img
+                    src={userPhoto}
+                    alt="Your photo"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-brand/10 animate-pulse" />
+                </div>
+              )}
               <div className="space-y-2">
                 <h2 className="text-2xl font-serif font-semibold text-foreground">
                   Creating your looks...
                 </h2>
                 <p className="text-muted-foreground">
-                  AI magic is happening
+                  {currentStep === STEPS.DETECTING
+                    ? 'Finding the perfect style for you'
+                    : 'AI magic is happening'}
                 </p>
               </div>
-              {/* Progress bar */}
-              <div className="w-full max-w-xs mx-auto">
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-brand transition-all duration-500 rounded-full"
-                    style={{ width: `${generationProgress}%` }}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {Math.round(generationProgress)}% complete
-                </p>
+              {/* Progress indicator */}
+              <div className="flex justify-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
