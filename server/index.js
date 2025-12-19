@@ -541,11 +541,18 @@ app.post('/api/try-on', optionalAuth, upload.fields([
   { name: 'clothingImage', maxCount: 1 }
 ]), async (req, res) => {
   const startTime = Date.now();
+  const requestId = `tryon_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+
+  logger.info(`[TRYON:${requestId}] ========== NEW TRY-ON REQUEST ==========`);
+  logger.info(`[TRYON:${requestId}] Request received at ${new Date().toISOString()}`);
 
   try {
     if (!req.files || !req.files.personImage || !req.files.clothingImage) {
       return res.status(400).json({ error: 'Both person and clothing images are required' });
     }
+
+    const parseTime = Date.now() - startTime;
+    logger.info(`[TRYON:${requestId}] [TIMING] Multipart parsing: ${parseTime}ms`);
 
     // Get buffers directly from memory (no disk I/O)
     const personImageBuffer = req.files.personImage[0].buffer;
@@ -556,12 +563,14 @@ app.post('/api/try-on', optionalAuth, upload.fields([
 
     // Log authentication status
     if (req.user) {
-      logger.info(`[AUTH] Authenticated try-on request from user: ${req.user.email} (${req.user.id})`);
+      logger.info(`[TRYON:${requestId}] Authenticated user: ${req.user.email}`);
     } else {
-      logger.info('[AUTH] Unauthenticated try-on request (guest user)');
+      logger.info(`[TRYON:${requestId}] Guest user (unauthenticated)`);
     }
 
-    logger.info(`[PERF] Request received, image sizes: person=${personImageBuffer.length}, clothing=${clothingImageBuffer.length}`);
+    const personSizeKB = Math.round(personImageBuffer.length / 1024);
+    const clothingSizeKB = Math.round(clothingImageBuffer.length / 1024);
+    logger.info(`[TRYON:${requestId}] Image sizes: person=${personSizeKB}KB, clothing=${clothingSizeKB}KB`);
 
     // AUTH DISABLED - Skip credit checks for now
     /*
@@ -598,13 +607,17 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     */
 
     // Use Gemini 2.5 Flash Image model for image generation
+    const modelInitStart = Date.now();
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-image'
     });
+    logger.info(`[TRYON:${requestId}] [TIMING] Model init: ${Date.now() - modelInitStart}ms`);
 
     // Convert buffers directly to Gemini parts (no file I/O)
+    const prepStart = Date.now();
     const personImagePart = bufferToGenerativePart(personImageBuffer, personImageMime);
     const clothingImagePart = bufferToGenerativePart(clothingImageBuffer, clothingImageMime);
+    logger.info(`[TRYON:${requestId}] [TIMING] Image prep (base64): ${Date.now() - prepStart}ms`);
 
     // Generate image directly with both image inputs
     const generationPrompt = `Generate a photorealistic virtual try-on image.
@@ -619,15 +632,19 @@ CRITICAL INSTRUCTIONS:
 5. MOOD & EXPRESSION: The person should look confident, comfortable, and innerly happy. They should feel good in these clothes.
 6. REALISM: The result must be a seamless, high-quality fashion photo. Natural folds, shadows, and interaction are essential.`;
 
+    logger.info(`[TRYON:${requestId}] [TIMING] Starting Gemini API call...`);
     const geminiStart = Date.now();
     const result = await model.generateContent([
       generationPrompt,
       personImagePart,
       clothingImagePart
     ]);
-    logger.info(`[PERF] Gemini API took ${Date.now() - geminiStart}ms`);
+    const geminiTime = Date.now() - geminiStart;
+    logger.info(`[TRYON:${requestId}] [TIMING] Gemini generateContent: ${geminiTime}ms`);
 
+    const responseStart = Date.now();
     const response = await result.response;
+    logger.info(`[TRYON:${requestId}] [TIMING] Response extraction: ${Date.now() - responseStart}ms`);
 
     // Get the generated image from the response
     const generatedImage = response.candidates[0].content.parts.find(
@@ -638,7 +655,13 @@ CRITICAL INSTRUCTIONS:
       throw new Error('No image generated in response');
     }
 
-    logger.info(`[PERF] Total request time: ${Date.now() - startTime}ms`);
+    const totalTime = Date.now() - startTime;
+    const resultSizeKB = Math.round(generatedImage.data.length / 1024);
+    logger.info(`[TRYON:${requestId}] [TIMING] ========== SUMMARY ==========`);
+    logger.info(`[TRYON:${requestId}] [TIMING] Total: ${totalTime}ms`);
+    logger.info(`[TRYON:${requestId}] [TIMING] Gemini API: ${geminiTime}ms (${Math.round(geminiTime/totalTime*100)}%)`);
+    logger.info(`[TRYON:${requestId}] [TIMING] Result size: ${resultSizeKB}KB`);
+    logger.info(`[TRYON:${requestId}] [TIMING] ==============================`);
 
     res.json({
       success: true,
