@@ -111,23 +111,37 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
       headers['Authorization'] = `Bearer ${authResult.data.session.access_token}`;
     }
 
-    // Call the backend API
+    // Call the backend API with retry on timeout
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    const apiStart = performance.now();
 
-    const response = await fetch(`${apiUrl}/api/try-on`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    const makeRequest = async (attempt = 1) => {
+      const apiStart = performance.now();
 
-    console.log(`[PERF] API call took ${Math.round(performance.now() - apiStart)}ms`);
+      const response = await fetch(`${apiUrl}/api/try-on`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.details || error.error || 'Failed to generate image');
-    }
+      const apiTime = Math.round(performance.now() - apiStart);
+      console.log(`[PERF] API call took ${apiTime}ms (attempt ${attempt})`);
 
+      // Retry once on timeout (504) or server timeout (code: TIMEOUT)
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+
+        if ((response.status === 504 || error.code === 'TIMEOUT') && attempt === 1) {
+          console.log('[PERF] Timeout, retrying once...');
+          return makeRequest(2);
+        }
+
+        throw new Error(error.details || error.error || 'Failed to generate image');
+      }
+
+      return response;
+    };
+
+    const response = await makeRequest();
     const data = await response.json();
     console.log(`[PERF] Total generation took ${Math.round(performance.now() - startTime)}ms`);
 
