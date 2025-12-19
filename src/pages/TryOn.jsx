@@ -172,7 +172,9 @@ const TryOn = () => {
 
   // Generate just ONE look for the initial "wow" moment
   const generateFirstLook = async (selectedStyle) => {
+    console.log(`[TryOn] generateFirstLook called with style: ${selectedStyle}`);
     setCurrentStep(STEPS.GENERATING);
+    console.log('[TryOn] Step set to GENERATING');
     clearGeneratedLooks();
     setGenerationProgress(0);
 
@@ -191,6 +193,7 @@ const TryOn = () => {
     const firstOutfit = shuffled[0];
 
     if (!firstOutfit) {
+      console.log('[TryOn] No outfits found, going back to UPLOAD');
       toast.error('No outfits available. Please try again.');
       setCurrentStep(STEPS.UPLOAD);
       return;
@@ -213,12 +216,14 @@ const TryOn = () => {
         trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, true);
         setCurrentStep(STEPS.FIRST_LOOK);
       } else {
+        console.log('[TryOn] applyOutfit returned falsy, going back to UPLOAD');
         trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
         toast.error('Failed to generate look. Please try again.');
         setCurrentStep(STEPS.UPLOAD);
       }
     } catch (error) {
-      console.error('Error generating first look:', error);
+      console.error('[TryOn] Error generating first look:', error);
+      console.log('[TryOn] Generation error, going back to UPLOAD');
       trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
       toast.error('Failed to generate look. Please try again.');
       setCurrentStep(STEPS.UPLOAD);
@@ -285,11 +290,18 @@ const TryOn = () => {
     try {
       const compressedBase64 = await compressImage(file);
       setUserPhoto(compressedBase64);
-      trackPhotoUploaded(user?.id);
       setShowGuidelines(false);
 
-      // Try AI catalog detection
+      // Set detecting step IMMEDIATELY after photo is set
       setCurrentStep(STEPS.DETECTING);
+      console.log('[TryOn] Step set to DETECTING');
+
+      // Track analytics (non-blocking, don't let it break the flow)
+      try {
+        trackPhotoUploaded(user?.id);
+      } catch (e) {
+        console.warn('[TryOn] Analytics error:', e);
+      }
       setCatalogDecisionResult(null);
 
       try {
@@ -319,9 +331,10 @@ const TryOn = () => {
         generateFirstLook(style);
       }
     } catch (err) {
-      console.error('Failed to process image:', err);
+      console.error('[TryOn] Failed to process image:', err);
       toast.error('Failed to process image. Please try again.');
       setCurrentStep(STEPS.UPLOAD);
+      console.log('[TryOn] Step set to UPLOAD due to error');
     } finally {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
