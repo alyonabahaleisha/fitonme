@@ -619,26 +619,30 @@ app.post('/api/try-on', optionalAuth, upload.fields([
     const clothingImagePart = bufferToGenerativePart(clothingImageBuffer, clothingImageMime);
     logger.info(`[TRYON:${requestId}] [TIMING] Image prep (base64): ${Date.now() - prepStart}ms`);
 
-    // Generate image directly with both image inputs
-    const generationPrompt = `Generate a photorealistic virtual try-on image.
-Base Person: Use the person from the first image. Keep their exact face, skin tone, complexion, hair, body proportions, pose, lighting, and background.
-Target Outfit: Use the outfit from the second image.
+    // Generate image - OPTIMIZED shorter prompt for faster generation
+    const generationPrompt = `Virtual try-on: Put the outfit from image 2 onto the person in image 1.
 
-CRITICAL INSTRUCTIONS:
-1. COMPLETE CLOTHING REPLACEMENT: Digitally "undress" the person first. Remove ALL original clothing. The new outfit must be worn directly on the body. No traces of the old clothes should be visible.
-2. INCLUDE ACCESSORIES: Ensure that ALL items from the outfit image are applied, including SHOES, JEWELRY, bags, and hats. If the outfit image includes shoes or jewelry, the person MUST be wearing them.
-3. PERFECT FIT & LENGTH: The new outfit must fit the person perfectly. Adjust the size to suit their specific body proportions. IMPORTANT: For full-length pants, they MUST be long enough to cover the shoes partially or fully, creating a long, flowing line. Do not crop them at the ankles.
-4. EXACT FABRIC & PATTERN: You MUST preserve the exact texture, fabric weight, pattern, and details of the target outfit. It should look exactly like the provided clothing image.
-5. MOOD & EXPRESSION: The person should look confident, comfortable, and innerly happy. They should feel good in these clothes.
-6. REALISM: The result must be a seamless, high-quality fashion photo. Natural folds, shadows, and interaction are essential.`;
+Keep: exact face, skin, hair, pose, background.
+Replace: all clothing with the new outfit. Include shoes/accessories if shown.
+Fit the outfit naturally to their body. Preserve fabric texture and pattern exactly.
+Output: photorealistic fashion photo, ~1000px tall.`;
 
     logger.info(`[TRYON:${requestId}] [TIMING] Starting Gemini API call...`);
     const geminiStart = Date.now();
-    const result = await model.generateContent([
+
+    // Timeout after 25 seconds to prevent hung requests
+    const GEMINI_TIMEOUT_MS = 25000;
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('GEMINI_TIMEOUT')), GEMINI_TIMEOUT_MS);
+    });
+
+    const generatePromise = model.generateContent([
       generationPrompt,
       personImagePart,
       clothingImagePart
     ]);
+
+    const result = await Promise.race([generatePromise, timeoutPromise]);
     const geminiTime = Date.now() - geminiStart;
     logger.info(`[TRYON:${requestId}] [TIMING] Gemini generateContent: ${geminiTime}ms`);
 
@@ -677,10 +681,23 @@ CRITICAL INSTRUCTIONS:
     }
 
   } catch (error) {
-    logger.error('Error processing try-on:', error);
+    const errorTime = Date.now() - startTime;
+
+    if (error.message === 'GEMINI_TIMEOUT') {
+      logger.warn(`[TRYON:${requestId}] Gemini timeout after ${errorTime}ms`);
+      return res.status(504).json({
+        error: 'Generation taking too long',
+        code: 'TIMEOUT',
+        details: 'Please try again. If this persists, try a different photo.',
+        retryable: true
+      });
+    }
+
+    logger.error(`[TRYON:${requestId}] Error after ${errorTime}ms:`, error.message);
     res.status(500).json({
       error: 'Failed to process virtual try-on',
-      details: error.message
+      details: error.message,
+      retryable: true
     });
   }
 });

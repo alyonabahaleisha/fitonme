@@ -527,6 +527,10 @@ const TryOn = () => {
                     />
                   ))}
                 </div>
+                {/* Time estimate */}
+                <p className="text-xs text-muted-foreground/60 pt-3">
+                  Usually 8–15 seconds
+                </p>
               </div>
             </div>
           </div>
