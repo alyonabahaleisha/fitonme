@@ -47,6 +47,7 @@ const TryOn = () => {
     userPhoto,
     setUserPhoto,
     outfits,
+    isLoading: isLoadingOutfits,
     currentStep,
     setCurrentStep,
     stylePreference,
@@ -104,10 +105,19 @@ const TryOn = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Determine initial step based on state (only on mount)
+  // Determine initial step based on state
+  // Wait for outfits to be loaded before starting detection
   useLayoutEffect(() => {
+    // Don't start detection until outfits are loaded
+    if (isLoadingOutfits) {
+      console.log('[TryOn] Waiting for outfits to load...');
+      return;
+    }
+
     if (hasInitialized.current) return;
     hasInitialized.current = true;
+
+    console.log('[TryOn] Initialized with', outfits.length, 'outfits');
 
     if (!userPhoto) {
       setCurrentStep(STEPS.UPLOAD);
@@ -121,7 +131,7 @@ const TryOn = () => {
       startDetectionFlow(userPhoto);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoadingOutfits]);
 
   // Rotate loading phrases every 1.8s during detection/generation
   useEffect(() => {
