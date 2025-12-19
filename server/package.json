@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "resend": "^6.5.2",
+    "sharp": "^0.34.5",
     "stripe": "^19.3.0",
     "winston": "^3.18.3"
   }

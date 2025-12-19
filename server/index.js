@@ -46,6 +46,7 @@ if (process.env.SENTRY_DSN) {
 
 // Middleware
 import helmet from 'helmet';
+import sharp from 'sharp';
 
 // Middleware
 app.use(helmet({
@@ -670,39 +671,27 @@ Output: photorealistic fashion photo, ~1000px tall.`;
       throw new Error('No image generated in response');
     }
 
-    const resultSizeKB = Math.round(generatedImage.data.length / 1024);
-    const mimeType = generatedImage.mimeType || 'image/png';
-    const fileExt = mimeType.includes('png') ? 'png' : mimeType.includes('webp') ? 'webp' : 'jpg';
+    const originalSizeKB = Math.round(generatedImage.data.length / 1024);
+    const originalMimeType = generatedImage.mimeType || 'image/png';
 
-    // Try to upload to Supabase Storage for faster delivery
-    let imageUrl = null;
-    const uploadStart = Date.now();
+    // Convert to WebP for smaller size (typically 50-70% smaller than PNG)
+    let finalImageBase64 = generatedImage.data;
+    let finalMimeType = originalMimeType;
+    let finalSizeKB = originalSizeKB;
 
     try {
-      const fileName = `${requestId}.${fileExt}`;
       const imageBuffer = Buffer.from(generatedImage.data, 'base64');
+      const webpBuffer = await sharp(imageBuffer)
+        .webp({ quality: 85 })
+        .toBuffer();
 
-      logger.info(`[TRYON:${requestId}] Uploading to storage: ${fileName} (${resultSizeKB}KB, ${mimeType})`);
+      finalImageBase64 = webpBuffer.toString('base64');
+      finalMimeType = 'image/webp';
+      finalSizeKB = Math.round(webpBuffer.length / 1024);
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('outfit-images')
-        .upload(fileName, imageBuffer, {
-          contentType: mimeType,
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) {
-        logger.warn(`[TRYON:${requestId}] Storage upload error: ${uploadError.message}`);
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from('outfit-images')
-          .getPublicUrl(fileName);
-        imageUrl = publicUrl;
-        logger.info(`[TRYON:${requestId}] [TIMING] Storage upload: ${Date.now() - uploadStart}ms`);
-      }
-    } catch (uploadErr) {
-      logger.warn(`[TRYON:${requestId}] Storage upload exception: ${uploadErr.message}`);
+      logger.info(`[TRYON:${requestId}] [TIMING] WebP conversion: ${originalSizeKB}KB → ${finalSizeKB}KB (${Math.round((1 - finalSizeKB/originalSizeKB) * 100)}% smaller)`);
+    } catch (webpErr) {
+      logger.warn(`[TRYON:${requestId}] WebP conversion failed, using original: ${webpErr.message}`);
     }
 
     const totalTime = Date.now() - startTime;
@@ -710,26 +699,41 @@ Output: photorealistic fashion photo, ~1000px tall.`;
     logger.info(`[TRYON:${requestId}] [TIMING] ========== SUMMARY ==========`);
     logger.info(`[TRYON:${requestId}] [TIMING] Total: ${totalTime}ms`);
     logger.info(`[TRYON:${requestId}] [TIMING] Gemini API: ${geminiTime}ms (${Math.round(geminiTime/totalTime*100)}%)`);
-    logger.info(`[TRYON:${requestId}] [TIMING] Result size: ${resultSizeKB}KB`);
-    logger.info(`[TRYON:${requestId}] [TIMING] Delivery: ${imageUrl ? 'URL' : 'base64'}`);
+    logger.info(`[TRYON:${requestId}] [TIMING] Result size: ${finalSizeKB}KB (was ${originalSizeKB}KB)`);
     logger.info(`[TRYON:${requestId}] [TIMING] ==============================`);
 
-    // Return URL if upload succeeded, otherwise base64 fallback
-    if (imageUrl) {
-      res.json({
-        success: true,
-        imageUrl: imageUrl,
-        mimeType: mimeType,
-        message: 'Virtual try-on generated successfully'
-      });
-    } else {
-      res.json({
-        success: true,
-        image: generatedImage.data,
-        mimeType: mimeType,
-        message: 'Virtual try-on generated successfully'
-      });
-    }
+    // RESPOND IMMEDIATELY with base64 - don't wait for storage upload
+    res.json({
+      success: true,
+      image: finalImageBase64,
+      mimeType: finalMimeType,
+      message: 'Virtual try-on generated successfully'
+    });
+
+    // Upload to storage ASYNC (fire and forget) - for future caching/CDN
+    const uploadAsync = async () => {
+      try {
+        const fileName = `${requestId}.webp`;
+        const uploadBuffer = Buffer.from(finalImageBase64, 'base64');
+
+        const { error: uploadError } = await supabase.storage
+          .from('outfit-images')
+          .upload(fileName, uploadBuffer, {
+            contentType: 'image/webp',
+            cacheControl: '31536000', // 1 year cache
+            upsert: true
+          });
+
+        if (uploadError) {
+          logger.warn(`[TRYON:${requestId}] Async upload failed: ${uploadError.message}`);
+        } else {
+          logger.info(`[TRYON:${requestId}] Async upload complete: ${fileName}`);
+        }
+      } catch (err) {
+        logger.warn(`[TRYON:${requestId}] Async upload exception: ${err.message}`);
+      }
+    };
+    uploadAsync(); // Fire and forget
 
     // Send email notification (async, don't wait)
     if (req.user && req.user.email) {
