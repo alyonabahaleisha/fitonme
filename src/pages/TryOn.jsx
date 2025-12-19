@@ -285,9 +285,13 @@ const TryOn = () => {
   };
 
   const handleFileChange = async (e) => {
+    console.log('[TryOn] handleFileChange CALLED', e.target.files);
     const file = e.target.files[0];
     setIsPickingFile(false);
-    if (!file) return;
+    if (!file) {
+      console.log('[TryOn] No file selected, returning');
+      return;
+    }
 
     // IMMEDIATELY close modal and show generating state
     setShowGuidelines(false);
