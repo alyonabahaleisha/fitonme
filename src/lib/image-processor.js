@@ -98,7 +98,13 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
     const data = await response.json();
     console.log(`[PERF] Total generation took ${Math.round(performance.now() - startTime)}ms`);
 
-    // Return the generated image as data URL
+    // Handle URL response (new) or base64 fallback (legacy)
+    if (data.imageUrl) {
+      console.log(`[PERF] Received URL response (fast delivery via CDN)`);
+      return data.imageUrl;
+    }
+
+    // Fallback to base64 if server returned it
     return `data:${data.mimeType};base64,${data.image}`;
   } catch (error) {
     console.error('Error in overlayOutfitOnPhoto:', error);

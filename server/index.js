@@ -659,18 +659,54 @@ Output: photorealistic fashion photo, ~1000px tall.`;
       throw new Error('No image generated in response');
     }
 
-    const totalTime = Date.now() - startTime;
     const resultSizeKB = Math.round(generatedImage.data.length / 1024);
+
+    // Upload to Supabase Storage for faster delivery (URL instead of base64)
+    const uploadStart = Date.now();
+    const fileName = `${requestId}.webp`;
+    const imageBuffer = Buffer.from(generatedImage.data, 'base64');
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('outfit-images')
+      .upload(fileName, imageBuffer, {
+        contentType: 'image/webp',
+        cacheControl: '3600', // 1 hour cache
+        upsert: true
+      });
+
+    if (uploadError) {
+      logger.warn(`[TRYON:${requestId}] Storage upload failed, falling back to base64: ${uploadError.message}`);
+      // Fallback to base64 if upload fails
+      const totalTime = Date.now() - startTime;
+      logger.info(`[TRYON:${requestId}] [TIMING] Total: ${totalTime}ms (base64 fallback)`);
+      return res.json({
+        success: true,
+        image: generatedImage.data,
+        mimeType: generatedImage.mimeType,
+        message: 'Virtual try-on generated successfully'
+      });
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('outfit-images')
+      .getPublicUrl(fileName);
+
+    const uploadTime = Date.now() - uploadStart;
+    const totalTime = Date.now() - startTime;
+
     logger.info(`[TRYON:${requestId}] [TIMING] ========== SUMMARY ==========`);
     logger.info(`[TRYON:${requestId}] [TIMING] Total: ${totalTime}ms`);
     logger.info(`[TRYON:${requestId}] [TIMING] Gemini API: ${geminiTime}ms (${Math.round(geminiTime/totalTime*100)}%)`);
+    logger.info(`[TRYON:${requestId}] [TIMING] Storage upload: ${uploadTime}ms`);
     logger.info(`[TRYON:${requestId}] [TIMING] Result size: ${resultSizeKB}KB`);
     logger.info(`[TRYON:${requestId}] [TIMING] ==============================`);
 
+    // Return URL instead of base64 (much smaller response, faster on mobile)
     res.json({
       success: true,
-      image: generatedImage.data,
-      mimeType: generatedImage.mimeType,
+      imageUrl: publicUrl,
+      mimeType: 'image/webp',
       message: 'Virtual try-on generated successfully'
     });
 
