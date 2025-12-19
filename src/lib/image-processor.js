@@ -17,6 +17,9 @@ const dataURLtoBlob = (dataUrl) => {
 // Pre-fetch and cache outfit images for faster generation
 const outfitImageCache = new Map();
 
+// Track what we've already prefetched to avoid duplicate work
+let lastPrefetchKey = null;
+
 // Limit concurrent prefetches to avoid competing with try-on request
 const MAX_CONCURRENT_PREFETCH = 2;
 let activePrefetches = 0;
@@ -58,12 +61,20 @@ export const prefetchOutfitImage = (outfitUrl) => {
 };
 
 // Pre-fetch multiple outfit images (NON-BLOCKING, limited concurrency)
-// Call this after API request is sent, not before
-export const prefetchOutfitImages = (outfitUrls) => {
+// Deduped: won't re-prefetch if same catalog already prefetched
+export const prefetchOutfitImages = (outfitUrls, catalogKey = 'default') => {
+  // Skip if we already prefetched this exact catalog
+  if (lastPrefetchKey === catalogKey) {
+    console.log(`[PREFETCH] Skipped (already prefetched ${catalogKey})`);
+    return;
+  }
+
+  lastPrefetchKey = catalogKey;
+
   // Don't await - let it run in background
   const urls = outfitUrls.slice(0, 5);
   urls.forEach(url => prefetchOutfitImage(url));
-  console.log(`[PREFETCH] Queued ${urls.length} images (concurrency: ${MAX_CONCURRENT_PREFETCH})`);
+  console.log(`[PREFETCH] Queued ${urls.length} images for ${catalogKey}`);
 };
 
 // Image overlay processor using Gemini API - OPTIMIZED

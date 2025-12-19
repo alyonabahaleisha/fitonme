@@ -337,7 +337,7 @@ const TryOn = () => {
 
       const filteredOutfits = getFilteredOutfits(style);
       const outfitUrls = filteredOutfits.slice(0, 5).map(o => o.imageUrl);
-      prefetchOutfitImages(outfitUrls);
+      prefetchOutfitImages(outfitUrls, style);
 
       generateFirstLook(style);
     } catch (detectionError) {
@@ -345,6 +345,7 @@ const TryOn = () => {
       console.log('[TryOn] 🎯 Detected: FEMALE (fallback due to error)');
       const style = 'feminine';
       setStylePreference(style);
+      prefetchOutfitImages(getFilteredOutfits(style).slice(0, 5).map(o => o.imageUrl), style);
       generateFirstLook(style);
     }
   };
@@ -406,7 +407,7 @@ const TryOn = () => {
         // Pre-fetch outfit images
         const filteredOutfits = getFilteredOutfits(style);
         const outfitUrls = filteredOutfits.slice(0, 5).map(o => o.imageUrl);
-        prefetchOutfitImages(outfitUrls);
+        prefetchOutfitImages(outfitUrls, style);
 
         // Go directly to generation
         generateFirstLook(style);
@@ -416,6 +417,7 @@ const TryOn = () => {
         // Use default (feminine) on error
         const style = 'feminine';
         setStylePreference(style);
+        prefetchOutfitImages(getFilteredOutfits(style).slice(0, 5).map(o => o.imageUrl), style);
         generateFirstLook(style);
       }
     } catch (err) {
@@ -437,7 +439,7 @@ const TryOn = () => {
     // Pre-fetch outfit images in the background while generating
     const filteredOutfits = getFilteredOutfits(style);
     const outfitUrls = filteredOutfits.slice(0, 5).map(o => o.imageUrl);
-    prefetchOutfitImages(outfitUrls); // Fire and forget
+    prefetchOutfitImages(outfitUrls, style); // Fire and forget, deduped
 
     // Generate just the first look for instant gratification
     generateFirstLook(style);

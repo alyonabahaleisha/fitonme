@@ -134,15 +134,12 @@ const useAppStore = create(
       },
       storage: {
         getItem: async (name) => {
-          console.log('[STORAGE] Reading from IndexedDB:', name);
           return await idbStorage.getItem(name);
         },
         setItem: async (name, value) => {
-          console.log('[STORAGE] Writing to IndexedDB:', name);
           await idbStorage.setItem(name, value);
         },
         removeItem: async (name) => {
-          console.log('[STORAGE] Removing from IndexedDB:', name);
           await idbStorage.removeItem(name);
         },
       },
