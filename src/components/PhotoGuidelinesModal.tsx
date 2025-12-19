@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { X, ChevronDown, Check } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { createPortal } from "react-dom";
 import photoReference from "@/assets/model-base.jpg";
 
@@ -13,29 +12,12 @@ interface PhotoGuidelinesModalProps {
 
 const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuidelinesModalProps) => {
   useScrollLock(isOpen);
-  const [showTips, setShowTips] = useState(false);
-
   if (!isOpen) return null;
 
-  const mainGuidelines = [
-    {
-      title: "Full body visible",
-      description: "Head to toe in frame"
-    },
-    {
-      title: "Front-facing & straight",
-      description: "Stand straight, facing the camera"
-    },
-    {
-      title: "Good lighting",
-      description: "A clear, well-lit photo works best"
-    }
-  ];
-
-  const extraTips = [
-    "Fitted clothing works best for accurate results",
-    "Avoid oversized clothes if possible",
-    "Plain backgrounds help the AI focus on you"
+  const rules = [
+    "Full body (head to toe)",
+    "Front-facing & standing",
+    "Good lighting"
   ];
 
   return (
@@ -83,79 +65,35 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
               {/* Right: Guidelines Text */}
               <div className="flex flex-col md:order-last">
                 {/* Emotional confirmation */}
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-semibold text-gray-900 mb-1 sm:mb-2">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-semibold text-gray-900 mb-3 sm:mb-4">
                   Let's see how these look on you
                 </h2>
 
-                {/* Subtitle */}
-                <p className="text-gray-600 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 md:mb-6">
-                  For best results:
-                </p>
-
-                {/* Main guidelines - just 3 */}
-                <div className="space-y-2 sm:space-y-3 md:space-y-4 mb-3 sm:mb-4">
-                  {mainGuidelines.map((guideline, index) => (
-                    <div key={index} className="flex gap-2 sm:gap-3 md:gap-4">
-                      <div className="flex-shrink-0 mt-0.5">
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-brand/10 flex items-center justify-center">
-                          <Check size={10} className="sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-brand" />
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="text-gray-900 font-medium text-sm sm:text-base md:text-lg mb-0.5">
-                          {guideline.title}
-                        </h3>
-                        <p className="text-gray-600 text-xs sm:text-sm leading-snug">
-                          {guideline.description}
-                        </p>
-                      </div>
+                {/* Simple rules - one line each */}
+                <div className="space-y-1.5 mb-4 sm:mb-5">
+                  {rules.map((rule, index) => (
+                    <div key={index} className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm">
+                      <Check size={12} className="text-gray-400 flex-shrink-0" />
+                      {rule}
                     </div>
                   ))}
                 </div>
 
-                {/* Expandable tips */}
+                {/* Button - the main act */}
                 <button
-                  onClick={() => setShowTips(!showTips)}
-                  className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 hover:text-gray-700 mb-3 sm:mb-4"
+                  onClick={() => {
+                    onChoosePhoto();
+                    onClose();
+                  }}
+                  className="w-full py-3 md:py-3.5 px-4 md:px-6 rounded-xl bg-[#2d4a3e] hover:bg-[#243d33] active:bg-[#243d33] text-white font-semibold flex items-center justify-center text-sm md:text-base appearance-none [-webkit-appearance:none] border-none outline-none mb-3"
                 >
-                  <ChevronDown size={14} className={`transition-transform ${showTips ? 'rotate-180' : ''}`} />
-                  More tips for better accuracy
+                  Choose Photo
                 </button>
 
-                {showTips && (
-                  <div className="mb-3 sm:mb-4 pl-2 border-l-2 border-gray-200 space-y-1.5">
-                    {extraTips.map((tip, index) => (
-                      <p key={index} className="text-xs sm:text-sm text-gray-500">
-                        {tip}
-                      </p>
-                    ))}
-                  </div>
-                )}
-
-                {/* Privacy reassurance */}
-                <div className="text-xs text-gray-400 mb-3 sm:mb-4 space-y-1">
-                  <p className="flex items-center gap-1.5">
-                    <span>🔒</span>
-                    Your photo is only used to generate outfits — never stored or shared
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <span>✨</span>
-                    No signup required
-                  </p>
-                </div>
-
-                {/* Button */}
-                <div className="mt-auto">
-                  <button
-                    onClick={() => {
-                      onChoosePhoto();
-                      onClose();
-                    }}
-                    className="w-full py-2.5 md:py-3 px-4 md:px-6 rounded-xl bg-[#2d4a3e] hover:bg-[#243d33] active:bg-[#243d33] text-white font-semibold flex items-center justify-center gap-2 text-sm md:text-base appearance-none [-webkit-appearance:none] border-none outline-none"
-                  >
-                    Choose Photo
-                  </button>
-                </div>
+                {/* Privacy whisper */}
+                <p className="text-[10px] sm:text-xs text-gray-400 text-center">
+                  🔒 Never stored or shared · No signup required
+                </p>
               </div>
             </div>
           </div>
