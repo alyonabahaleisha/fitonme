@@ -1,4 +1,5 @@
-import { X, Check, Smile } from "lucide-react";
+import { useState } from "react";
+import { X, Check, ChevronDown } from "lucide-react";
 import { createPortal } from "react-dom";
 import photoReference from "@/assets/model-base.jpg";
 
@@ -12,9 +13,11 @@ interface PhotoGuidelinesModalProps {
 
 const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuidelinesModalProps) => {
   useScrollLock(isOpen);
+  const [showTips, setShowTips] = useState(false);
+
   if (!isOpen) return null;
 
-  const guidelines = [
+  const mainGuidelines = [
     {
       title: "Full body visible",
       description: "Head to toe in frame"
@@ -24,17 +27,15 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
       description: "Stand straight, facing the camera"
     },
     {
-      title: "Wear minimal clothing",
-      description: "Expose arms and legs for better shape detection"
-    },
-    {
       title: "Good lighting",
       description: "A clear, well-lit photo works best"
-    },
-    {
-      title: "Add a smile",
-      description: "A smile makes for better results"
     }
+  ];
+
+  const extraTips = [
+    "Fitted clothing works best for accurate results",
+    "Avoid oversized clothes if possible",
+    "Plain backgrounds help the AI focus on you"
   ];
 
   return (
@@ -76,29 +77,24 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                   <div className="absolute -top-1.5 -right-1.5 md:-top-3 md:-right-3 bg-green-500 text-white rounded-full p-1 md:p-2 shadow-lg">
                     <Check size={12} className="md:w-5 md:h-5" />
                   </div>
-                  {/* Smile badge */}
-                  <div className="absolute -top-1.5 -left-1.5 md:-top-3 md:-left-3 bg-yellow-400 text-gray-900 rounded-full px-2 py-1 md:px-3 md:py-1.5 shadow-lg flex items-center gap-1">
-                    <Smile size={12} className="md:w-4 md:h-4" />
-                    <span className="text-xs md:text-sm font-medium">Add a smile</span>
-                  </div>
                 </div>
               </div>
 
               {/* Right: Guidelines Text */}
               <div className="flex flex-col md:order-last">
-                {/* Title */}
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-semibold text-gray-900 mb-2 sm:mb-3 md:mb-4">
-                  Photo Guidelines
+                {/* Emotional confirmation */}
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-semibold text-gray-900 mb-1 sm:mb-2">
+                  Let's see how these look on you
                 </h2>
 
                 {/* Subtitle */}
-                <p className="text-gray-600 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 md:mb-8">
-                  For the best try-on experience, please upload a photo with:
+                <p className="text-gray-600 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 md:mb-6">
+                  For best results:
                 </p>
 
-                {/* Guidelines list */}
-                <div className="space-y-2 sm:space-y-3 md:space-y-6 mb-4 sm:mb-6 md:mb-10 flex-1">
-                  {guidelines.map((guideline, index) => (
+                {/* Main guidelines - just 3 */}
+                <div className="space-y-2 sm:space-y-3 md:space-y-4 mb-3 sm:mb-4">
+                  {mainGuidelines.map((guideline, index) => (
                     <div key={index} className="flex gap-2 sm:gap-3 md:gap-4">
                       <div className="flex-shrink-0 mt-0.5">
                         <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-brand/10 flex items-center justify-center">
@@ -106,16 +102,41 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                         </div>
                       </div>
                       <div>
-                        <h3 className="text-gray-900 font-medium text-sm sm:text-base md:text-lg mb-0.5 md:mb-1">
+                        <h3 className="text-gray-900 font-medium text-sm sm:text-base md:text-lg mb-0.5">
                           {guideline.title}
                         </h3>
-                        <p className="text-gray-600 text-xs sm:text-sm md:text-sm leading-snug md:leading-normal">
+                        <p className="text-gray-600 text-xs sm:text-sm leading-snug">
                           {guideline.description}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Expandable tips */}
+                <button
+                  onClick={() => setShowTips(!showTips)}
+                  className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 hover:text-gray-700 mb-3 sm:mb-4"
+                >
+                  <ChevronDown size={14} className={`transition-transform ${showTips ? 'rotate-180' : ''}`} />
+                  More tips for better accuracy
+                </button>
+
+                {showTips && (
+                  <div className="mb-3 sm:mb-4 pl-2 border-l-2 border-gray-200 space-y-1.5">
+                    {extraTips.map((tip, index) => (
+                      <p key={index} className="text-xs sm:text-sm text-gray-500">
+                        {tip}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Privacy reassurance */}
+                <p className="text-xs text-gray-400 mb-3 sm:mb-4 flex items-center gap-1.5">
+                  <span>🔒</span>
+                  Your photo is only used to generate outfits — never stored or shared
+                </p>
 
                 {/* Button */}
                 <div className="mt-auto">
