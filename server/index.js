@@ -660,55 +660,65 @@ Output: photorealistic fashion photo, ~1000px tall.`;
     }
 
     const resultSizeKB = Math.round(generatedImage.data.length / 1024);
+    const mimeType = generatedImage.mimeType || 'image/png';
+    const fileExt = mimeType.includes('png') ? 'png' : mimeType.includes('webp') ? 'webp' : 'jpg';
 
-    // Upload to Supabase Storage for faster delivery (URL instead of base64)
+    // Try to upload to Supabase Storage for faster delivery
+    let imageUrl = null;
     const uploadStart = Date.now();
-    const fileName = `${requestId}.webp`;
-    const imageBuffer = Buffer.from(generatedImage.data, 'base64');
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('outfit-images')
-      .upload(fileName, imageBuffer, {
-        contentType: 'image/webp',
-        cacheControl: '3600', // 1 hour cache
-        upsert: true
-      });
+    try {
+      const fileName = `${requestId}.${fileExt}`;
+      const imageBuffer = Buffer.from(generatedImage.data, 'base64');
 
-    if (uploadError) {
-      logger.warn(`[TRYON:${requestId}] Storage upload failed, falling back to base64: ${uploadError.message}`);
-      // Fallback to base64 if upload fails
-      const totalTime = Date.now() - startTime;
-      logger.info(`[TRYON:${requestId}] [TIMING] Total: ${totalTime}ms (base64 fallback)`);
-      return res.json({
-        success: true,
-        image: generatedImage.data,
-        mimeType: generatedImage.mimeType,
-        message: 'Virtual try-on generated successfully'
-      });
+      logger.info(`[TRYON:${requestId}] Uploading to storage: ${fileName} (${resultSizeKB}KB, ${mimeType})`);
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('outfit-images')
+        .upload(fileName, imageBuffer, {
+          contentType: mimeType,
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        logger.warn(`[TRYON:${requestId}] Storage upload error: ${uploadError.message}`);
+      } else {
+        const { data: { publicUrl } } = supabase.storage
+          .from('outfit-images')
+          .getPublicUrl(fileName);
+        imageUrl = publicUrl;
+        logger.info(`[TRYON:${requestId}] [TIMING] Storage upload: ${Date.now() - uploadStart}ms`);
+      }
+    } catch (uploadErr) {
+      logger.warn(`[TRYON:${requestId}] Storage upload exception: ${uploadErr.message}`);
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('outfit-images')
-      .getPublicUrl(fileName);
-
-    const uploadTime = Date.now() - uploadStart;
     const totalTime = Date.now() - startTime;
 
     logger.info(`[TRYON:${requestId}] [TIMING] ========== SUMMARY ==========`);
     logger.info(`[TRYON:${requestId}] [TIMING] Total: ${totalTime}ms`);
     logger.info(`[TRYON:${requestId}] [TIMING] Gemini API: ${geminiTime}ms (${Math.round(geminiTime/totalTime*100)}%)`);
-    logger.info(`[TRYON:${requestId}] [TIMING] Storage upload: ${uploadTime}ms`);
     logger.info(`[TRYON:${requestId}] [TIMING] Result size: ${resultSizeKB}KB`);
+    logger.info(`[TRYON:${requestId}] [TIMING] Delivery: ${imageUrl ? 'URL' : 'base64'}`);
     logger.info(`[TRYON:${requestId}] [TIMING] ==============================`);
 
-    // Return URL instead of base64 (much smaller response, faster on mobile)
-    res.json({
-      success: true,
-      imageUrl: publicUrl,
-      mimeType: 'image/webp',
-      message: 'Virtual try-on generated successfully'
-    });
+    // Return URL if upload succeeded, otherwise base64 fallback
+    if (imageUrl) {
+      res.json({
+        success: true,
+        imageUrl: imageUrl,
+        mimeType: mimeType,
+        message: 'Virtual try-on generated successfully'
+      });
+    } else {
+      res.json({
+        success: true,
+        image: generatedImage.data,
+        mimeType: mimeType,
+        message: 'Virtual try-on generated successfully'
+      });
+    }
 
     // Send email notification (async, don't wait)
     if (req.user && req.user.email) {
