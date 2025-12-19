@@ -104,8 +104,10 @@ const TryOn = () => {
       // If we have generated looks from a previous session, show them
       setCurrentStep(STEPS.MORE_LOOKS);
     } else {
-      // User has photo but no generated looks - go back to upload to re-detect
-      setCurrentStep(STEPS.UPLOAD);
+      // User has photo but no generated looks - START DETECTION AUTOMATICALLY
+      console.log('[TryOn] Photo exists but no looks, starting detection flow');
+      setCurrentStep(STEPS.DETECTING);
+      startDetectionFlow(userPhoto);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -272,6 +274,35 @@ const TryOn = () => {
     }
 
     setIsGeneratingMore(false);
+  };
+
+  // Start detection flow with existing photo (called on mount if photo exists)
+  const startDetectionFlow = async (photoData) => {
+    console.log('[TryOn] startDetectionFlow called');
+    setCatalogDecisionResult(null);
+
+    try {
+      const decision = await detectCatalogFromPhoto(photoData);
+      setCatalogDecisionResult(decision);
+
+      console.log('[TryOn] Catalog decision:', decision);
+      console.log(`[TryOn] 🎯 Detected: ${decision.catalog.toUpperCase()} (confidence: ${decision.confidence}, reason: ${decision.reason})`);
+
+      const style = catalogToStylePreference(decision.catalog);
+      setStylePreference(style);
+
+      const filteredOutfits = getFilteredOutfits(style);
+      const outfitUrls = filteredOutfits.slice(0, 5).map(o => o.imageUrl);
+      prefetchOutfitImages(outfitUrls);
+
+      generateFirstLook(style);
+    } catch (detectionError) {
+      console.warn('[TryOn] Catalog detection error, using default:', detectionError);
+      console.log('[TryOn] 🎯 Detected: FEMALE (fallback due to error)');
+      const style = 'feminine';
+      setStylePreference(style);
+      generateFirstLook(style);
+    }
   };
 
   // Handle photo upload - directly open file picker, no modal
