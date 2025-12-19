@@ -8,6 +8,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import AuthCallback from './pages/AuthCallback';
 import useAppStore from './store/useAppStore';
 import { getAllOutfits } from './services/outfitService';
+import { prefetchOutfitImages } from './lib/image-processor';
 import { initGA, trackPageView } from './services/analytics';
 
 import Layout from './components/Layout';
@@ -39,7 +40,12 @@ function App() {
         setLoading(true);
         const outfits = await getAllOutfits();
         setOutfits(outfits);
-        console.log('Loaded published outfits from Supabase:', outfits.length);
+        console.log('[App] Loaded outfits from Supabase:', outfits.length);
+
+        // Prefetch outfit images immediately (non-blocking, limited concurrency)
+        // This happens BEFORE user uploads photo, so images are ready
+        const imageUrls = outfits.slice(0, 10).map(o => o.imageUrl);
+        prefetchOutfitImages(imageUrls);
       } catch (error) {
         console.error('Error loading outfits:', error);
         // Don't show alert on initial load failure - Supabase might not be configured yet
