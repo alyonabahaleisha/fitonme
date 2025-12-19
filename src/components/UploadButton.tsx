@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showGuidelines, setShowGuidelines] = useState(false);
+  const [isPickingFile, setIsPickingFile] = useState(false);
   const { toast } = useToast();
   const { setUserPhoto } = useAppStore();
   const { user } = useAuth();
@@ -30,10 +31,31 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
   };
 
   const handleChoosePhoto = () => {
+    setIsPickingFile(true);
     fileInputRef.current?.click();
   };
 
+  const handleCloseGuidelines = () => {
+    if (!isPickingFile) {
+      setShowGuidelines(false);
+    }
+  };
+
+  // Reset picking flag when window regains focus (file picker closed/cancelled)
+  useEffect(() => {
+    const handleFocus = () => {
+      // Small delay to allow onChange to fire first if file was selected
+      setTimeout(() => {
+        setIsPickingFile(false);
+      }, 300);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsPickingFile(false);
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -158,7 +180,7 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
 
       <PhotoGuidelinesModal
         isOpen={showGuidelines}
-        onClose={() => setShowGuidelines(false)}
+        onClose={handleCloseGuidelines}
         onChoosePhoto={handleChoosePhoto}
       />
     </>
