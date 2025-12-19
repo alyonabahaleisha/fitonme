@@ -18,6 +18,7 @@ import { useOutfitOverlay } from '../hooks/useOutfitOverlay';
 import { useAuth } from '../contexts/AuthContext';
 import { checkUserCredits, decrementUserCredits, recordTryOn } from '../lib/supabase';
 import { compressImage, prefetchOutfitImages } from '../lib/image-processor';
+import { preparePhoto, getPreparedDataUrl } from '../services/photoPrep';
 import {
   trackPhotoUploaded,
   trackTryOnStarted,
@@ -319,6 +320,12 @@ const TryOn = () => {
     setCatalogDecisionResult(null);
 
     try {
+      // Prepare photo blob from existing data URL (for try-on requests)
+      // This ensures the blob cache is populated even when photo comes from storage
+      const prepStart = performance.now();
+      await preparePhoto(photoData);
+      console.log(`[TryOn] Re-prepared photo for cache: ${Math.round(performance.now() - prepStart)}ms`);
+
       const decision = await detectCatalogFromPhoto(photoData);
       setCatalogDecisionResult(decision);
 
@@ -367,8 +374,15 @@ const TryOn = () => {
     console.log('[TryOn] Step set to DETECTING immediately');
 
     try {
-      const compressedBase64 = await compressImage(file);
-      setUserPhoto(compressedBase64);
+      // Prepare photo ONCE (resize, compress, cache as blob)
+      const prepStart = performance.now();
+      const { blob, meta, fromCache } = await preparePhoto(file);
+      console.log(`[TryOn] Photo prepared: ${meta.width}x${meta.height}, ${Math.round(meta.bytes/1024)}KB, fromCache: ${fromCache}`);
+
+      // Get data URL for display and detection (from prepared blob)
+      const dataUrl = await getPreparedDataUrl();
+      setUserPhoto(dataUrl);
+      console.log(`[TryOn] Photo prep total: ${Math.round(performance.now() - prepStart)}ms`);
 
       // Track analytics (non-blocking)
       try {
@@ -379,7 +393,7 @@ const TryOn = () => {
       setCatalogDecisionResult(null);
 
       try {
-        const decision = await detectCatalogFromPhoto(compressedBase64);
+        const decision = await detectCatalogFromPhoto(dataUrl);
         setCatalogDecisionResult(decision);
 
         console.log('[TryOn] Catalog decision:', decision);

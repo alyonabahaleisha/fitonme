@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { getPreparedBlob } from '../services/photoPrep';
 
 // Convert data URL to Blob (faster than File for FormData)
 const dataURLtoBlob = (dataUrl) => {
@@ -44,18 +45,24 @@ export const overlayOutfitOnPhoto = async (userPhotoUrl, outfitUrl) => {
   const startTime = performance.now();
 
   try {
-    // First, compress user photo for faster API processing
-    const compressStart = performance.now();
-    const compressedUserPhoto = userPhotoUrl.startsWith('data:')
-      ? await compressImageForApi(userPhotoUrl, 400) // Target 400KB
-      : userPhotoUrl;
-    console.log(`[PERF] User photo compression took ${Math.round(performance.now() - compressStart)}ms`);
+    // Use prepared blob if available (instant), otherwise fall back to compression
+    let userPhotoBlob = getPreparedBlob();
+
+    if (userPhotoBlob) {
+      console.log(`[PERF] Using prepared photo blob (${Math.round(userPhotoBlob.size/1024)}KB)`);
+    } else {
+      // Fallback: compress on the fly (shouldn't happen if flow is correct)
+      console.warn('[PERF] No prepared blob, compressing on the fly...');
+      const compressStart = performance.now();
+      const compressedUserPhoto = userPhotoUrl.startsWith('data:')
+        ? await compressImageForApi(userPhotoUrl, 400)
+        : userPhotoUrl;
+      userPhotoBlob = dataURLtoBlob(compressedUserPhoto);
+      console.log(`[PERF] Fallback compression took ${Math.round(performance.now() - compressStart)}ms`);
+    }
 
     // Run remaining async operations in parallel
-    const [userPhotoBlob, outfitBlob, authResult] = await Promise.all([
-      // Convert compressed user photo
-      Promise.resolve(dataURLtoBlob(compressedUserPhoto)),
-
+    const [outfitBlob, authResult] = await Promise.all([
       // Get outfit image (check cache first)
       outfitImageCache.has(outfitUrl)
         ? Promise.resolve(outfitImageCache.get(outfitUrl))
