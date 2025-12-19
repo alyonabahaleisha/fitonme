@@ -47,6 +47,7 @@ export function initCatalogDecisionService(apiKey) {
  */
 export async function decideCatalogSexFromPhoto(personImageBuffer, mimeType) {
   const startTime = Date.now();
+  logger.info(`[CATALOG_DECISION] Starting decision, imageSize=${personImageBuffer.length}, mime=${mimeType}`);
 
   // If feature is disabled, return fallback immediately
   if (!config.enabled) {
@@ -71,16 +72,20 @@ export async function decideCatalogSexFromPhoto(personImageBuffer, mimeType) {
   }
 
   try {
+    logger.info(`[CATALOG_DECISION] Creating timeout promise (${config.timeoutMs}ms)...`);
     // Create a promise that rejects after timeout
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('TIMEOUT')), config.timeoutMs);
     });
 
+    logger.info('[CATALOG_DECISION] Starting AI decision call...');
     // Create the AI decision promise
     const decisionPromise = makeAIDecision(personImageBuffer, mimeType);
 
     // Race between AI decision and timeout
+    logger.info('[CATALOG_DECISION] Racing AI call vs timeout...');
     const result = await Promise.race([decisionPromise, timeoutPromise]);
+    logger.info(`[CATALOG_DECISION] Race completed, result: ${JSON.stringify(result)}`);
 
     const latencyMs = Date.now() - startTime;
 
@@ -134,6 +139,7 @@ export async function decideCatalogSexFromPhoto(personImageBuffer, mimeType) {
  * @returns {Promise<{sex: string, confidence: number}>}
  */
 async function makeAIDecision(personImageBuffer, mimeType) {
+  logger.info('[CATALOG_DECISION] makeAIDecision: Getting model...');
   // Use gemini-2.0-flash for fast vision analysis (text-only output)
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
@@ -142,6 +148,7 @@ async function makeAIDecision(personImageBuffer, mimeType) {
     },
   });
 
+  logger.info('[CATALOG_DECISION] makeAIDecision: Preparing image part...');
   const imagePart = {
     inlineData: {
       data: personImageBuffer.toString('base64'),
@@ -149,6 +156,7 @@ async function makeAIDecision(personImageBuffer, mimeType) {
     },
   };
 
+  logger.info('[CATALOG_DECISION] makeAIDecision: Calling generateContent...');
   const prompt = `Analyze this photo to determine which clothing catalog to use.
 
 Look at the PRIMARY person in the photo. Consider:
@@ -165,7 +173,9 @@ Respond with:
 Return ONLY valid JSON: {"sex": "female"|"male"|"uncertain", "confidence": <0.0-1.0>}`;
 
   const result = await model.generateContent([prompt, imagePart]);
+  logger.info('[CATALOG_DECISION] makeAIDecision: generateContent returned, getting response...');
   const response = await result.response;
+  logger.info('[CATALOG_DECISION] makeAIDecision: Got response, extracting text...');
   const text = response.text().trim();
 
   logger.info(`[CATALOG_DECISION] Raw AI response: ${text}`);

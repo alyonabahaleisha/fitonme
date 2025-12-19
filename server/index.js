@@ -433,22 +433,32 @@ app.get('/api/health', (req, res) => {
 // This endpoint analyzes the uploaded photo to decide female/male catalog
 app.post('/api/detect-catalog', upload.single('personImage'), async (req, res) => {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const startTime = Date.now();
+
+  logger.info(`[DETECT_CATALOG] ${requestId} - Request received`);
 
   try {
     if (!req.file) {
+      logger.warn(`[DETECT_CATALOG] ${requestId} - No file provided`);
       return res.status(400).json({ error: 'Person image is required' });
     }
 
     const personImageBuffer = req.file.buffer;
     const personImageMime = req.file.mimetype;
 
-    logger.info(`[DETECT_CATALOG] ${requestId} - Processing catalog detection request`);
+    logger.info(`[DETECT_CATALOG] ${requestId} - File received: ${personImageBuffer.length} bytes, mime=${personImageMime}`);
+    logger.info(`[DETECT_CATALOG] ${requestId} - Calling decideCatalogSexFromPhoto...`);
 
     // Make AI decision
     const decision = await decideCatalogSexFromPhoto(personImageBuffer, personImageMime);
 
+    logger.info(`[DETECT_CATALOG] ${requestId} - Decision received: ${JSON.stringify(decision)}`);
+
     // Log metrics
     logCatalogDecision(requestId, decision);
+
+    const totalTime = Date.now() - startTime;
+    logger.info(`[DETECT_CATALOG] ${requestId} - Sending response (totalTime=${totalTime}ms)`);
 
     // Return decision
     res.json({
@@ -461,7 +471,8 @@ app.post('/api/detect-catalog', upload.single('personImage'), async (req, res) =
     });
 
   } catch (error) {
-    logger.error(`[DETECT_CATALOG] ${requestId} - Error:`, error);
+    const totalTime = Date.now() - startTime;
+    logger.error(`[DETECT_CATALOG] ${requestId} - Error after ${totalTime}ms:`, error);
     res.status(500).json({
       error: 'Failed to detect catalog',
       details: error.message,
