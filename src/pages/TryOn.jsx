@@ -83,15 +83,18 @@ const TryOn = () => {
   const [catalogDecisionResult, setCatalogDecisionResult] = useState(null);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
 
-  // Loading phrases that rotate during generation
-  const loadingPhrases = [
-    "Analyzing your photo",
-    "Understanding your silhouette",
-    "Finding styles that fit you",
-    "Choosing pieces for your shape",
-    "Styling your first look",
-    "Almost ready…"
+  // Loading phrases with variable timing (slower in middle, faster at end)
+  // Each step has 2 variants for natural feel over 17s
+  const loadingSteps = [
+    { text: "Analyzing your photo", duration: 2000 },
+    { text: "Understanding your proportions", duration: 2000 },
+    { text: "Choosing outfits that fit your vibe", duration: 3000 },
+    { text: "Adjusting fit and balance", duration: 4000 },
+    { text: "Refining details", duration: 3000 },
+    { text: "Almost ready", duration: 2000 },
+    { text: "Preparing your first look", duration: 2000 },
   ];
+  const loadingPhrases = loadingSteps.map(s => s.text);
 
   // Check for successful payment redirect from Stripe
   useEffect(() => {
@@ -134,21 +137,27 @@ const TryOn = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingOutfits]);
 
-  // Rotate loading phrases every 1.8s during detection/generation
+  // Rotate loading phrases with variable timing (slower in middle, faster at end)
   useEffect(() => {
     if (currentStep !== STEPS.DETECTING && currentStep !== STEPS.GENERATING) {
       setLoadingPhraseIndex(0);
       return;
     }
 
-    const interval = setInterval(() => {
-      setLoadingPhraseIndex((prev) =>
-        prev < loadingPhrases.length - 1 ? prev + 1 : prev
-      );
-    }, 1800);
+    let timeoutId;
+    const scheduleNext = (index) => {
+      if (index >= loadingSteps.length - 1) return; // Stay on last phrase
 
-    return () => clearInterval(interval);
-  }, [currentStep, loadingPhrases.length]);
+      const duration = loadingSteps[index].duration;
+      timeoutId = setTimeout(() => {
+        setLoadingPhraseIndex(index + 1);
+        scheduleNext(index + 1);
+      }, duration);
+    };
+
+    scheduleNext(0);
+    return () => clearTimeout(timeoutId);
+  }, [currentStep]);
 
   // Get outfits filtered by style preference
   const getFilteredOutfits = useCallback((style) => {
@@ -540,13 +549,13 @@ const TryOn = () => {
                 <p className="text-muted-foreground h-6 transition-opacity duration-300">
                   {loadingPhrases[loadingPhraseIndex]}
                 </p>
-                {/* Step indicator */}
+                {/* Step indicator - 3 dots that fill as we progress through 7 steps */}
                 <div className="flex justify-center gap-1.5 pt-2">
                   {[0, 1, 2].map((step) => (
                     <div
                       key={step}
                       className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        Math.floor(loadingPhraseIndex / 2) >= step
+                        Math.floor((loadingPhraseIndex + 1) * 3 / loadingSteps.length) > step
                           ? 'bg-brand scale-110'
                           : 'bg-brand/30'
                       }`}
