@@ -1,44 +1,44 @@
 import { useEffect } from 'react';
 
+// Cache scrollbar width (only compute once)
+let cachedScrollbarWidth: number | null = null;
+
+const getScrollbarWidth = () => {
+    if (cachedScrollbarWidth !== null) return cachedScrollbarWidth;
+    cachedScrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    return cachedScrollbarWidth;
+};
+
 export const useScrollLock = (isLocked: boolean) => {
     useEffect(() => {
         if (!isLocked) return;
 
-        console.log('[useScrollLock] Locking scroll');
+        // Read all layout values FIRST (batch reads)
+        const originalStyle = document.body.style.overflow;
+        const originalPaddingRight = document.body.style.paddingRight;
+        const scrollbarWidth = getScrollbarWidth();
+        const nav = document.querySelector('nav');
 
-        // Save original body style
-        const originalStyle = window.getComputedStyle(document.body).overflow;
-        const originalPaddingRight = window.getComputedStyle(document.body).paddingRight;
+        // Then batch all writes (no interleaved reads/writes)
+        requestAnimationFrame(() => {
+            document.body.style.overflow = 'hidden';
 
-        // Prevent scrolling
-        document.body.style.overflow = 'hidden';
+            if (scrollbarWidth > 0) {
+                const currentPadding = parseInt(originalPaddingRight || '0', 10);
+                document.body.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
 
-        // Get scrollbar width
-        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-        console.log('[useScrollLock] Scrollbar width:', scrollbarWidth);
-
-        // Add padding to prevent layout shift if scrollbar exists
-        if (scrollbarWidth > 0) {
-            const paddingRight = `${parseInt(originalPaddingRight || '0', 10) + scrollbarWidth}px`;
-            document.body.style.paddingRight = paddingRight;
-
-            // Also add padding to fixed header to prevent it from jumping
-            // We target the nav element which has fixed positioning
-            const nav = document.querySelector('nav');
-            if (nav) {
-                nav.style.paddingRight = `${scrollbarWidth}px`;
+                if (nav) {
+                    (nav as HTMLElement).style.paddingRight = `${scrollbarWidth}px`;
+                }
             }
-        }
+        });
 
         return () => {
-            console.log('[useScrollLock] Unlocking scroll');
             document.body.style.overflow = originalStyle;
             document.body.style.paddingRight = originalPaddingRight;
 
-            // Reset nav padding
-            const nav = document.querySelector('nav');
             if (nav) {
-                nav.style.paddingRight = '';
+                (nav as HTMLElement).style.paddingRight = '';
             }
         };
     }, [isLocked]);

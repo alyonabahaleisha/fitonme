@@ -5,10 +5,13 @@
  * - Normalize orientation
  * - Resize to target size
  * - Compress to WebP/JPEG
- * - Cache by fingerprint
+ * - Cache by fingerprint + version
  *
  * Never re-process the same photo.
  */
+
+// Bump this when changing prep settings (size/quality/format)
+const PREP_VERSION = 1;
 
 // Target size for try-on (smaller = faster Gemini processing)
 const TARGET_SIZE = 1024;
@@ -18,9 +21,13 @@ const TARGET_FORMAT = 'image/jpeg'; // More compatible than webp
 // In-memory cache (fastest)
 let memoryCache = {
   fingerprint: null,
+  version: null,
   blob: null,
   meta: null,
 };
+
+// Track if we've loaded from IDB on boot
+let hasLoadedFromIDB = false;
 
 // IndexedDB for persistence across refresh
 const DB_NAME = 'fitonme-photo-cache';
@@ -92,7 +99,13 @@ async function saveToIDB(fingerprint, blob, meta) {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       const store = tx.objectStore(STORE_NAME);
-      const request = store.put({ fingerprint, blob, meta, savedAt: Date.now() });
+      const request = store.put({
+        fingerprint,
+        version: PREP_VERSION,
+        blob,
+        meta,
+        savedAt: Date.now()
+      });
 
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
@@ -204,8 +217,10 @@ export async function preparePhoto(source) {
   const fingerprint = generateFingerprint(source);
 
   // Check memory cache first (instant)
-  if (memoryCache.fingerprint === fingerprint && memoryCache.blob) {
-    console.log('[PhotoPrep] Using memory cache');
+  if (memoryCache.fingerprint === fingerprint &&
+      memoryCache.version === PREP_VERSION &&
+      memoryCache.blob) {
+    console.log('[PhotoPrep] ✓ Using memory cache (skip prep)');
     return {
       blob: memoryCache.blob,
       meta: memoryCache.meta,
@@ -216,10 +231,16 @@ export async function preparePhoto(source) {
 
   // Check IndexedDB (fast)
   const cached = await getFromIDB(fingerprint);
-  if (cached && cached.blob) {
-    console.log('[PhotoPrep] Using IDB cache');
+  if (cached && cached.blob && cached.version === PREP_VERSION) {
+    console.log('[PhotoPrep] ✓ Using IDB cache (skip prep)');
     // Update memory cache
-    memoryCache = { fingerprint, blob: cached.blob, meta: cached.meta };
+    memoryCache = {
+      fingerprint,
+      version: PREP_VERSION,
+      blob: cached.blob,
+      meta: cached.meta
+    };
+    hasLoadedFromIDB = true;
     return {
       blob: cached.blob,
       meta: cached.meta,
@@ -228,12 +249,17 @@ export async function preparePhoto(source) {
     };
   }
 
-  // Process the image (only happens once per photo)
+  // Version mismatch or not cached - need to process
+  if (cached && cached.version !== PREP_VERSION) {
+    console.log(`[PhotoPrep] Version mismatch (${cached.version} → ${PREP_VERSION}), re-processing`);
+  }
+
+  // Process the image (only happens once per photo or on version bump)
   console.log('[PhotoPrep] Processing new photo...');
   const { blob, meta } = await processImage(source);
 
   // Update memory cache
-  memoryCache = { fingerprint, blob, meta };
+  memoryCache = { fingerprint, version: PREP_VERSION, blob, meta };
 
   // Save to IDB async (don't block)
   saveToIDB(fingerprint, blob, meta).then(() => {

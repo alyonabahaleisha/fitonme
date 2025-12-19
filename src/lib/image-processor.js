@@ -17,27 +17,53 @@ const dataURLtoBlob = (dataUrl) => {
 // Pre-fetch and cache outfit images for faster generation
 const outfitImageCache = new Map();
 
-export const prefetchOutfitImage = async (outfitUrl) => {
-  if (outfitImageCache.has(outfitUrl)) {
-    return outfitImageCache.get(outfitUrl);
-  }
+// Limit concurrent prefetches to avoid competing with try-on request
+const MAX_CONCURRENT_PREFETCH = 2;
+let activePrefetches = 0;
+const prefetchQueue = [];
 
-  try {
-    const response = await fetch(outfitUrl);
-    const blob = await response.blob();
-    outfitImageCache.set(outfitUrl, blob);
-    return blob;
-  } catch (error) {
-    console.warn('[PREFETCH] Failed to prefetch outfit image:', error);
-    return null;
+const processPrefetchQueue = () => {
+  while (prefetchQueue.length > 0 && activePrefetches < MAX_CONCURRENT_PREFETCH) {
+    const { url, resolve } = prefetchQueue.shift();
+    activePrefetches++;
+
+    fetch(url)
+      .then(r => r.blob())
+      .then(blob => {
+        outfitImageCache.set(url, blob);
+        resolve(blob);
+      })
+      .catch(err => {
+        console.warn('[PREFETCH] Failed:', url.slice(-20), err.message);
+        resolve(null);
+      })
+      .finally(() => {
+        activePrefetches--;
+        processPrefetchQueue();
+      });
   }
 };
 
-// Pre-fetch multiple outfit images (call this after style selection)
-export const prefetchOutfitImages = async (outfitUrls) => {
-  const promises = outfitUrls.slice(0, 5).map(url => prefetchOutfitImage(url));
-  await Promise.allSettled(promises);
-  console.log(`[PREFETCH] Pre-cached ${outfitImageCache.size} outfit images`);
+export const prefetchOutfitImage = (outfitUrl) => {
+  // Already cached - return immediately
+  if (outfitImageCache.has(outfitUrl)) {
+    return Promise.resolve(outfitImageCache.get(outfitUrl));
+  }
+
+  // Queue the prefetch (non-blocking)
+  return new Promise(resolve => {
+    prefetchQueue.push({ url: outfitUrl, resolve });
+    processPrefetchQueue();
+  });
+};
+
+// Pre-fetch multiple outfit images (NON-BLOCKING, limited concurrency)
+// Call this after API request is sent, not before
+export const prefetchOutfitImages = (outfitUrls) => {
+  // Don't await - let it run in background
+  const urls = outfitUrls.slice(0, 5);
+  urls.forEach(url => prefetchOutfitImage(url));
+  console.log(`[PREFETCH] Queued ${urls.length} images (concurrency: ${MAX_CONCURRENT_PREFETCH})`);
 };
 
 // Image overlay processor using Gemini API - OPTIMIZED
