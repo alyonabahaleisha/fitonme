@@ -297,6 +297,7 @@ const TryOn = () => {
         setCatalogDecisionResult(decision);
 
         console.log('[TryOn] Catalog decision:', decision);
+        console.log(`[TryOn] 🎯 Detected: ${decision.catalog.toUpperCase()} (confidence: ${decision.confidence}, reason: ${decision.reason})`);
 
         // Use the catalog decision (AI or fallback) - no style selector needed
         const style = catalogToStylePreference(decision.catalog);
@@ -311,6 +312,7 @@ const TryOn = () => {
         generateFirstLook(style);
       } catch (detectionError) {
         console.warn('[TryOn] Catalog detection error, using default:', detectionError);
+        console.log('[TryOn] 🎯 Detected: FEMALE (fallback due to error)');
         // Use default (feminine) on error
         const style = 'feminine';
         setStylePreference(style);
