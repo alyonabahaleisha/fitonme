@@ -79,6 +79,17 @@ const TryOn = () => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [catalogDecisionResult, setCatalogDecisionResult] = useState(null);
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+
+  // Loading phrases that rotate during generation
+  const loadingPhrases = [
+    "Analyzing your photo",
+    "Understanding your silhouette",
+    "Finding styles that fit you",
+    "Choosing pieces for your shape",
+    "Styling your first look",
+    "Almost ready…"
+  ];
 
   // Check for successful payment redirect from Stripe
   useEffect(() => {
@@ -111,6 +122,22 @@ const TryOn = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Rotate loading phrases every 1.8s during detection/generation
+  useEffect(() => {
+    if (currentStep !== STEPS.DETECTING && currentStep !== STEPS.GENERATING) {
+      setLoadingPhraseIndex(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingPhraseIndex((prev) =>
+        prev < loadingPhrases.length - 1 ? prev + 1 : prev
+      );
+    }, 1800);
+
+    return () => clearInterval(interval);
+  }, [currentStep, loadingPhrases.length]);
 
   // Get outfits filtered by style preference
   const getFilteredOutfits = useCallback((style) => {
@@ -465,32 +492,41 @@ const TryOn = () => {
         return (
           <div className="h-[100dvh] flex flex-col items-center justify-center px-4">
             <div className="text-center space-y-6">
-              {/* User photo preview */}
+              {/* User photo preview with subtle glow */}
               {userPhoto && (
-                <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-brand/20 shadow-lg">
-                  <img
-                    src={userPhoto}
-                    alt="Your photo"
-                    className="w-full h-full object-cover object-top"
-                  />
-                  <div className="absolute inset-0 bg-brand/10 animate-pulse" />
+                <div className="relative w-28 h-28 mx-auto">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 rounded-full bg-brand/20 blur-xl animate-pulse" />
+                  <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white/50 shadow-xl">
+                    <img
+                      src={userPhoto}
+                      alt="Your photo"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
                 </div>
               )}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h2 className="text-2xl font-serif font-semibold text-foreground">
                   Creating your looks...
                 </h2>
-                <p className="text-muted-foreground">
-                  {currentStep === STEPS.DETECTING
-                    ? 'Finding the perfect style for you'
-                    : 'AI magic is happening'}
+                {/* Rotating phrases */}
+                <p className="text-muted-foreground h-6 transition-opacity duration-300">
+                  {loadingPhrases[loadingPhraseIndex]}
                 </p>
-              </div>
-              {/* Progress indicator */}
-              <div className="flex justify-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: '300ms' }} />
+                {/* Step indicator */}
+                <div className="flex justify-center gap-1.5 pt-2">
+                  {[0, 1, 2].map((step) => (
+                    <div
+                      key={step}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        Math.floor(loadingPhraseIndex / 2) >= step
+                          ? 'bg-brand scale-110'
+                          : 'bg-brand/30'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
