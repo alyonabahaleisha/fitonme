@@ -11,7 +11,7 @@ import logger from '../utils/logger.js';
 const config = {
   enabled: process.env.FEATURE_SEX_CATALOG_DECISION !== 'false',
   threshold: parseFloat(process.env.SEX_DECISION_THRESHOLD) || 0.70,
-  timeoutMs: parseInt(process.env.SEX_DECISION_TIMEOUT_MS) || 800,
+  timeoutMs: parseInt(process.env.SEX_DECISION_TIMEOUT_MS) || 5000,
   defaultFallback: process.env.DEFAULT_SEX_FALLBACK || 'female',
 };
 
@@ -149,21 +149,26 @@ async function makeAIDecision(personImageBuffer, mimeType) {
     },
   };
 
-  const prompt = `You are an assistant for clothing catalog selection. Analyze the person in this photo.
+  const prompt = `Analyze this photo to determine which clothing catalog to use.
 
-Based on their appearance, determine which clothing catalog would be most appropriate for styling them:
-- "female" for women's clothing catalog
+Look at the PRIMARY person in the photo. Consider:
+- Facial features (jawline, facial hair, bone structure)
+- Body build and proportions
+- Clothing style (if wearing gendered clothing like suit, dress, uniform)
+- Overall presentation
+
+Respond with:
 - "male" for men's clothing catalog
-- "uncertain" if you cannot determine
+- "female" for women's clothing catalog
+- "uncertain" ONLY if truly ambiguous
 
-Return ONLY valid JSON in this exact format:
-{"sex": "female"|"male"|"uncertain", "confidence": <number between 0 and 1>}
-
-Do NOT include any explanation or text outside the JSON.`;
+Return ONLY valid JSON: {"sex": "female"|"male"|"uncertain", "confidence": <0.0-1.0>}`;
 
   const result = await model.generateContent([prompt, imagePart]);
   const response = await result.response;
   const text = response.text().trim();
+
+  logger.info(`[CATALOG_DECISION] Raw AI response: ${text}`);
 
   // Parse JSON response
   try {
