@@ -1,6 +1,6 @@
 import { X, Check, Smile } from "lucide-react";
 import { createPortal } from "react-dom";
-import photoReference from "@/assets/photo-reference.png";
+import photoReference from "@/assets/model-base.jpg";
 
 import { useScrollLock } from "../hooks/useScrollLock";
 
