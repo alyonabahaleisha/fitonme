@@ -37,6 +37,9 @@ const UploadButton = ({ variant = "hero", size = "lg", fullWidth = false, classN
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Close the guidelines modal once file is selected
+    setShowGuidelines(false);
+
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
       toast({
