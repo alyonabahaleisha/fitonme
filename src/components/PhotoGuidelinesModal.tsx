@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Check, ChevronDown } from "lucide-react";
+import { X, ChevronDown, Check } from "lucide-react";
 import { createPortal } from "react-dom";
 import photoReference from "@/assets/model-base.jpg";
 
@@ -73,9 +73,9 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                       className="w-full h-auto object-contain"
                     />
                   </div>
-                  {/* Green checkmark badge */}
-                  <div className="absolute -top-1.5 -right-1.5 md:-top-3 md:-right-3 bg-green-500 text-white rounded-full p-1 md:p-2 shadow-lg">
-                    <Check size={12} className="md:w-5 md:h-5" />
+                  {/* Example label */}
+                  <div className="absolute -top-1.5 -right-1.5 md:-top-2 md:-right-2 bg-white text-gray-600 rounded-full px-2 py-0.5 md:px-2.5 md:py-1 shadow-lg text-[10px] md:text-xs font-medium">
+                    Example
                   </div>
                 </div>
               </div>
@@ -133,10 +133,16 @@ const PhotoGuidelinesModal = ({ isOpen, onClose, onChoosePhoto }: PhotoGuideline
                 )}
 
                 {/* Privacy reassurance */}
-                <p className="text-xs text-gray-400 mb-3 sm:mb-4 flex items-center gap-1.5">
-                  <span>🔒</span>
-                  Your photo is only used to generate outfits — never stored or shared
-                </p>
+                <div className="text-xs text-gray-400 mb-3 sm:mb-4 space-y-1">
+                  <p className="flex items-center gap-1.5">
+                    <span>🔒</span>
+                    Your photo is only used to generate outfits — never stored or shared
+                  </p>
+                  <p className="flex items-center gap-1.5">
+                    <span>✨</span>
+                    No signup required
+                  </p>
+                </div>
 
                 {/* Button */}
                 <div className="mt-auto">
