@@ -17,6 +17,12 @@ import {
   decideCatalogSexFromPhoto,
   logCatalogDecision
 } from './services/catalogDecision.js';
+import {
+  initBatchService,
+  startBatchJob,
+  getJobResults,
+  isReady as isBatchReady
+} from './services/tryOnBatch.js';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
@@ -107,6 +113,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Initialize Catalog Decision Service (uses same Gemini API key)
 initCatalogDecisionService(process.env.GEMINI_API_KEY);
+
+// Initialize Batch Try-On Service
+initBatchService(process.env.GEMINI_API_KEY);
 
 // Initialize Stripe
 logger.info('[STARTUP] Initializing Stripe...');
@@ -520,6 +529,92 @@ app.post('/api/detect-catalog', (req, res, next) => {
     }
   }
 });
+
+// ==================== BATCH TRY-ON ENDPOINTS ====================
+
+/**
+ * Start a batch try-on job
+ * Generates multiple looks in parallel with quality gating
+ */
+app.post('/api/try-on-batch', optionalAuth, upload.single('personImage'), async (req, res) => {
+  const requestId = `batch_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  const startTime = Date.now();
+
+  logger.info(`[BATCH_API] ${requestId} - Request received`);
+
+  try {
+    if (!isBatchReady()) {
+      logger.error(`[BATCH_API] ${requestId} - Service not ready`);
+      return res.status(503).json({ error: 'Batch service not ready' });
+    }
+
+    if (!req.file) {
+      logger.warn(`[BATCH_API] ${requestId} - No person image provided`);
+      return res.status(400).json({ error: 'Person image is required' });
+    }
+
+    // Parse outfits from request body
+    let outfits;
+    try {
+      outfits = JSON.parse(req.body.outfits || '[]');
+    } catch (e) {
+      logger.warn(`[BATCH_API] ${requestId} - Invalid outfits JSON`);
+      return res.status(400).json({ error: 'Invalid outfits data' });
+    }
+
+    if (!outfits.length) {
+      logger.warn(`[BATCH_API] ${requestId} - No outfits provided`);
+      return res.status(400).json({ error: 'At least one outfit is required' });
+    }
+
+    const personImageBuffer = req.file.buffer;
+    const personImageMime = req.file.mimetype;
+
+    logger.info(`[BATCH_API] ${requestId} - Starting batch job with ${outfits.length} outfits`);
+    logger.info(`[BATCH_API] ${requestId} - Person image: ${Math.round(personImageBuffer.length / 1024)}KB, ${personImageMime}`);
+
+    // Start the batch job (returns immediately, processes in background)
+    const jobId = await startBatchJob(personImageBuffer, personImageMime, outfits);
+
+    const elapsed = Date.now() - startTime;
+    logger.info(`[BATCH_API] ${requestId} - Job started: ${jobId} (${elapsed}ms)`);
+
+    res.json({
+      success: true,
+      jobId,
+      message: 'Batch job started',
+      outfitCount: outfits.length,
+    });
+
+  } catch (error) {
+    logger.error(`[BATCH_API] ${requestId} - Error:`, error.message);
+    res.status(500).json({
+      error: 'Failed to start batch job',
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * Get batch job results
+ * Poll this endpoint to get approved looks as they become ready
+ */
+app.get('/api/try-on-batch/:jobId/results', optionalAuth, (req, res) => {
+  const { jobId } = req.params;
+
+  logger.info(`[BATCH_API] Results requested for job: ${jobId}`);
+
+  const results = getJobResults(jobId);
+
+  if (!results) {
+    logger.warn(`[BATCH_API] Job not found: ${jobId}`);
+    return res.status(404).json({ error: 'Job not found' });
+  }
+
+  res.json(results);
+});
+
+// ==================== END BATCH TRY-ON ====================
 
 // Stripe: Create checkout session
 app.post('/api/create-checkout-session', async (req, res) => {

@@ -31,6 +31,7 @@ import {
   detectCatalogFromPhoto,
   catalogToStylePreference,
 } from '../services/catalogDecisionService';
+import { runBatchTryOn } from '../services/tryOnBatch';
 
 // Flow steps
 const STEPS = {
@@ -220,7 +221,14 @@ const TryOn = () => {
     */
   };
 
-  // Generate just ONE look for the initial "wow" moment
+  // Single try-on fallback (used by batch service when batch fails)
+  const singleTryOnFallback = async (photoDataUrl, outfit) => {
+    console.log('[TryOn] Using single try-on fallback for:', outfit.name);
+    const result = await applyOutfit(outfit);
+    return result;
+  };
+
+  // Generate looks using batch (parallel) with fallback to single
   const generateFirstLook = async (selectedStyle) => {
     console.log(`[TryOn] generateFirstLook called with style: ${selectedStyle}`);
     setCurrentStep(STEPS.GENERATING);
@@ -238,45 +246,73 @@ const TryOn = () => {
       setStylePreference(fallbackStyle);
     }
 
-    // Select 1 random outfit for the first look
-    const shuffled = [...filteredOutfits].sort(() => Math.random() - 0.5);
-    const firstOutfit = shuffled[0];
-
-    if (!firstOutfit) {
+    if (filteredOutfits.length === 0) {
       console.log('[TryOn] No outfits found, going back to UPLOAD');
       toast.error('No outfits available. Please try again.');
       setCurrentStep(STEPS.UPLOAD);
       return;
     }
 
+    // Select up to 4 random outfits for batch generation
+    const shuffled = [...filteredOutfits].sort(() => Math.random() - 0.5);
+    const batchOutfits = shuffled.slice(0, 4);
+
     const userType = isAuthenticated ? userData?.plan_type || 'free' : 'guest';
-    trackTryOnStarted(firstOutfit.id, firstOutfit.name, user?.id, userType);
+    trackTryOnStarted(batchOutfits[0].id, batchOutfits[0].name, user?.id, userType);
+
+    let firstLookReceived = false;
+    const looksRef = { current: [] }; // Track looks for appending
 
     try {
-      setGenerationProgress(50);
-      const result = await applyOutfit(firstOutfit);
-      setGenerationProgress(100);
+      await runBatchTryOn(
+        userPhoto,
+        batchOutfits,
+        // onFirstLook - called when first approved look is ready
+        (look) => {
+          console.log('[TryOn] First look received:', look.outfit?.name);
+          firstLookReceived = true;
+          setGenerationProgress(100);
+          looksRef.current = [look];
+          setGeneratedLooks([look]);
+          trackTryOnCompleted(look.outfitId, look.outfit?.name, user?.id, userType, true);
+          setCurrentStep(STEPS.FIRST_LOOK);
+        },
+        // onNewLook - called for each subsequent approved look
+        (look) => {
+          console.log('[TryOn] New look received:', look.outfit?.name);
+          looksRef.current = [...looksRef.current, look];
+          setGeneratedLooks(looksRef.current);
+          trackTryOnCompleted(look.outfitId, look.outfit?.name, user?.id, userType, true);
+        },
+        // onProgress - called with batch progress updates
+        (progress) => {
+          console.log('[TryOn] Batch progress:', progress);
+          // Update progress bar based on pending count
+          const total = progress.approved + progress.pending + progress.rejected + progress.failed;
+          const done = total - progress.pending;
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          if (!firstLookReceived) {
+            setGenerationProgress(Math.min(pct, 90)); // Cap at 90 until first look
+          }
+        },
+        // fallbackSingleTryOn - called if batch fails completely
+        singleTryOnFallback
+      );
 
-      if (result) {
-        setGeneratedLooks([{
-          outfitId: firstOutfit.id,
-          image: result,
-          outfit: firstOutfit,
-        }]);
-        trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, true);
-        setCurrentStep(STEPS.FIRST_LOOK);
-      } else {
-        console.log('[TryOn] applyOutfit returned falsy, going back to UPLOAD');
-        trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
+      // If batch completed but no looks received (shouldn't happen due to fallback)
+      if (!firstLookReceived) {
+        console.log('[TryOn] Batch completed but no looks, going back to UPLOAD');
         toast.error('Failed to generate look. Please try again.');
         setCurrentStep(STEPS.UPLOAD);
       }
     } catch (error) {
-      console.error('[TryOn] Error generating first look:', error);
-      console.log('[TryOn] Generation error, going back to UPLOAD');
-      trackTryOnCompleted(firstOutfit.id, firstOutfit.name, user?.id, userType, false);
-      toast.error('Failed to generate look. Please try again.');
-      setCurrentStep(STEPS.UPLOAD);
+      console.error('[TryOn] Error in batch try-on:', error);
+      if (!firstLookReceived) {
+        console.log('[TryOn] Batch error, going back to UPLOAD');
+        trackTryOnCompleted(batchOutfits[0].id, batchOutfits[0].name, user?.id, userType, false);
+        toast.error('Failed to generate look. Please try again.');
+        setCurrentStep(STEPS.UPLOAD);
+      }
     }
   };
 
