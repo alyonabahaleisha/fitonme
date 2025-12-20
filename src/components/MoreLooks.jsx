@@ -29,12 +29,6 @@ const MoreLooks = ({
     setTimeout(() => setShowSavedFeedback(false), 2000);
   };
 
-  const scrollToNext = () => {
-    if (currentIndex < looks.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
   const handleScroll = (e) => {
     const container = e.target;
     const scrollTop = container.scrollTop;
@@ -55,10 +49,6 @@ const MoreLooks = ({
     );
   }
 
-  const currentLook = looks[currentIndex];
-  const isLastLook = currentIndex === looks.length - 1;
-  const isSaved = savedLooks.includes(currentLook?.outfitId);
-
   return (
     <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
       {/* Full-screen snap scroll container */}
@@ -71,49 +61,47 @@ const MoreLooks = ({
         {looks.map((look, index) => (
           <div
             key={look.outfitId || index}
-            className="h-[100dvh] snap-start snap-always relative flex flex-col"
+            className="h-[100dvh] snap-start snap-always relative"
             style={{ scrollSnapAlign: 'start' }}
           >
-            {/* Image area - takes most of the screen */}
-            <div className="flex-1 relative min-h-0">
-              <img
-                src={look.image}
-                alt="Your look"
-                className="absolute inset-0 w-full h-full object-cover"
-                onClick={() => onViewDetails?.(look)}
-              />
+            {/* Full-screen image - object-contain to show full body including shoes */}
+            <img
+              src={look.image}
+              alt="Your look"
+              className="absolute inset-0 w-full h-full object-contain bg-neutral-100"
+              onClick={() => onViewDetails?.(look)}
+            />
 
-              {/* Gradient overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {/* Gradient overlay at bottom for text readability */}
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white via-white/80 to-transparent" />
 
-              {/* Top actions (subtle) */}
-              <div className="absolute top-4 right-4 flex gap-2 z-10">
-                <button
-                  onClick={() => handleSave(look.outfitId)}
-                  className={`p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 ${
-                    savedLooks.includes(look.outfitId)
-                      ? 'bg-brand text-white'
-                      : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                  aria-label={savedLooks.includes(look.outfitId) ? 'Saved' : 'Save look'}
-                >
-                  <Heart className={`w-5 h-5 ${savedLooks.includes(look.outfitId) ? 'fill-current' : ''}`} />
-                </button>
-                <button
-                  onClick={() => onShareLook?.(look)}
-                  className="p-2.5 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all duration-300"
-                  aria-label="Share look"
-                >
-                  <Share2 className="w-5 h-5" />
-                </button>
-              </div>
+            {/* Top actions (subtle) */}
+            <div className="absolute top-4 right-4 flex gap-2 z-10">
+              <button
+                onClick={() => handleSave(look.outfitId)}
+                className={`p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 ${
+                  savedLooks.includes(look.outfitId)
+                    ? 'bg-brand text-white'
+                    : 'bg-black/20 text-white hover:bg-black/30'
+                }`}
+                aria-label={savedLooks.includes(look.outfitId) ? 'Saved' : 'Save look'}
+              >
+                <Heart className={`w-5 h-5 ${savedLooks.includes(look.outfitId) ? 'fill-current' : ''}`} />
+              </button>
+              <button
+                onClick={() => onShareLook?.(look)}
+                className="p-2.5 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/30 transition-all duration-300"
+                aria-label="Share look"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Bottom content - same style as FirstLook */}
-            <div className="relative z-10 px-4 py-4 -mt-20">
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl space-y-3">
+            {/* Bottom content - floats over gradient */}
+            <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-2">
+              <div className="text-center space-y-3">
                 {/* Main message */}
-                <div className="text-center space-y-1">
+                <div className="space-y-0.5">
                   <h2 className="text-lg font-serif font-semibold text-foreground">
                     {index === 0 ? 'Your first look' : 'Another look for you'}
                   </h2>
@@ -125,30 +113,24 @@ const MoreLooks = ({
                 {/* Next look prompt or generating state */}
                 {index === looks.length - 1 ? (
                   isGeneratingMore ? (
-                    <p className="text-center text-sm text-muted-foreground py-2">
+                    <p className="text-sm text-muted-foreground/70 py-1">
                       Styling your next look...
                     </p>
                   ) : canGenerateMore && looks.length < 7 ? (
-                    <button
-                      onClick={scrollToNext}
-                      className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
-                    >
-                      <ChevronDown className="w-4 h-4" />
-                      Scroll for next look
-                    </button>
+                    <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
+                      <ChevronDown className="w-4 h-4 animate-bounce" />
+                      <span>Scroll for next look</span>
+                    </div>
                   ) : (
-                    <p className="text-center text-xs text-muted-foreground/60 py-2">
+                    <p className="text-xs text-muted-foreground/50 py-1">
                       You've seen all your looks
                     </p>
                   )
                 ) : (
-                  <button
-                    onClick={scrollToNext}
-                    className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
-                  >
+                  <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
                     <ChevronDown className="w-4 h-4" />
-                    Scroll for next look
-                  </button>
+                    <span>Scroll for next look</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -158,7 +140,7 @@ const MoreLooks = ({
 
       {/* Saved feedback toast */}
       {showSavedFeedback && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-foreground text-background text-sm font-medium shadow-lg animate-fade-in z-50">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-foreground text-background text-sm font-medium shadow-lg animate-fade-in z-50">
           Look saved
         </div>
       )}
