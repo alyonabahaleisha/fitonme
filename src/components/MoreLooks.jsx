@@ -1,5 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Heart, Share2, ChevronDown } from 'lucide-react';
+
+// Varied generating copy to make AI feel alive
+const generatingPhrases = [
+  "Styling your next look",
+  "Exploring another side of you",
+  "Finding a new direction",
+  "Refining the silhouette",
+  "Adjusting tone and balance",
+];
 
 const MoreLooks = ({
   looks = [],
@@ -14,7 +23,13 @@ const MoreLooks = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+  const [showGenerating, setShowGenerating] = useState(false);
   const containerRef = useRef(null);
+
+  // Pick a random phrase when generation starts
+  const generatingPhrase = useMemo(() => {
+    return generatingPhrases[Math.floor(Math.random() * generatingPhrases.length)];
+  }, [isGeneratingMore]);
 
   // Auto-generate next look when viewing the last one
   useEffect(() => {
@@ -22,6 +37,16 @@ const MoreLooks = ({
       onGenerateMore?.();
     }
   }, [currentIndex, looks.length, canGenerateMore, isGeneratingMore, onGenerateMore]);
+
+  // Show generating text after 200ms delay (prevent flicker on fast generations)
+  useEffect(() => {
+    if (isGeneratingMore) {
+      const timer = setTimeout(() => setShowGenerating(true), 200);
+      return () => clearTimeout(timer);
+    } else {
+      setShowGenerating(false);
+    }
+  }, [isGeneratingMore]);
 
   const handleSave = (lookId) => {
     onSaveLook?.(lookId);
@@ -113,30 +138,37 @@ const MoreLooks = ({
                   </p>
                 </div>
 
-                {/* Scroll hint only on first look, subtle generating state, or end message */}
-                {index === looks.length - 1 ? (
-                  isGeneratingMore ? (
-                    <p className="text-sm text-muted-foreground/70 py-1">
-                      Styling your next look...
-                    </p>
-                  ) : canGenerateMore && looks.length < 7 ? (
+                {/* Status: generating narration, scroll hint (first look only), or end message */}
+                <div className="h-8 flex items-center justify-center">
+                  {index === looks.length - 1 ? (
+                    // Last look - show generating state or end message
+                    showGenerating && isGeneratingMore ? (
+                      <p className="text-sm text-muted-foreground/70 animate-pulse">
+                        {generatingPhrase}...
+                      </p>
+                    ) : canGenerateMore && looks.length < 7 ? (
+                      // Can generate more - show scroll hint only on first look
+                      index === 0 ? (
+                        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70">
+                          <ChevronDown className="w-4 h-4 animate-bounce" />
+                          <span>Scroll for next look</span>
+                        </div>
+                      ) : null
+                    ) : (
+                      <p className="text-xs text-muted-foreground/50">
+                        You've seen all your looks
+                      </p>
+                    )
+                  ) : (
+                    // Not last look - show scroll hint only on first
                     index === 0 ? (
-                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
-                        <ChevronDown className="w-4 h-4 animate-bounce" />
+                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70">
+                        <ChevronDown className="w-4 h-4" />
                         <span>Scroll for next look</span>
                       </div>
                     ) : null
-                  ) : (
-                    <p className="text-xs text-muted-foreground/50 py-1">
-                      You've seen all your looks
-                    </p>
-                  )
-                ) : index === 0 ? (
-                  <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
-                    <ChevronDown className="w-4 h-4" />
-                    <span>Scroll for next look</span>
-                  </div>
-                ) : null}
+                  )}
+                </div>
               </div>
             </div>
           </div>
