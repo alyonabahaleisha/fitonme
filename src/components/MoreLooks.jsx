@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { Heart, Share2, Info, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useRef, useEffect } from 'react';
+import { Heart, Share2, ChevronDown } from 'lucide-react';
 
 const MoreLooks = ({
   looks = [],
@@ -13,12 +12,37 @@ const MoreLooks = ({
   canGenerateMore = true,
   isGeneratingMore = false,
 }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+  const containerRef = useRef(null);
+
+  // Auto-generate next look when viewing the last one
+  useEffect(() => {
+    if (currentIndex === looks.length - 1 && canGenerateMore && !isGeneratingMore && looks.length < 7) {
+      onGenerateMore?.();
+    }
+  }, [currentIndex, looks.length, canGenerateMore, isGeneratingMore, onGenerateMore]);
 
   const handleSave = (lookId) => {
     onSaveLook?.(lookId);
     setShowSavedFeedback(true);
     setTimeout(() => setShowSavedFeedback(false), 2000);
+  };
+
+  const scrollToNext = () => {
+    if (currentIndex < looks.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const handleScroll = (e) => {
+    const container = e.target;
+    const scrollTop = container.scrollTop;
+    const itemHeight = container.clientHeight;
+    const newIndex = Math.round(scrollTop / itemHeight);
+    if (newIndex !== currentIndex && newIndex >= 0 && newIndex < looks.length) {
+      setCurrentIndex(newIndex);
+    }
   };
 
   if (looks.length === 0) {
@@ -31,51 +55,39 @@ const MoreLooks = ({
     );
   }
 
-  return (
-    <div className="h-[100dvh] flex flex-col bg-background">
-      {/* Header - fixed */}
-      <div className="px-4 pt-4 pb-3 text-center flex-shrink-0 border-b border-border/50">
-        <h2 className="text-lg font-serif font-semibold text-foreground">
-          More options for you
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          {looks.length} look{looks.length !== 1 ? 's' : ''} generated
-        </p>
-      </div>
+  const currentLook = looks[currentIndex];
+  const isLastLook = currentIndex === looks.length - 1;
+  const isSaved = savedLooks.includes(currentLook?.outfitId);
 
-      {/* Vertical scrollable list */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+  return (
+    <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
+      {/* Full-screen snap scroll container */}
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto snap-y snap-mandatory"
+        onScroll={handleScroll}
+        style={{ scrollSnapType: 'y mandatory' }}
+      >
         {looks.map((look, index) => (
           <div
             key={look.outfitId || index}
-            className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg"
+            className="h-[100dvh] snap-start snap-always relative flex flex-col"
+            style={{ scrollSnapAlign: 'start' }}
           >
-            <img
-              src={look.image}
-              alt={`Look ${index + 1}`}
-              className="w-full h-full object-cover"
-              onClick={() => onSelectLook?.(look)}
-            />
-
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-
-            {/* Look number badge */}
-            <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm">
-              <span className="text-white text-xs font-medium">Look {index + 1}</span>
-            </div>
-
-            {/* Actions overlay */}
-            <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-              <button
+            {/* Image area - takes most of the screen */}
+            <div className="flex-1 relative min-h-0">
+              <img
+                src={look.image}
+                alt="Your look"
+                className="absolute inset-0 w-full h-full object-cover"
                 onClick={() => onViewDetails?.(look)}
-                className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium hover:bg-white/30 transition-all flex items-center gap-1.5"
-              >
-                <Info className="w-3.5 h-3.5" />
-                Details
-              </button>
+              />
 
-              <div className="flex gap-2">
+              {/* Gradient overlay for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+              {/* Top actions (subtle) */}
+              <div className="absolute top-4 right-4 flex gap-2 z-10">
                 <button
                   onClick={() => handleSave(look.outfitId)}
                   className={`p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 ${
@@ -83,46 +95,65 @@ const MoreLooks = ({
                       ? 'bg-brand text-white'
                       : 'bg-white/20 text-white hover:bg-white/30'
                   }`}
-                  aria-label="Save look"
+                  aria-label={savedLooks.includes(look.outfitId) ? 'Saved' : 'Save look'}
                 >
-                  <Heart className={`w-4 h-4 ${savedLooks.includes(look.outfitId) ? 'fill-current' : ''}`} />
+                  <Heart className={`w-5 h-5 ${savedLooks.includes(look.outfitId) ? 'fill-current' : ''}`} />
                 </button>
                 <button
                   onClick={() => onShareLook?.(look)}
-                  className="p-2.5 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all"
+                  className="p-2.5 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all duration-300"
                   aria-label="Share look"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Share2 className="w-5 h-5" />
                 </button>
+              </div>
+            </div>
+
+            {/* Bottom content - same style as FirstLook */}
+            <div className="relative z-10 px-4 py-4 -mt-20">
+              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl space-y-3">
+                {/* Main message */}
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-serif font-semibold text-foreground">
+                    {index === 0 ? 'Your first look' : 'Another look for you'}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {look.outfit?.description || "Styled to complement your shape"}
+                  </p>
+                </div>
+
+                {/* Next look prompt or generating state */}
+                {index === looks.length - 1 ? (
+                  isGeneratingMore ? (
+                    <p className="text-center text-sm text-muted-foreground py-2">
+                      Styling your next look...
+                    </p>
+                  ) : canGenerateMore && looks.length < 7 ? (
+                    <button
+                      onClick={scrollToNext}
+                      className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                      Scroll for next look
+                    </button>
+                  ) : (
+                    <p className="text-center text-xs text-muted-foreground/60 py-2">
+                      You've seen all your looks
+                    </p>
+                  )
+                ) : (
+                  <button
+                    onClick={scrollToNext}
+                    className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                    Scroll for next look
+                  </button>
+                )}
               </div>
             </div>
           </div>
         ))}
-
-        {/* Generate more button - inside scroll area */}
-        {canGenerateMore && looks.length < 7 && (
-          <Button
-            onClick={onGenerateMore}
-            disabled={isGeneratingMore}
-            variant="outline"
-            className="w-full py-4 rounded-xl text-sm"
-          >
-            {isGeneratingMore ? (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Generate more options
-              </>
-            )}
-          </Button>
-        )}
-
-        {/* Bottom padding for safe area */}
-        <div className="h-4" />
       </div>
 
       {/* Saved feedback toast */}
