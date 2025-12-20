@@ -13,11 +13,11 @@ const FirstLook = ({ image, description, onSeeMore, onSave, onShare, isSaved = f
 
   return (
     <div className="h-[100dvh] flex flex-col bg-background overflow-hidden relative">
-      {/* Full-screen image - object-contain to show full body including shoes */}
+      {/* Full-screen image - object-contain, positioned slightly higher to reduce top whitespace */}
       <img
         src={image}
         alt="Your new look"
-        className="absolute inset-0 w-full h-full object-contain bg-neutral-100"
+        className="absolute inset-x-0 top-[-5%] bottom-0 w-full h-[105%] object-contain bg-neutral-100"
       />
 
       {/* Gradient overlay at bottom for text readability - transparent to white */}

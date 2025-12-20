@@ -64,11 +64,11 @@ const MoreLooks = ({
             className="h-[100dvh] snap-start snap-always relative"
             style={{ scrollSnapAlign: 'start' }}
           >
-            {/* Full-screen image - object-contain to show full body including shoes */}
+            {/* Full-screen image - object-contain, positioned slightly higher to reduce top whitespace */}
             <img
               src={look.image}
               alt="Your look"
-              className="absolute inset-0 w-full h-full object-contain bg-neutral-100"
+              className="absolute inset-x-0 top-[-5%] bottom-0 w-full h-[105%] object-contain bg-neutral-100"
               onClick={() => onViewDetails?.(look)}
             />
 
@@ -100,38 +100,43 @@ const MoreLooks = ({
             {/* Bottom content - floats over gradient */}
             <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-2">
               <div className="text-center space-y-3">
-                {/* Main message */}
+                {/* Main message - varied copy to stay human */}
                 <div className="space-y-0.5">
                   <h2 className="text-lg font-serif font-semibold text-foreground">
-                    {index === 0 ? 'Your first look' : 'Another look for you'}
+                    {index === 0 ? 'Your first look' :
+                     index === 1 ? 'Another look for you' :
+                     index === 2 ? 'A different direction' :
+                     'A new side of you'}
                   </h2>
                   <p className="text-sm text-muted-foreground">
                     {look.outfit?.description || "Styled to complement your shape"}
                   </p>
                 </div>
 
-                {/* Next look prompt or generating state */}
+                {/* Scroll hint only on first look, subtle generating state, or end message */}
                 {index === looks.length - 1 ? (
                   isGeneratingMore ? (
                     <p className="text-sm text-muted-foreground/70 py-1">
                       Styling your next look...
                     </p>
                   ) : canGenerateMore && looks.length < 7 ? (
-                    <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
-                      <ChevronDown className="w-4 h-4 animate-bounce" />
-                      <span>Scroll for next look</span>
-                    </div>
+                    index === 0 ? (
+                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
+                        <ChevronDown className="w-4 h-4 animate-bounce" />
+                        <span>Scroll for next look</span>
+                      </div>
+                    ) : null
                   ) : (
                     <p className="text-xs text-muted-foreground/50 py-1">
                       You've seen all your looks
                     </p>
                   )
-                ) : (
+                ) : index === 0 ? (
                   <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70 py-1">
                     <ChevronDown className="w-4 h-4" />
                     <span>Scroll for next look</span>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
