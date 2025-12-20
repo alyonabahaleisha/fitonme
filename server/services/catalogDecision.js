@@ -24,7 +24,7 @@ let genAI = null;
  */
 export function initCatalogDecisionService(apiKey) {
   genAI = new GoogleGenerativeAI(apiKey);
-  logger.info('[CATALOG_DECISION] Service initialized, enabled:', config.enabled);
+  logger.info(`[CATALOG_DECISION] Service initialized, enabled=${config.enabled}, timeout=${config.timeoutMs}ms`);
 }
 
 /**

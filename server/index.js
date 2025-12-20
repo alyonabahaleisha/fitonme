@@ -432,15 +432,43 @@ app.get('/api/health', (req, res) => {
 
 // Detect catalog sex from person photo (AI-based)
 // This endpoint analyzes the uploaded photo to decide female/male catalog
-app.post('/api/detect-catalog', upload.single('personImage'), async (req, res) => {
+app.post('/api/detect-catalog', (req, res, next) => {
+  // Set a hard timeout on the entire request (10 seconds)
+  const REQUEST_TIMEOUT_MS = 10000;
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  logger.info(`[DETECT_CATALOG] ${requestId} - Incoming request, setting ${REQUEST_TIMEOUT_MS}ms timeout`);
+
+  const timeoutId = setTimeout(() => {
+    logger.warn(`[DETECT_CATALOG] ${requestId} - Request timeout after ${REQUEST_TIMEOUT_MS}ms`);
+    if (!res.headersSent) {
+      res.status(504).json({
+        error: 'Request timeout',
+        catalog: 'female',
+        confidence: 0,
+        reason: 'fallback_timeout',
+      });
+    }
+  }, REQUEST_TIMEOUT_MS);
+
+  // Store requestId and cleanup function on req for use in handler
+  req.catalogRequestId = requestId;
+  req.clearCatalogTimeout = () => clearTimeout(timeoutId);
+
+  // Clear timeout when response is sent
+  res.on('finish', () => clearTimeout(timeoutId));
+
+  next();
+}, upload.single('personImage'), async (req, res) => {
+  const requestId = req.catalogRequestId;
   const startTime = Date.now();
 
-  logger.info(`[DETECT_CATALOG] ${requestId} - Request received`);
+  logger.info(`[DETECT_CATALOG] ${requestId} - Multer completed, processing request`);
 
   try {
     if (!req.file) {
       logger.warn(`[DETECT_CATALOG] ${requestId} - No file provided`);
+      req.clearCatalogTimeout?.();
       return res.status(400).json({ error: 'Person image is required' });
     }
 
@@ -461,27 +489,35 @@ app.post('/api/detect-catalog', upload.single('personImage'), async (req, res) =
     const totalTime = Date.now() - startTime;
     logger.info(`[DETECT_CATALOG] ${requestId} - Sending response (totalTime=${totalTime}ms)`);
 
+    req.clearCatalogTimeout?.();
+
     // Return decision
-    res.json({
-      success: true,
-      requestId,
-      catalog: decision.sex,
-      confidence: decision.confidence,
-      reason: decision.reason,
-      latencyMs: decision.latencyMs,
-    });
+    if (!res.headersSent) {
+      res.json({
+        success: true,
+        requestId,
+        catalog: decision.sex,
+        confidence: decision.confidence,
+        reason: decision.reason,
+        latencyMs: decision.latencyMs,
+      });
+    }
 
   } catch (error) {
     const totalTime = Date.now() - startTime;
-    logger.error(`[DETECT_CATALOG] ${requestId} - Error after ${totalTime}ms:`, error);
-    res.status(500).json({
-      error: 'Failed to detect catalog',
-      details: error.message,
-      // Return fallback on error
-      catalog: 'female',
-      confidence: 0,
-      reason: 'fallback_error',
-    });
+    logger.error(`[DETECT_CATALOG] ${requestId} - Error after ${totalTime}ms:`, error.message);
+    req.clearCatalogTimeout?.();
+
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Failed to detect catalog',
+        details: error.message,
+        // Return fallback on error
+        catalog: 'female',
+        confidence: 0,
+        reason: 'fallback_error',
+      });
+    }
   }
 });
 
