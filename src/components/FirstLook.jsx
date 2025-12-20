@@ -58,10 +58,13 @@ const FirstLook = ({ image, onSeeMore, onSave, onShare, isSaved = false }) => {
       <div className="relative z-10 px-4 py-4 -mt-20">
         <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl space-y-3">
           {/* Main message */}
-          <div className="text-center">
+          <div className="text-center space-y-1">
             <h2 className="text-lg font-serif font-semibold text-foreground">
-              This is how you could look
+              Your first look, styled
             </h2>
+            <p className="text-sm text-muted-foreground">
+              Designed to flatter your shape
+            </p>
           </div>
 
           {/* Primary CTA */}
@@ -69,7 +72,7 @@ const FirstLook = ({ image, onSeeMore, onSave, onShare, isSaved = false }) => {
             onClick={onSeeMore}
             className="w-full py-5 text-base font-semibold rounded-xl bg-brand hover:bg-brand/90 text-white"
           >
-            See more looks
+            See my next looks
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
