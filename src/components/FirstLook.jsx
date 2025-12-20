@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Heart, Share2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const FirstLook = ({ image, onSeeMore, onSave, onShare, isSaved = false }) => {
+const FirstLook = ({ image, description, onSeeMore, onSave, onShare, isSaved = false }) => {
   const [showSaved, setShowSaved] = useState(false);
 
   const handleSave = () => {
@@ -63,7 +63,7 @@ const FirstLook = ({ image, onSeeMore, onSave, onShare, isSaved = false }) => {
               Your first look, styled
             </h2>
             <p className="text-sm text-muted-foreground">
-              Designed to flatter your shape
+              {description || "Designed to flatter your shape"}
             </p>
           </div>
 

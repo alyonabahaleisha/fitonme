@@ -577,6 +577,7 @@ const TryOn = () => {
         return (
           <FirstLook
             image={firstLook.image}
+            description={firstLook.outfit?.description}
             onSeeMore={() => {
               setCurrentStep(STEPS.MORE_LOOKS);
               // Start generating next look in background
