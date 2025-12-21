@@ -56,15 +56,14 @@ const MoreLooks = ({
   }, [isGeneratingMore]);
 
   const handleSave = (look, index) => {
+    const wasAlreadySaved = savedLooks.includes(look.outfitId);
     onSaveLook?.(look.outfitId);
     setShowSavedFeedback(true);
     setTimeout(() => setShowSavedFeedback(false), 2000);
 
-    // If this is the LAST look and user just saved it, show the sheet after delay
-    const isLastLook = index === looks.length - 1;
-    const noMoreLookscoming = !canGenerateMore || looks.length >= 7;
-
-    if (isLastLook && noMoreLookscoming) {
+    // Show sheet if user is not authenticated (doesn't have a profile)
+    // Only on new saves, not when un-saving
+    if (!isAuthenticated && !wasAlreadySaved) {
       setSavedLookForSheet(look);
       // Delay to let the heart animation complete first
       setTimeout(() => {
