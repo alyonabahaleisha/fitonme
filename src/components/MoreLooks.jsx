@@ -57,13 +57,14 @@ const MoreLooks = ({
 
   const handleSave = (look, index) => {
     const wasAlreadySaved = savedLooks.includes(look.outfitId);
+    const isFirstSaveEver = savedLooks.length === 0 && !wasAlreadySaved;
+
     onSaveLook?.(look.outfitId);
     setShowSavedFeedback(true);
     setTimeout(() => setShowSavedFeedback(false), 2000);
 
-    // Show sheet if user is not authenticated (doesn't have a profile)
-    // Only on new saves, not when un-saving
-    if (!isAuthenticated && !wasAlreadySaved) {
+    // Show sheet only on the FIRST save ever (if not authenticated)
+    if (!isAuthenticated && isFirstSaveEver) {
       setSavedLookForSheet(look);
       // Delay to let the heart animation complete first
       setTimeout(() => {
