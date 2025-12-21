@@ -76,7 +76,7 @@ const SaveLookSheet = ({
                     Want to keep this look?
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    We can save it so you can come back to it anytime.
+                    Save it to your profile or email it to yourself so you don't lose it.
                   </p>
                 </div>
 

@@ -210,11 +210,11 @@ const MoreLooks = ({
         ))}
       </div>
 
-      {/* Saved feedback toast */}
+      {/* Favorite feedback toast */}
       {showSavedFeedback && (
         <div className="fixed bottom-24 inset-x-0 flex justify-center z-50 pointer-events-none">
           <div className="px-6 py-3 rounded-full bg-foreground text-background text-sm font-medium shadow-lg animate-fade-in">
-            Saved
+            Added to favorites
           </div>
         </div>
       )}
