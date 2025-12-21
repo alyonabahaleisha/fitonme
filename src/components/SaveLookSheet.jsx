@@ -73,32 +73,31 @@ const SaveLookSheet = ({
               <>
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-serif font-semibold text-foreground mb-1">
-                    Want to keep this look?
+                    Want a place for your looks?
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Save it to your profile or email it to yourself so you don't lose it.
+                    Save your favorites and come back to them anytime.
                   </p>
                 </div>
 
                 <div className="space-y-3">
-                  {/* Email option */}
+                  {/* Create profile - primary action */}
+                  <Button
+                    onClick={onSaveToProfile}
+                    className="w-full py-6 text-base font-semibold rounded-2xl bg-brand hover:bg-brand/90 text-white"
+                  >
+                    <User className="w-5 h-5 mr-3" />
+                    Create my style profile
+                  </Button>
+
+                  {/* Email option - secondary */}
                   <Button
                     onClick={handleEmailClick}
                     variant="outline"
                     className="w-full py-6 text-base font-medium rounded-2xl border-2 hover:bg-gray-50 justify-start px-5"
                   >
                     <Mail className="w-5 h-5 mr-3 text-brand" />
-                    Email it to me
-                  </Button>
-
-                  {/* Save to profile option */}
-                  <Button
-                    onClick={onSaveToProfile}
-                    variant="outline"
-                    className="w-full py-6 text-base font-medium rounded-2xl border-2 hover:bg-gray-50 justify-start px-5"
-                  >
-                    <User className="w-5 h-5 mr-3 text-brand" />
-                    Save to my profile
+                    Just email this look
                   </Button>
 
                   {/* Not now */}
