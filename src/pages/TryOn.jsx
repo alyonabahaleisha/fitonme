@@ -83,6 +83,7 @@ const TryOn = () => {
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
   const [catalogDecisionResult, setCatalogDecisionResult] = useState(null);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Loading phrases with variable timing (slower in middle, faster at end)
   // Each step has 2 variants for natural feel over 17s
@@ -518,6 +519,48 @@ const TryOn = () => {
     setShowDetails(true);
   };
 
+  // Handle email look (from SaveLookSheet)
+  const handleEmailLook = async (look, email) => {
+    setIsSendingEmail(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/email-look`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          imageBase64: look.image,
+          outfitName: look.outfit?.name || 'Your Look',
+          outfitDescription: look.outfit?.description,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Look sent!', {
+          description: `We've sent your look to ${email}`,
+        });
+      } else {
+        throw new Error('Failed to send email');
+      }
+    } catch (error) {
+      console.error('[TryOn] Email error:', error);
+      toast.error('Failed to send email. Please try again.');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  // Handle save to profile (from SaveLookSheet)
+  const handleSaveToProfile = (look) => {
+    if (!isAuthenticated) {
+      // Show sign up modal if not authenticated
+      setShowSignUpModal(true);
+    } else {
+      // Already authenticated, look is already saved via favorite
+      toast.success('Look saved to your profile!');
+    }
+  };
+
   // Render based on current step
   const renderContent = () => {
     switch (currentStep) {
@@ -634,9 +677,13 @@ const TryOn = () => {
             onShareLook={handleShareLook}
             onViewDetails={handleViewDetails}
             onGenerateMore={generateMoreLooks}
+            onEmailLook={handleEmailLook}
+            onSaveToProfile={handleSaveToProfile}
             savedLooks={favorites}
             canGenerateMore={generatedLooks.length < 7}
             isGeneratingMore={isGeneratingMore}
+            isAuthenticated={isAuthenticated}
+            isSendingEmail={isSendingEmail}
           />
         );
 

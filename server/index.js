@@ -9,7 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { verifyAuth, optionalAuth } from './middleware/auth.js';
 import { createClient } from '@supabase/supabase-js';
-import { sendOutfitReadyEmail } from './services/email.js';
+import { sendOutfitReadyEmail, sendSavedLookEmail } from './services/email.js';
 import logger from './utils/logger.js';
 import { apiLimiter, strictLimiter } from './middleware/rateLimiter.js';
 import {
@@ -615,6 +615,45 @@ app.get('/api/try-on-batch/:jobId/results', optionalAuth, (req, res) => {
 });
 
 // ==================== END BATCH TRY-ON ====================
+
+// ==================== EMAIL LOOK ====================
+
+/**
+ * POST /api/email-look
+ * Send a saved look to user's email
+ */
+app.post('/api/email-look', async (req, res) => {
+  try {
+    const { email, imageBase64, outfitName, outfitDescription } = req.body;
+
+    if (!email || !imageBase64) {
+      return res.status(400).json({ error: 'Email and image are required' });
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    logger.info(`[EMAIL_LOOK] Sending look to: ${email}`);
+
+    const result = await sendSavedLookEmail(email, imageBase64, outfitName, outfitDescription);
+
+    if (result.success) {
+      logger.info(`[EMAIL_LOOK] Successfully sent to: ${email}`);
+      res.json({ success: true });
+    } else {
+      logger.error(`[EMAIL_LOOK] Failed to send: ${result.error}`);
+      res.status(500).json({ error: result.error || 'Failed to send email' });
+    }
+  } catch (error) {
+    logger.error(`[EMAIL_LOOK] Exception: ${error.message}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ==================== END EMAIL LOOK ====================
 
 // Stripe: Create checkout session
 app.post('/api/create-checkout-session', async (req, res) => {

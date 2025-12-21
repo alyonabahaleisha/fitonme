@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Heart, Share2, ChevronDown } from 'lucide-react';
+import SaveLookSheet from './SaveLookSheet';
 
 // Varied generating copy to make AI feel alive
 const generatingPhrases = [
@@ -17,13 +18,19 @@ const MoreLooks = ({
   onShareLook,
   onViewDetails,
   onGenerateMore,
+  onEmailLook,
+  onSaveToProfile,
   savedLooks = [],
   canGenerateMore = true,
   isGeneratingMore = false,
+  isAuthenticated = false,
+  isSendingEmail = false,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
   const [showGenerating, setShowGenerating] = useState(false);
+  const [showSaveSheet, setShowSaveSheet] = useState(false);
+  const [savedLookForSheet, setSavedLookForSheet] = useState(null);
   const containerRef = useRef(null);
 
   // Pick a random phrase when generation starts
@@ -48,10 +55,38 @@ const MoreLooks = ({
     }
   }, [isGeneratingMore]);
 
-  const handleSave = (lookId) => {
-    onSaveLook?.(lookId);
+  const handleSave = (look, index) => {
+    onSaveLook?.(look.outfitId);
     setShowSavedFeedback(true);
     setTimeout(() => setShowSavedFeedback(false), 2000);
+
+    // If this is the LAST look and user just saved it, show the sheet after delay
+    const isLastLook = index === looks.length - 1;
+    const noMoreLookscoming = !canGenerateMore || looks.length >= 7;
+
+    if (isLastLook && noMoreLookscoming) {
+      setSavedLookForSheet(look);
+      // Delay to let the heart animation complete first
+      setTimeout(() => {
+        setShowSaveSheet(true);
+      }, 600);
+    }
+  };
+
+  const handleEmailSubmit = (email) => {
+    if (savedLookForSheet) {
+      onEmailLook?.(savedLookForSheet, email);
+    }
+  };
+
+  const handleSaveToProfile = () => {
+    setShowSaveSheet(false);
+    onSaveToProfile?.(savedLookForSheet);
+  };
+
+  const handleCloseSheet = () => {
+    setShowSaveSheet(false);
+    setSavedLookForSheet(null);
   };
 
   const handleScroll = (e) => {
@@ -103,7 +138,7 @@ const MoreLooks = ({
             {/* Top actions (subtle) */}
             <div className="absolute top-4 right-4 flex gap-2 z-10">
               <button
-                onClick={() => handleSave(look.outfitId)}
+                onClick={() => handleSave(look, index)}
                 className={`p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 ${
                   savedLooks.includes(look.outfitId)
                     ? 'bg-brand text-white'
@@ -178,9 +213,19 @@ const MoreLooks = ({
       {/* Saved feedback toast */}
       {showSavedFeedback && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-foreground text-background text-sm font-medium shadow-lg animate-fade-in z-50">
-          Look saved
+          Saved
         </div>
       )}
+
+      {/* Save Look Sheet - shown after liking last look */}
+      <SaveLookSheet
+        isOpen={showSaveSheet}
+        onClose={handleCloseSheet}
+        onEmailSubmit={handleEmailSubmit}
+        onSaveToProfile={handleSaveToProfile}
+        isAuthenticated={isAuthenticated}
+        isSending={isSendingEmail}
+      />
     </div>
   );
 };

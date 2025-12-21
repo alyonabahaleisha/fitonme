@@ -65,3 +65,75 @@ export const sendOutfitReadyEmail = async (userEmail, outfitName, imageUrl) => {
         return false;
     }
 };
+
+/**
+ * Send "Saved Look" email to user with embedded image
+ * @param {string} userEmail
+ * @param {string} imageBase64 - Base64 encoded image (with or without data URL prefix)
+ * @param {string} outfitName
+ * @param {string} outfitDescription
+ */
+export const sendSavedLookEmail = async (userEmail, imageBase64, outfitName, outfitDescription) => {
+    if (!resend) {
+        console.log('[EMAIL] Resend API key not found. Skipping email.');
+        return { success: false, error: 'Email service not configured' };
+    }
+
+    try {
+        // Extract base64 data if it's a data URL
+        let base64Data = imageBase64;
+        let mimeType = 'image/png';
+
+        if (imageBase64.startsWith('data:')) {
+            const matches = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+            if (matches) {
+                mimeType = matches[1];
+                base64Data = matches[2];
+            }
+        }
+
+        // Create image attachment
+        const attachment = {
+            filename: `${outfitName || 'your-look'}.${mimeType.split('/')[1] || 'png'}`,
+            content: base64Data,
+        };
+
+        const { data, error } = await resend.emails.send({
+            from: 'FitOnMe <noreply@fitonme.ai>',
+            to: [userEmail],
+            subject: `Your saved look from FitOnMe`,
+            attachments: [attachment],
+            html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #2d2d2d; font-size: 24px; font-weight: 600; margin-bottom: 8px;">Your look is saved</h1>
+          <p style="color: #666; margin-bottom: 24px;">Here's the look you loved. We've attached it so you can keep it forever.</p>
+
+          ${outfitName ? `<p style="color: #2d2d2d; font-size: 16px; margin-bottom: 4px;"><strong>${outfitName}</strong></p>` : ''}
+          ${outfitDescription ? `<p style="color: #888; font-size: 14px; margin-bottom: 24px;">${outfitDescription}</p>` : ''}
+
+          <p style="margin-top: 32px;">
+            <a href="${process.env.FRONTEND_URL || 'https://fitonme.ai'}/try-on" style="background-color: #e8645a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 28px; font-weight: 600; display: inline-block;">
+              Try more looks
+            </a>
+          </p>
+
+          <p style="color: #999; font-size: 12px; margin-top: 48px; border-top: 1px solid #eee; padding-top: 16px;">
+            You're receiving this because you saved a look on FitOnMe.<br/>
+            © ${new Date().getFullYear()} FitOnMe AI
+          </p>
+        </div>
+      `,
+        });
+
+        if (error) {
+            console.error('[EMAIL] Error sending saved look email:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log('[EMAIL] Saved look email sent to:', userEmail);
+        return { success: true };
+    } catch (error) {
+        console.error('[EMAIL] Exception sending saved look email:', error);
+        return { success: false, error: error.message };
+    }
+};
