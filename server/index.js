@@ -448,29 +448,55 @@ app.post('/api/detect-catalog', (req, res, next) => {
 
   logger.info(`[DETECT_CATALOG] ${requestId} - Incoming request, setting ${REQUEST_TIMEOUT_MS}ms timeout`);
 
-  const timeoutId = setTimeout(() => {
-    logger.warn(`[DETECT_CATALOG] ${requestId} - Request timeout after ${REQUEST_TIMEOUT_MS}ms`);
-    if (!res.headersSent) {
-      res.status(504).json({
-        error: 'Request timeout',
-        catalog: 'female',
-        confidence: 0,
-        reason: 'fallback_timeout',
-      });
-    }
-  }, REQUEST_TIMEOUT_MS);
+  // Set HTTP socket timeout (works at Node.js level, more reliable)
+  req.setTimeout(REQUEST_TIMEOUT_MS);
+  res.setTimeout(REQUEST_TIMEOUT_MS);
+
+  let responded = false;
+
+  const sendFallback = () => {
+    if (responded || res.headersSent) return;
+    responded = true;
+    logger.warn(`[DETECT_CATALOG] ${requestId} - Timeout, sending fallback`);
+    res.status(504).json({
+      error: 'Request timeout',
+      catalog: 'female',
+      confidence: 0,
+      reason: 'fallback_timeout',
+    });
+  };
+
+  // JavaScript-level timeout (backup)
+  const timeoutId = setTimeout(sendFallback, REQUEST_TIMEOUT_MS);
+
+  // Socket-level timeout handler
+  req.on('timeout', sendFallback);
+  res.on('timeout', sendFallback);
 
   // Store requestId and cleanup function on req for use in handler
   req.catalogRequestId = requestId;
-  req.clearCatalogTimeout = () => clearTimeout(timeoutId);
+  req.catalogResponded = () => responded;
+  req.clearCatalogTimeout = () => {
+    responded = true;
+    clearTimeout(timeoutId);
+  };
 
   // Clear timeout when response is sent
-  res.on('finish', () => clearTimeout(timeoutId));
+  res.on('finish', () => {
+    responded = true;
+    clearTimeout(timeoutId);
+  });
 
   next();
 }, upload.single('personImage'), async (req, res) => {
   const requestId = req.catalogRequestId;
   const startTime = Date.now();
+
+  // Check if timeout already fired
+  if (req.catalogResponded?.()) {
+    logger.warn(`[DETECT_CATALOG] ${requestId} - Already responded via timeout, skipping`);
+    return;
+  }
 
   logger.info(`[DETECT_CATALOG] ${requestId} - Multer completed, processing request`);
 
@@ -485,10 +511,23 @@ app.post('/api/detect-catalog', (req, res, next) => {
     const personImageMime = req.file.mimetype;
 
     logger.info(`[DETECT_CATALOG] ${requestId} - File received: ${personImageBuffer.length} bytes, mime=${personImageMime}`);
+
+    // Check if timeout already fired before AI call
+    if (req.catalogResponded?.()) {
+      logger.warn(`[DETECT_CATALOG] ${requestId} - Timeout fired before AI call, skipping`);
+      return;
+    }
+
     logger.info(`[DETECT_CATALOG] ${requestId} - Calling decideCatalogSexFromPhoto...`);
 
     // Make AI decision
     const decision = await decideCatalogSexFromPhoto(personImageBuffer, personImageMime);
+
+    // Check if timeout fired during AI call
+    if (req.catalogResponded?.()) {
+      logger.warn(`[DETECT_CATALOG] ${requestId} - Timeout fired during AI call, skipping response`);
+      return;
+    }
 
     logger.info(`[DETECT_CATALOG] ${requestId} - Decision received: ${JSON.stringify(decision)}`);
 
@@ -501,7 +540,7 @@ app.post('/api/detect-catalog', (req, res, next) => {
     req.clearCatalogTimeout?.();
 
     // Return decision
-    if (!res.headersSent) {
+    if (!res.headersSent && !req.catalogResponded?.()) {
       res.json({
         success: true,
         requestId,
