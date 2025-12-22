@@ -705,8 +705,37 @@ const TryOn = () => {
 
       {/* Main content */}
       <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
-        {/* Back button (shown during flow, not on upload/generating) */}
-        {currentStep !== STEPS.UPLOAD && currentStep !== STEPS.GENERATING && currentStep !== STEPS.DETECTING && (
+        {/* Top navigation bar (shown during results flow) */}
+        {(currentStep === STEPS.FIRST_LOOK || currentStep === STEPS.MORE_LOOKS) && (
+          <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
+            <div className="flex items-center justify-between px-4 py-3">
+              {/* Back button */}
+              <button
+                onClick={handleBack}
+                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+
+              {/* My Style - text button, reads as "place" not "action" */}
+              {isAuthenticated && (
+                <Link
+                  to="/my-style"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  My Style
+                </Link>
+              )}
+
+              {/* Spacer when not authenticated */}
+              {!isAuthenticated && <div className="w-16" />}
+            </div>
+          </div>
+        )}
+
+        {/* Back button for other steps (not results) */}
+        {currentStep !== STEPS.UPLOAD && currentStep !== STEPS.GENERATING && currentStep !== STEPS.DETECTING && currentStep !== STEPS.FIRST_LOOK && currentStep !== STEPS.MORE_LOOKS && (
           <div className="fixed top-4 left-4 z-40">
             <button
               onClick={handleBack}
@@ -715,19 +744,6 @@ const TryOn = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-          </div>
-        )}
-
-        {/* My Style button (top right, when authenticated and in results) */}
-        {isAuthenticated && (currentStep === STEPS.FIRST_LOOK || currentStep === STEPS.MORE_LOOKS) && (
-          <div className="fixed top-4 right-4 z-40">
-            <Link
-              to="/my-style"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all text-sm font-medium text-foreground"
-            >
-              <Heart className="w-4 h-4" />
-              My Style
-            </Link>
           </div>
         )}
 
