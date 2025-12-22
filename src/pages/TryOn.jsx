@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Sparkles, ArrowLeft, Upload, User } from 'lucide-react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Sparkles, ArrowLeft, Upload, User, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
 import StyleSelector from '../components/StyleSelector';
@@ -705,8 +705,8 @@ const TryOn = () => {
 
       {/* Main content */}
       <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
-        {/* Back button (shown during flow, not on upload) */}
-        {currentStep !== STEPS.UPLOAD && currentStep !== STEPS.GENERATING && (
+        {/* Back button (shown during flow, not on upload/generating) */}
+        {currentStep !== STEPS.UPLOAD && currentStep !== STEPS.GENERATING && currentStep !== STEPS.DETECTING && (
           <div className="fixed top-4 left-4 z-40">
             <button
               onClick={handleBack}
@@ -715,6 +715,19 @@ const TryOn = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
+          </div>
+        )}
+
+        {/* My Style button (top right, when authenticated and in results) */}
+        {isAuthenticated && (currentStep === STEPS.FIRST_LOOK || currentStep === STEPS.MORE_LOOKS) && (
+          <div className="fixed top-4 right-4 z-40">
+            <Link
+              to="/my-style"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all text-sm font-medium text-foreground"
+            >
+              <Heart className="w-4 h-4" />
+              My Style
+            </Link>
           </div>
         )}
 

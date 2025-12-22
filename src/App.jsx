@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import Index from './pages/Index';
 import TryOn from './pages/TryOn';
 import Closet from './pages/Closet';
+import MyStyle from './pages/MyStyle';
 import Legal from './pages/Legal';
 import PaymentSuccess from './pages/PaymentSuccess';
 import AuthCallback from './pages/AuthCallback';
@@ -70,6 +71,7 @@ function App() {
           <Route path="/legal/:slug" element={<Legal />} />
         </Route>
         <Route path="/try-on" element={<TryOn />} />
+        <Route path="/my-style" element={<MyStyle />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
