@@ -164,52 +164,52 @@ const MoreLooks = ({
 
             {/* Bottom content - floats over gradient */}
             <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-2">
-              <div className="text-center space-y-3">
-                {/* Main message - varied copy to stay human */}
-                <div className="space-y-0.5">
-                  <h2 className="text-lg font-serif font-semibold text-foreground">
-                    {index === 0 ? 'Your first look' :
-                     index === 1 ? 'Another look for you' :
-                     index === 2 ? 'A different direction' :
-                     'A new side of you'}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {look.outfit?.description || "Styled to complement your shape"}
+              {/* When generating on last look: show dedicated pause moment */}
+              {index === looks.length - 1 && showGenerating && isGeneratingMore ? (
+                <div className="flex flex-col items-center justify-center py-4 space-y-4">
+                  {/* Calm spinner - thin stroke, slow animation, brand color */}
+                  <div className="w-10 h-10 rounded-full border-2 border-brand/30 border-t-brand animate-[spin_1.5s_linear_infinite]" />
+                  {/* Single line of copy - no stacking */}
+                  <p className="text-sm text-muted-foreground/70 font-serif">
+                    {generatingPhrase}
                   </p>
                 </div>
+              ) : (
+                <div className="text-center space-y-3">
+                  {/* Main message - varied copy to stay human */}
+                  <div className="space-y-0.5">
+                    <h2 className="text-lg font-serif font-semibold text-foreground">
+                      {index === 0 ? 'Your first look' :
+                       index === 1 ? 'Another look for you' :
+                       index === 2 ? 'A different direction' :
+                       'A new side of you'}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {look.outfit?.description || "Styled to complement your shape"}
+                    </p>
+                  </div>
 
-                {/* Status: generating narration, scroll hint (first look only), or end message */}
-                <div className="h-8 flex items-center justify-center">
-                  {index === looks.length - 1 ? (
-                    // Last look - show generating state or end message
-                    showGenerating && isGeneratingMore ? (
-                      <p className="text-sm text-muted-foreground/60 font-serif italic">
-                        {generatingPhrase}
-                        <span className="inline-flex ml-1">
-                          <span className="animate-[pulse_1.4s_ease-in-out_infinite]">.</span>
-                          <span className="animate-[pulse_1.4s_ease-in-out_0.2s_infinite]">.</span>
-                          <span className="animate-[pulse_1.4s_ease-in-out_0.4s_infinite]">.</span>
-                        </span>
-                      </p>
-                    ) : canGenerateMore && looks.length < 7 ? (
-                      // Can generate more - waiting state
-                      null
+                  {/* Status: scroll hint (first look only) or end message */}
+                  <div className="h-8 flex items-center justify-center">
+                    {index === looks.length - 1 ? (
+                      // Last look - end message only (generating handled above)
+                      !canGenerateMore || looks.length >= 7 ? (
+                        <p className="text-xs text-muted-foreground/40 font-serif italic">
+                          That's your collection
+                        </p>
+                      ) : null
                     ) : (
-                      <p className="text-xs text-muted-foreground/40 font-serif italic">
-                        That's your collection
-                      </p>
-                    )
-                  ) : (
-                    // Not last look - show scroll hint only on first
-                    index === 0 ? (
-                      <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground/50">
-                        <ChevronDown className="w-4 h-4 animate-bounce" />
-                        <span className="font-serif italic">More looks below</span>
-                      </div>
-                    ) : null
-                  )}
+                      // Not last look - show scroll hint only on first
+                      index === 0 ? (
+                        <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground/50">
+                          <ChevronDown className="w-4 h-4 animate-bounce" />
+                          <span className="font-serif italic">More looks below</span>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         ))}
