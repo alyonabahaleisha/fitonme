@@ -24,7 +24,7 @@ const FirstLook = ({ image, description, onSeeMore, onSave, onShare, isSaved = f
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white via-white/80 to-transparent" />
 
       {/* Top actions (subtle) - positioned below nav bar */}
-      <div className="absolute top-16 right-4 flex gap-2 z-10">
+      <div className="absolute top-[104px] right-4 flex gap-2 z-10">
         <button
           onClick={handleSave}
           className={`p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 ${
@@ -47,7 +47,7 @@ const FirstLook = ({ image, description, onSeeMore, onSave, onShare, isSaved = f
 
       {/* Saved feedback */}
       {showSaved && (
-        <div className="absolute top-28 right-4 px-3 py-1.5 rounded-full bg-brand text-white text-sm font-medium animate-fade-in z-10">
+        <div className="absolute top-[152px] right-4 px-3 py-1.5 rounded-full bg-brand text-white text-sm font-medium animate-fade-in z-10">
           Saved!
         </div>
       )}
