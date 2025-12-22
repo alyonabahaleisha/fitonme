@@ -709,33 +709,35 @@ const TryOn = () => {
         {/* Top navigation bar (shown during results flow) */}
         {(currentStep === STEPS.FIRST_LOOK || currentStep === STEPS.MORE_LOOKS) && (
           <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-            <div className="flex items-center justify-between px-4 py-3">
+            <div className="relative flex items-center justify-between px-4 py-3">
               {/* Back button - neutral utility */}
               <button
                 onClick={handleBack}
-                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400"
+                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400 z-10"
                 aria-label="Go back"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              {/* Logo + brand name - silent signature, centered */}
-              <div className="flex items-center gap-1.5">
-                <img
-                  src={logo}
-                  alt="ILOVME"
-                  className="h-6 w-6"
-                />
-                <span className="text-sm font-semibold tracking-widest text-[#2B2B2B] uppercase">
-                  ilovme
-                </span>
+              {/* Logo + brand name - absolutely centered */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex items-center gap-1.5">
+                  <img
+                    src={logo}
+                    alt="ILOVME"
+                    className="h-6 w-6"
+                  />
+                  <span className="text-sm font-semibold tracking-widest text-[#2B2B2B] uppercase">
+                    ilovme
+                  </span>
+                </div>
               </div>
 
               {/* My Style - personal destination, slightly bolder */}
               {isAuthenticated ? (
                 <Link
                   to="/my-style"
-                  className="text-sm font-medium text-gray-600 hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-gray-600 hover:text-foreground transition-colors z-10"
                 >
                   My Style
                 </Link>

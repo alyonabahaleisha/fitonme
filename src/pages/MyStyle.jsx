@@ -25,24 +25,26 @@ const MyStyle = () => {
     <div className="min-h-[100dvh] bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-lg mx-auto px-4 py-3 relative flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400"
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400 z-10"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          {/* Logo + brand name - silent signature */}
-          <div className="flex items-center gap-1.5">
-            <img
-              src={logo}
-              alt="ILOVME"
-              className="h-6 w-6"
-            />
-            <span className="text-sm font-semibold tracking-widest text-[#2B2B2B] uppercase">
-              ilovme
-            </span>
+          {/* Logo + brand name - absolutely centered */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="flex items-center gap-1.5">
+              <img
+                src={logo}
+                alt="ILOVME"
+                className="h-6 w-6"
+              />
+              <span className="text-sm font-semibold tracking-widest text-[#2B2B2B] uppercase">
+                ilovme
+              </span>
+            </div>
           </div>
           <div className="w-9" /> {/* Spacer for balance */}
         </div>
