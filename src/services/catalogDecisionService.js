@@ -6,6 +6,7 @@
  */
 
 import { API_URL } from '@/config';
+import { getPreparedBlob } from './photoPrep';
 
 /**
  * @typedef {Object} CatalogDecisionResult
@@ -28,11 +29,18 @@ export async function detectCatalogFromPhoto(photoDataUrl) {
   console.log('[CatalogDecision] API_URL:', API_URL);
 
   try {
-    // Convert data URL to Blob
-    console.log('[CatalogDecision] Converting data URL to blob...');
-    const response = await fetch(photoDataUrl);
-    const blob = await response.blob();
-    console.log('[CatalogDecision] Blob created, size:', blob.size);
+    // Use prepared blob if available (much smaller, ~66KB vs 1.2MB)
+    let blob = getPreparedBlob();
+
+    if (blob) {
+      console.log('[CatalogDecision] Using prepared blob, size:', blob.size);
+    } else {
+      // Fallback to converting data URL
+      console.log('[CatalogDecision] No prepared blob, converting data URL...');
+      const response = await fetch(photoDataUrl);
+      blob = await response.blob();
+      console.log('[CatalogDecision] Blob created from data URL, size:', blob.size);
+    }
 
     // Create FormData
     const formData = new FormData();
