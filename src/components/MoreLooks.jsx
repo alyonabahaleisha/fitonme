@@ -31,6 +31,7 @@ const MoreLooks = ({
   const [showGenerating, setShowGenerating] = useState(false);
   const [showSaveSheet, setShowSaveSheet] = useState(false);
   const [savedLookForSheet, setSavedLookForSheet] = useState(null);
+  const [hasShownSheet, setHasShownSheet] = useState(false);
   const containerRef = useRef(null);
 
   // Pick a random phrase when generation starts
@@ -57,14 +58,18 @@ const MoreLooks = ({
 
   const handleSave = (look, index) => {
     const wasAlreadySaved = savedLooks.includes(look.outfitId);
-    const isFirstSaveEver = savedLooks.length === 0 && !wasAlreadySaved;
+    const isFirstSave = !wasAlreadySaved;
+
+    console.log('[MoreLooks] handleSave called', { isAuthenticated, wasAlreadySaved, isFirstSave, hasShownSheet, savedLooksCount: savedLooks.length });
 
     onSaveLook?.(look.outfitId);
     setShowSavedFeedback(true);
     setTimeout(() => setShowSavedFeedback(false), 2000);
 
-    // Show sheet only on the FIRST save ever (if not authenticated)
-    if (!isAuthenticated && isFirstSaveEver) {
+    // Show sheet on first save of any look (if not authenticated and not shown before)
+    if (!isAuthenticated && isFirstSave && !hasShownSheet) {
+      console.log('[MoreLooks] Showing save sheet in 600ms');
+      setHasShownSheet(true);
       setSavedLookForSheet(look);
       // Delay to let the heart animation complete first
       setTimeout(() => {

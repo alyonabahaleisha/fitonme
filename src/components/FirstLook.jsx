@@ -18,15 +18,20 @@ const FirstLook = ({
 }) => {
   const [showSaved, setShowSaved] = useState(false);
   const [showSaveSheet, setShowSaveSheet] = useState(false);
+  const [hasShownSheet, setHasShownSheet] = useState(false);
 
   const handleSave = () => {
     const isFirstSave = !isSaved;
+    console.log('[FirstLook] handleSave called', { isAuthenticated, isSaved, isFirstSave, hasShownSheet });
+
     onSave?.();
     setShowSaved(true);
     setTimeout(() => setShowSaved(false), 2000);
 
-    // Show sheet on first save (if not authenticated)
-    if (!isAuthenticated && isFirstSave) {
+    // Show sheet on first save (if not authenticated and not shown before)
+    if (!isAuthenticated && isFirstSave && !hasShownSheet) {
+      console.log('[FirstLook] Showing save sheet in 600ms');
+      setHasShownSheet(true);
       setTimeout(() => {
         setShowSaveSheet(true);
       }, 600);
