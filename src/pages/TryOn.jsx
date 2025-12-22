@@ -724,9 +724,9 @@ const TryOn = () => {
                 <img
                   src={logo}
                   alt="ILOVME"
-                  className="h-5 w-5"
+                  className="h-6 w-6"
                 />
-                <span className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+                <span className="text-sm font-semibold tracking-widest text-[#2B2B2B] uppercase">
                   ilovme
                 </span>
               </div>
