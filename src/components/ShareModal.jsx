@@ -9,6 +9,8 @@ const ShareModal = ({ imageToShare, outfitName }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [watermarkedImage, setWatermarkedImage] = useState(null);
   const [downloaded, setDownloaded] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareError, setShareError] = useState(null);
   const { showShareModal, setShowShareModal } = useAppStore();
 
   useScrollLock(showShareModal);
@@ -29,6 +31,13 @@ const ShareModal = ({ imageToShare, outfitName }) => {
     }
   };
 
+  // Convert data URL to File object for Web Share API
+  const dataUrlToFile = async (dataUrl, filename) => {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: 'image/png' });
+  };
+
   const handleDownload = async () => {
     const image = await generateShareImage();
     const link = document.createElement('a');
@@ -38,11 +47,41 @@ const ShareModal = ({ imageToShare, outfitName }) => {
     link.click();
     document.body.removeChild(link);
     setDownloaded(true);
+    return image;
   };
 
-  const handleShareToStory = () => {
-    // Download first, then show Instagram tip
-    handleDownload();
+  const handleShareToStory = async () => {
+    setIsSharing(true);
+    setShareError(null);
+
+    try {
+      const image = await generateShareImage();
+      const file = await dataUrlToFile(image, `ilovme-${outfitName || 'look'}.png`);
+
+      // Check if Web Share API with files is supported
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My look styled by ilovme',
+        });
+        setDownloaded(true);
+      } else {
+        // Fallback: download the image and show instruction
+        setShareError('not-supported');
+        await handleDownload();
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      if (error.name === 'AbortError') {
+        // User cancelled - that's fine
+      } else {
+        // Other error - fallback to download
+        setShareError('not-supported');
+        await handleDownload();
+      }
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   if (!showShareModal) return null;
@@ -89,38 +128,48 @@ const ShareModal = ({ imageToShare, outfitName }) => {
               Share this look
             </h2>
 
-            {/* Primary: Save image */}
+            {/* Primary: Share to Instagram */}
             <button
-              onClick={handleDownload}
-              disabled={isGenerating}
+              onClick={handleShareToStory}
+              disabled={isGenerating || isSharing}
               className="w-full flex items-center justify-center gap-2 py-4 bg-brand hover:bg-brand/90 text-white rounded-2xl font-semibold transition-colors disabled:opacity-50"
             >
-              {downloaded ? (
+              {isSharing ? (
                 <>
-                  <Check className="w-5 h-5" />
-                  Saved to photos
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Opening...
                 </>
               ) : (
                 <>
-                  <Download className="w-5 h-5" />
+                  <Instagram className="w-5 h-5" />
+                  Share to Instagram
+                </>
+              )}
+            </button>
+
+            {/* Secondary: Save image */}
+            <button
+              onClick={handleDownload}
+              disabled={isGenerating}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors disabled:opacity-50"
+            >
+              {downloaded ? (
+                <>
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-green-600">Saved to photos</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
                   Save image
                 </>
               )}
             </button>
 
-            {/* Secondary: Share to Instagram */}
-            <button
-              onClick={handleShareToStory}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
-            >
-              <Instagram className="w-4 h-4" />
-              Share to Story
-            </button>
-
-            {/* Subtle tip after download */}
-            {downloaded && (
-              <p className="text-xs text-center text-gray-400 animate-fade-in">
-                Open Instagram → Add to Story
+            {/* Fallback message when share not supported */}
+            {shareError === 'not-supported' && downloaded && (
+              <p className="text-xs text-center text-gray-500 animate-fade-in">
+                Image saved! Open Instagram to share to your Story.
               </p>
             )}
           </div>
