@@ -68,7 +68,7 @@ const OutfitDetails = ({ outfit, image, onClose, isOpen }) => {
   );
 };
 
-// Editorial annotation style - not a product card
+// Editorial annotation style - with thumbnail
 const ItemRow = ({ item }) => {
   const handleClick = () => {
     if (item.link) {
@@ -80,30 +80,34 @@ const ItemRow = ({ item }) => {
     <button
       onClick={handleClick}
       disabled={!item.link}
-      className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-0 text-left group disabled:cursor-default"
+      className="w-full flex items-center gap-3 py-3 border-b border-gray-100 last:border-0 text-left group disabled:cursor-default"
     >
-      <div className="flex items-center gap-3 min-w-0">
-        {/* Category label */}
-        <span className="text-xs text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">
-          {item.category || 'Item'}
-        </span>
-
-        {/* Name + Brand */}
-        <div className="min-w-0">
-          <span className="text-sm text-gray-900 truncate block">
-            {item.name || 'Untitled'}
-          </span>
-          {item.brand && (
-            <span className="text-xs text-gray-500">
-              {item.brand}
-            </span>
-          )}
+      {/* Thumbnail */}
+      {item.imageUrl && (
+        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+          <img
+            src={item.imageUrl}
+            alt={item.name || 'Item'}
+            className="w-full h-full object-cover"
+          />
         </div>
+      )}
+
+      {/* Name + Category */}
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-gray-900 truncate block">
+          {item.name || item.category || 'Item'}
+        </span>
+        {item.name && item.category && (
+          <span className="text-xs text-gray-500">
+            {item.category}
+          </span>
+        )}
       </div>
 
       {/* Link indicator - subtle arrow */}
       {item.link && (
-        <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-brand transition-colors flex-shrink-0 ml-2" />
+        <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-brand transition-colors flex-shrink-0" />
       )}
     </button>
   );
