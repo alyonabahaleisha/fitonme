@@ -24,20 +24,28 @@ import { API_URL } from '@/config';
  * @returns {Promise<CatalogDecisionResult>}
  */
 export async function detectCatalogFromPhoto(photoDataUrl) {
+  console.log('[CatalogDecision] Starting detection...');
+  console.log('[CatalogDecision] API_URL:', API_URL);
+
   try {
     // Convert data URL to Blob
+    console.log('[CatalogDecision] Converting data URL to blob...');
     const response = await fetch(photoDataUrl);
     const blob = await response.blob();
+    console.log('[CatalogDecision] Blob created, size:', blob.size);
 
     // Create FormData
     const formData = new FormData();
     formData.append('personImage', blob, 'photo.jpg');
 
     // Call backend
+    console.log('[CatalogDecision] Calling backend...');
     const apiResponse = await fetch(`${API_URL}/api/detect-catalog`, {
       method: 'POST',
       body: formData,
     });
+
+    console.log('[CatalogDecision] Response status:', apiResponse.status);
 
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json().catch(() => ({}));
@@ -54,6 +62,7 @@ export async function detectCatalogFromPhoto(photoDataUrl) {
     }
 
     const data = await apiResponse.json();
+    console.log('[CatalogDecision] Response data:', data);
 
     return {
       success: data.success,
