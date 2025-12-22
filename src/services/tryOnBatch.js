@@ -85,7 +85,7 @@ export async function getJobResults(jobId) {
  */
 export function pollForResults(jobId, onNewLook, onProgress) {
   return new Promise((resolve, reject) => {
-    let lastApprovedCount = 0;
+    const seenOutfitIds = new Set(); // Track which outfits we've already sent
     let attempts = 0;
 
     const poll = async () => {
@@ -109,11 +109,15 @@ export function pollForResults(jobId, onNewLook, onProgress) {
           failed: results.results.failedCount,
         });
 
-        // Check for new approved looks
-        const newApproved = results.results.approved.slice(lastApprovedCount);
+        // Check for new approved looks (filter by outfitId to avoid duplicates)
+        const newApproved = results.results.approved.filter(
+          look => !seenOutfitIds.has(look.outfitId)
+        );
+
         if (newApproved.length > 0) {
           console.log(`[BATCH] ${newApproved.length} new approved looks`);
           for (const look of newApproved) {
+            seenOutfitIds.add(look.outfitId);
             onNewLook({
               outfitId: look.outfitId,
               image: `data:${look.mimeType};base64,${look.image}`,
@@ -125,7 +129,6 @@ export function pollForResults(jobId, onNewLook, onProgress) {
               coherenceScore: look.coherenceScore,
             });
           }
-          lastApprovedCount = results.results.approvedCount;
         }
 
         // Continue polling if still processing
