@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, LogOut, Sparkles } from 'lucide-react';
+import logo from '../assets/logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import useAppStore from '../store/useAppStore';
 import { Button } from '../components/ui/button';
@@ -24,20 +25,28 @@ const MyStyle = () => {
     <div className="min-h-[100dvh] bg-gradient-to-b from-[hsl(20,25%,92%)] via-[hsl(25,22%,90%)] to-[hsl(30,20%,86%)]">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-serif text-lg font-semibold">My Style</h1>
-          <div className="w-9" /> {/* Spacer for centering */}
+          {/* Logo - silent signature */}
+          <img
+            src={logo}
+            alt="ILOVME"
+            className="h-6 w-6 opacity-70"
+          />
+          <div className="w-9" /> {/* Spacer for balance */}
         </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-8">
+        {/* Page title */}
+        <h1 className="font-serif text-2xl font-semibold text-center">My Style</h1>
+
         {/* Saved Looks Section */}
         <section>
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">

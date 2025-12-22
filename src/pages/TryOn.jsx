@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Sparkles, ArrowLeft, Upload, User, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
+import logo from '../assets/logo.png';
 import StyleSelector from '../components/StyleSelector';
 import FirstLook from '../components/FirstLook';
 import MoreLooks from '../components/MoreLooks';
@@ -709,27 +710,33 @@ const TryOn = () => {
         {(currentStep === STEPS.FIRST_LOOK || currentStep === STEPS.MORE_LOOKS) && (
           <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
             <div className="flex items-center justify-between px-4 py-3">
-              {/* Back button */}
+              {/* Back button - neutral utility */}
               <button
                 onClick={handleBack}
-                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400"
                 aria-label="Go back"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              {/* My Style - text button, reads as "place" not "action" */}
-              {isAuthenticated && (
+              {/* Logo - silent signature, centered */}
+              <img
+                src={logo}
+                alt="ILOVME"
+                className="h-6 w-6 opacity-70"
+              />
+
+              {/* My Style - personal destination, slightly bolder */}
+              {isAuthenticated ? (
                 <Link
                   to="/my-style"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-gray-600 hover:text-foreground transition-colors"
                 >
                   My Style
                 </Link>
+              ) : (
+                <div className="w-16" />
               )}
-
-              {/* Spacer when not authenticated */}
-              {!isAuthenticated && <div className="w-16" />}
             </div>
           </div>
         )}
