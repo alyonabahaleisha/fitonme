@@ -112,12 +112,12 @@ const ShareModal = ({ imageToShare, outfitName }) => {
             <span className="absolute bottom-4 right-4 text-[11px] font-serif tracking-wide text-white/60">
               ilovme
             </span>
-            {/* Close button */}
+            {/* Close button - larger touch target for mobile */}
             <button
               onClick={() => setShowShareModal(false)}
-              className="absolute top-3 right-3 p-2 bg-black/20 hover:bg-black/30 backdrop-blur-sm rounded-full transition-colors"
+              className="absolute top-3 right-3 p-3 bg-black/30 active:bg-black/50 backdrop-blur-sm rounded-full transition-colors"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-6 h-6 text-white" />
             </button>
           </div>
 
@@ -172,6 +172,14 @@ const ShareModal = ({ imageToShare, outfitName }) => {
                 Image saved! Open Instagram to share to your Story.
               </p>
             )}
+
+            {/* Done button - easy to tap on mobile */}
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="w-full py-3 text-sm font-medium text-gray-500 active:text-gray-700 transition-colors"
+            >
+              Done
+            </button>
           </div>
         </div>
       </div>,
