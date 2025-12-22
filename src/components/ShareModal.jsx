@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Download, Instagram, Link2, Check } from 'lucide-react';
+import { X, Download, Instagram, Check } from 'lucide-react';
 import { addWatermark } from '../lib/image-processor';
 import useAppStore from '../store/useAppStore';
 import { useScrollLock } from "../hooks/useScrollLock";
@@ -8,7 +8,6 @@ import { useScrollLock } from "../hooks/useScrollLock";
 const ShareModal = ({ imageToShare, outfitName }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [watermarkedImage, setWatermarkedImage] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const { showShareModal, setShowShareModal } = useAppStore();
 
@@ -19,7 +18,7 @@ const ShareModal = ({ imageToShare, outfitName }) => {
 
     setIsGenerating(true);
     try {
-      const result = await addWatermark(imageToShare, 'styled by ilovme');
+      const result = await addWatermark(imageToShare, 'ilovme');
       setWatermarkedImage(result);
       return result;
     } catch (error) {
@@ -41,15 +40,8 @@ const ShareModal = ({ imageToShare, outfitName }) => {
     setDownloaded(true);
   };
 
-  const handleCopyLink = async () => {
-    const shareUrl = window.location.href;
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleInstagramTip = () => {
-    // Download first, then show tip
+  const handleShareToStory = () => {
+    // Download first, then show Instagram tip
     handleDownload();
   };
 
@@ -97,7 +89,7 @@ const ShareModal = ({ imageToShare, outfitName }) => {
               Share this look
             </h2>
 
-            {/* Primary: Download */}
+            {/* Primary: Save image */}
             <button
               onClick={handleDownload}
               disabled={isGenerating}
@@ -116,35 +108,14 @@ const ShareModal = ({ imageToShare, outfitName }) => {
               )}
             </button>
 
-            {/* Secondary actions */}
-            <div className="flex gap-3">
-              {/* Instagram hint */}
-              <button
-                onClick={handleInstagramTip}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
-              >
-                <Instagram className="w-4 h-4" />
-                Share to Story
-              </button>
-
-              {/* Copy link */}
-              <button
-                onClick={handleCopyLink}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-green-600">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-4 h-4" />
-                    Copy link
-                  </>
-                )}
-              </button>
-            </div>
+            {/* Secondary: Share to Instagram */}
+            <button
+              onClick={handleShareToStory}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
+            >
+              <Instagram className="w-4 h-4" />
+              Share to Story
+            </button>
 
             {/* Subtle tip after download */}
             {downloaded && (
