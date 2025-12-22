@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Download, Twitter, Facebook, Instagram, Link2, Check } from 'lucide-react';
+import { X, Download, Instagram, Link2, Check } from 'lucide-react';
 import { addWatermark } from '../lib/image-processor';
 import useAppStore from '../store/useAppStore';
-
 import { useScrollLock } from "../hooks/useScrollLock";
 
 const ShareModal = ({ imageToShare, outfitName }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [watermarkedImage, setWatermarkedImage] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
   const { showShareModal, setShowShareModal } = useAppStore();
 
   useScrollLock(showShareModal);
@@ -19,7 +19,7 @@ const ShareModal = ({ imageToShare, outfitName }) => {
 
     setIsGenerating(true);
     try {
-      const result = await addWatermark(imageToShare, 'GodLovesMe AI');
+      const result = await addWatermark(imageToShare, 'styled by ilovme');
       setWatermarkedImage(result);
       return result;
     } catch (error) {
@@ -34,134 +34,127 @@ const ShareModal = ({ imageToShare, outfitName }) => {
     const image = await generateShareImage();
     const link = document.createElement('a');
     link.href = image;
-    link.download = `godlovesme-ai-${outfitName || 'outfit'}.png`;
+    link.download = `ilovme-${outfitName || 'look'}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setDownloaded(true);
   };
 
   const handleCopyLink = async () => {
-    // In production, this would be a real shareable link
     const shareUrl = window.location.href;
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareToSocial = (platform) => {
-    const text = `Check out my new outfit on GodLovesMe AI! 👗✨`;
-    const url = window.location.href;
-
-    const urls = {
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      instagram: '#', // Instagram doesn't support web sharing
-    };
-
-    if (urls[platform] !== '#') {
-      window.open(urls[platform], '_blank', 'width=600,height=400');
-    }
+  const handleInstagramTip = () => {
+    // Download first, then show tip
+    handleDownload();
   };
 
   if (!showShareModal) return null;
 
   return (
     createPortal(
-      <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div
+        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
+        onClick={() => setShowShareModal(false)}
+      >
         <div
-          className="glass-card w-full sm:w-auto sm:max-w-lg rounded-t-3xl sm:rounded-2xl p-6 animate-slide-up"
+          className="bg-white w-full sm:w-auto sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden animate-slide-up"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-display font-bold text-gray-900">
-              Share Your Look
-            </h2>
+          {/* Preview - full look, clean */}
+          <div className="relative bg-neutral-100">
+            <img
+              src={watermarkedImage || imageToShare}
+              alt="Your look"
+              className="w-full aspect-[3/4] object-contain"
+            />
+            {isGenerating && (
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+              </div>
+            )}
+            {/* Brand signature */}
+            <div className="absolute bottom-3 right-3 px-2 py-1 bg-white/80 backdrop-blur-sm rounded-full">
+              <span className="text-[10px] font-medium tracking-wider text-gray-500 uppercase">
+                styled by ilovme
+              </span>
+            </div>
+            {/* Close button */}
             <button
               onClick={() => setShowShareModal(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-3 right-3 p-2 bg-black/20 hover:bg-black/30 backdrop-blur-sm rounded-full transition-colors"
             >
-              <X className="w-6 h-6 text-gray-700" />
+              <X className="w-5 h-5 text-white" />
             </button>
           </div>
 
-          {/* Preview */}
-          <div className="mb-6">
-            <div className="relative rounded-xl overflow-hidden">
-              <img
-                src={watermarkedImage || imageToShare}
-                alt="Share preview"
-                className="w-full h-48 object-cover"
-              />
-              {isGenerating && (
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Actions */}
+          <div className="p-5 space-y-3">
+            {/* Header */}
+            <h2 className="text-lg font-serif font-semibold text-center text-gray-900">
+              Share this look
+            </h2>
 
-          {/* Share options */}
-          <div className="space-y-3">
-            {/* Download */}
+            {/* Primary: Download */}
             <button
               onClick={handleDownload}
-              className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:shadow-lg transition-all"
+              disabled={isGenerating}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-brand hover:bg-brand/90 text-white rounded-2xl font-semibold transition-colors disabled:opacity-50"
             >
-              <Download className="w-5 h-5" />
-              <span className="font-semibold">Download Image</span>
-            </button>
-
-            {/* Social media */}
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => shareToSocial('twitter')}
-                className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 transition-colors"
-              >
-                <Twitter className="w-6 h-6 text-blue-400" />
-                <span className="text-xs font-medium text-gray-700">Twitter</span>
-              </button>
-
-              <button
-                onClick={() => shareToSocial('facebook')}
-                className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-600 transition-colors"
-              >
-                <Facebook className="w-6 h-6 text-blue-600" />
-                <span className="text-xs font-medium text-gray-700">Facebook</span>
-              </button>
-
-              <button
-                onClick={() => shareToSocial('instagram')}
-                className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-500 transition-colors"
-              >
-                <Instagram className="w-6 h-6 text-pink-500" />
-                <span className="text-xs font-medium text-gray-700">Instagram</span>
-              </button>
-            </div>
-
-            {/* Copy link */}
-            <button
-              onClick={handleCopyLink}
-              className="w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-primary-500 transition-colors"
-            >
-              {copied ? (
+              {downloaded ? (
                 <>
-                  <Check className="w-5 h-5 text-green-500" />
-                  <span className="font-semibold text-green-600">Link Copied!</span>
+                  <Check className="w-5 h-5" />
+                  Saved to photos
                 </>
               ) : (
                 <>
-                  <Link2 className="w-5 h-5 text-gray-700" />
-                  <span className="font-semibold text-gray-700">Copy Link</span>
+                  <Download className="w-5 h-5" />
+                  Save image
                 </>
               )}
             </button>
-          </div>
 
-          {/* Footer text */}
-          <p className="mt-4 text-center text-xs text-gray-500">
-            Share your style with the world!
-          </p>
+            {/* Secondary actions */}
+            <div className="flex gap-3">
+              {/* Instagram hint */}
+              <button
+                onClick={handleInstagramTip}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
+              >
+                <Instagram className="w-4 h-4" />
+                Share to Story
+              </button>
+
+              {/* Copy link */}
+              <button
+                onClick={handleCopyLink}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span className="text-green-600">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="w-4 h-4" />
+                    Copy link
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Subtle tip after download */}
+            {downloaded && (
+              <p className="text-xs text-center text-gray-400 animate-fade-in">
+                Open Instagram → Add to Story
+              </p>
+            )}
+          </div>
         </div>
       </div>,
       document.body
