@@ -77,12 +77,10 @@ const ShareModal = ({ imageToShare, outfitName }) => {
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
               </div>
             )}
-            {/* Brand signature */}
-            <div className="absolute bottom-3 right-3 px-2 py-1 bg-white/80 backdrop-blur-sm rounded-full">
-              <span className="text-[10px] font-medium tracking-wider text-gray-500 uppercase">
-                styled by ilovme
-              </span>
-            </div>
+            {/* Brand signature - editorial, not UI */}
+            <span className="absolute bottom-4 right-4 text-[11px] font-serif tracking-wide text-white/60">
+              ilovme
+            </span>
             {/* Close button */}
             <button
               onClick={() => setShowShareModal(false)}

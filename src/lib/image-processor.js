@@ -198,8 +198,8 @@ export const generateThumbnail = async (imageUrl, width = 200, height = 300) => 
   });
 };
 
-// Add watermark for sharing
-export const addWatermark = async (imageDataUrl, text = 'GodLovesMe AI') => {
+// Add watermark for sharing - editorial style, not UI
+export const addWatermark = async (imageDataUrl, text = 'ilovme') => {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -212,17 +212,19 @@ export const addWatermark = async (imageDataUrl, text = 'GodLovesMe AI') => {
       // Draw original image
       ctx.drawImage(img, 0, 0);
 
-      // Add watermark
-      ctx.font = 'bold 24px Inter';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.lineWidth = 2;
+      // Add watermark - elegant, editorial style
+      // Use Georgia as a widely available serif font
+      const fontSize = Math.max(16, Math.floor(canvas.width / 30));
+      ctx.font = `${fontSize}px Georgia, "Times New Roman", serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)'; // Subtle, 55% opacity
+      ctx.letterSpacing = '0.05em';
 
       const textWidth = ctx.measureText(text).width;
-      const x = canvas.width - textWidth - 20;
-      const y = canvas.height - 20;
+      // Position: bottom-right with breathing room (not hugging edge)
+      const x = canvas.width - textWidth - 24;
+      const y = canvas.height - 24;
 
-      ctx.strokeText(text, x, y);
+      // No stroke - clean text only
       ctx.fillText(text, x, y);
 
       resolve(canvas.toDataURL('image/png'));
