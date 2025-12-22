@@ -738,16 +738,17 @@ const TryOn = () => {
                 </div>
               </div>
 
-              {/* My Style - personal destination, slightly bolder */}
+              {/* My Style - pill button, clearly tappable */}
               {isAuthenticated ? (
                 <Link
                   to="/my-style"
-                  className="text-sm font-medium text-gray-600 hover:text-foreground transition-colors z-10"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
                 >
-                  My Style
+                  <Heart className="w-3.5 h-3.5 text-brand" />
+                  <span className="text-sm font-medium text-gray-700">My Style</span>
                 </Link>
               ) : (
-                <div className="w-16" />
+                <div className="w-20" />
               )}
             </div>
           </div>
