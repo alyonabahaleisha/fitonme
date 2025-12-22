@@ -55,10 +55,10 @@ const OutfitDetails = ({ outfit, image, onClose, isOpen }) => {
       <div className="flex-1 overflow-y-auto">
         {/* Section header - generous top spacing for pause */}
         <div className="px-4 pt-6 pb-4">
-          <h2 className="text-base font-serif font-semibold text-gray-900">
+          <h2 className="text-xl font-serif font-semibold text-gray-900">
             Items in this look
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-1">
             Real pieces you can find online
           </p>
         </div>
@@ -99,8 +99,10 @@ const ItemTile = ({ item }) => {
     }
   };
 
-  // Use descriptive name, fallback to category only if no name
-  const displayName = item.name || item.category || 'Item';
+  // Only show name if it exists and isn't a generic category like "top"
+  const genericCategories = ['top', 'bottom', 'accessory', 'item', 'clothing'];
+  const hasRealName = item.name && !genericCategories.includes(item.name.toLowerCase());
+  const displayName = hasRealName ? item.name : null;
 
   return (
     <button
@@ -108,13 +110,13 @@ const ItemTile = ({ item }) => {
       disabled={!item.link}
       className="text-left group disabled:cursor-default"
     >
-      {/* Large square image - visually dominant */}
-      <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2">
+      {/* Large square image - object-contain to show full item */}
+      <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 mb-2">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
-            alt={displayName}
-            className="w-full h-full object-cover"
+            alt={displayName || 'Item'}
+            className="w-full h-full object-contain"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -123,15 +125,19 @@ const ItemTile = ({ item }) => {
         )}
       </div>
 
-      {/* Name + subtle arrow */}
-      <div className="flex items-start justify-between gap-1">
-        <span className="text-sm text-gray-900 leading-snug">
-          {displayName}
-        </span>
-        {item.link && (
-          <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-brand transition-colors flex-shrink-0 mt-0.5" />
-        )}
-      </div>
+      {/* Name + subtle arrow - only if we have a real name */}
+      {(displayName || item.link) && (
+        <div className="flex items-start justify-between gap-1">
+          {displayName && (
+            <span className="text-sm text-gray-900 leading-snug">
+              {displayName}
+            </span>
+          )}
+          {item.link && (
+            <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-brand transition-colors flex-shrink-0 mt-0.5 ml-auto" />
+          )}
+        </div>
+      )}
     </button>
   );
 };
