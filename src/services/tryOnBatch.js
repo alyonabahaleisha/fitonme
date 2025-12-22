@@ -77,70 +77,78 @@ export async function getJobResults(jobId) {
 }
 
 /**
- * Poll for results until we have at least one approved look
+ * Poll for results until job is complete
  * @param {string} jobId - The job ID
  * @param {Function} onNewLook - Callback when a new approved look is available
  * @param {Function} onProgress - Callback with progress updates
- * @returns {Promise<void>}
+ * @returns {Promise<void>} - Resolves when job is complete
  */
-export async function pollForResults(jobId, onNewLook, onProgress) {
-  let lastApprovedCount = 0;
-  let attempts = 0;
+export function pollForResults(jobId, onNewLook, onProgress) {
+  return new Promise((resolve, reject) => {
+    let lastApprovedCount = 0;
+    let attempts = 0;
 
-  const poll = async () => {
-    if (attempts >= MAX_POLL_ATTEMPTS) {
-      console.warn('[BATCH] Max poll attempts reached');
-      return;
-    }
+    const poll = async () => {
+      if (attempts >= MAX_POLL_ATTEMPTS) {
+        console.warn('[BATCH] Max poll attempts reached');
+        resolve(); // Resolve anyway, fallback will handle it
+        return;
+      }
 
-    attempts++;
+      attempts++;
 
-    try {
-      const results = await getJobResults(jobId);
+      try {
+        const results = await getJobResults(jobId);
 
-      // Report progress
-      onProgress?.({
-        status: results.status,
-        approved: results.results.approvedCount,
-        pending: results.results.pending,
-        rejected: results.results.rejectedCount,
-        failed: results.results.failedCount,
-      });
+        // Report progress
+        onProgress?.({
+          status: results.status,
+          approved: results.results.approvedCount,
+          pending: results.results.pending,
+          rejected: results.results.rejectedCount,
+          failed: results.results.failedCount,
+        });
 
-      // Check for new approved looks
-      const newApproved = results.results.approved.slice(lastApprovedCount);
-      if (newApproved.length > 0) {
-        console.log(`[BATCH] ${newApproved.length} new approved looks`);
-        for (const look of newApproved) {
-          onNewLook({
-            outfitId: look.outfitId,
-            image: `data:${look.mimeType};base64,${look.image}`,
-            outfit: {
-              id: look.outfitId,
-              name: look.outfitName,
-              description: look.outfitDescription,
-            },
-            coherenceScore: look.coherenceScore,
-          });
+        // Check for new approved looks
+        const newApproved = results.results.approved.slice(lastApprovedCount);
+        if (newApproved.length > 0) {
+          console.log(`[BATCH] ${newApproved.length} new approved looks`);
+          for (const look of newApproved) {
+            onNewLook({
+              outfitId: look.outfitId,
+              image: `data:${look.mimeType};base64,${look.image}`,
+              outfit: {
+                id: look.outfitId,
+                name: look.outfitName,
+                description: look.outfitDescription,
+              },
+              coherenceScore: look.coherenceScore,
+            });
+          }
+          lastApprovedCount = results.results.approvedCount;
         }
-        lastApprovedCount = results.results.approvedCount;
-      }
 
-      // Continue polling if still processing
-      if (results.status === 'processing' || results.results.pending > 0) {
-        setTimeout(poll, POLL_INTERVAL_MS);
-      } else {
-        console.log('[BATCH] Job completed');
+        // Continue polling if still processing
+        if (results.status === 'processing' || results.results.pending > 0) {
+          setTimeout(poll, POLL_INTERVAL_MS);
+        } else {
+          console.log('[BATCH] Job completed');
+          resolve();
+        }
+      } catch (error) {
+        console.error('[BATCH] Poll error:', error);
+        // Continue polling on error (might be temporary)
+        if (attempts < MAX_POLL_ATTEMPTS) {
+          setTimeout(poll, POLL_INTERVAL_MS);
+        } else {
+          reject(error);
+        }
       }
-    } catch (error) {
-      console.error('[BATCH] Poll error:', error);
-      // Continue polling on error (might be temporary)
-      setTimeout(poll, POLL_INTERVAL_MS);
-    }
-  };
+    };
 
-  // Start polling
-  poll();
+    // Start polling
+    poll();
+  });
 }
 
 /**
@@ -161,19 +169,31 @@ export async function runBatchTryOn(
   fallbackSingleTryOn
 ) {
   console.log('[BATCH] Starting batch try-on with', outfits.length, 'outfits');
+  console.log('[BATCH] Outfits:', outfits.map(o => o.name).join(', '));
 
   try {
     // Get prepared blob
+    console.log('[BATCH] Getting prepared blob...');
     let personBlob = getPreparedBlob();
+
     if (!personBlob) {
       console.warn('[BATCH] No prepared blob, creating from data URL');
+      console.log('[BATCH] Data URL length:', userPhotoDataUrl?.length || 0);
       // Convert data URL to blob
       const response = await fetch(userPhotoDataUrl);
       personBlob = await response.blob();
     }
 
+    console.log('[BATCH] Person blob size:', personBlob?.size || 0);
+
+    if (!personBlob || personBlob.size === 0) {
+      throw new Error('No valid person image blob');
+    }
+
     // Start batch job
+    console.log('[BATCH] Starting batch job...');
     const jobId = await startBatchJob(personBlob, outfits);
+    console.log('[BATCH] Job started with ID:', jobId);
 
     let firstLookSent = false;
 
