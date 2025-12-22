@@ -183,28 +183,28 @@ const MoreLooks = ({
                   {index === looks.length - 1 ? (
                     // Last look - show generating state or end message
                     showGenerating && isGeneratingMore ? (
-                      <p className="text-sm text-muted-foreground/70 animate-pulse">
-                        {generatingPhrase}...
+                      <p className="text-sm text-muted-foreground/60 font-serif italic">
+                        {generatingPhrase}
+                        <span className="inline-flex ml-1">
+                          <span className="animate-[pulse_1.4s_ease-in-out_infinite]">.</span>
+                          <span className="animate-[pulse_1.4s_ease-in-out_0.2s_infinite]">.</span>
+                          <span className="animate-[pulse_1.4s_ease-in-out_0.4s_infinite]">.</span>
+                        </span>
                       </p>
                     ) : canGenerateMore && looks.length < 7 ? (
-                      // Can generate more - show scroll hint only on first look
-                      index === 0 ? (
-                        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70">
-                          <ChevronDown className="w-4 h-4 animate-bounce" />
-                          <span>Scroll for next look</span>
-                        </div>
-                      ) : null
+                      // Can generate more - waiting state
+                      null
                     ) : (
-                      <p className="text-xs text-muted-foreground/50">
-                        You've seen all your looks
+                      <p className="text-xs text-muted-foreground/40 font-serif italic">
+                        That's your collection
                       </p>
                     )
                   ) : (
                     // Not last look - show scroll hint only on first
                     index === 0 ? (
-                      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground/70">
-                        <ChevronDown className="w-4 h-4" />
-                        <span>Scroll for next look</span>
+                      <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground/50">
+                        <ChevronDown className="w-4 h-4 animate-bounce" />
+                        <span className="font-serif italic">More looks below</span>
                       </div>
                     ) : null
                   )}
