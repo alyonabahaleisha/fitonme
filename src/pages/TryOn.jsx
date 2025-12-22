@@ -665,7 +665,12 @@ const TryOn = () => {
             }}
             onSave={() => handleSaveLook(firstLook.outfitId)}
             onShare={() => handleShareLook(firstLook)}
+            onEmailLook={handleEmailLook}
+            onSaveToProfile={handleSaveToProfile}
             isSaved={favorites.includes(firstLook.outfitId)}
+            isAuthenticated={isAuthenticated}
+            isSendingEmail={isSendingEmail}
+            look={firstLook}
           />
         );
 

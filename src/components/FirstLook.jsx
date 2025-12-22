@@ -1,14 +1,45 @@
 import { useState } from 'react';
 import { Heart, Share2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import SaveLookSheet from './SaveLookSheet';
 
-const FirstLook = ({ image, description, onSeeMore, onSave, onShare, isSaved = false }) => {
+const FirstLook = ({
+  image,
+  description,
+  onSeeMore,
+  onSave,
+  onShare,
+  onEmailLook,
+  onSaveToProfile,
+  isSaved = false,
+  isAuthenticated = false,
+  isSendingEmail = false,
+  look,
+}) => {
   const [showSaved, setShowSaved] = useState(false);
+  const [showSaveSheet, setShowSaveSheet] = useState(false);
 
   const handleSave = () => {
+    const isFirstSave = !isSaved;
     onSave?.();
     setShowSaved(true);
     setTimeout(() => setShowSaved(false), 2000);
+
+    // Show sheet on first save (if not authenticated)
+    if (!isAuthenticated && isFirstSave) {
+      setTimeout(() => {
+        setShowSaveSheet(true);
+      }, 600);
+    }
+  };
+
+  const handleEmailSubmit = (email) => {
+    onEmailLook?.(look, email);
+  };
+
+  const handleSaveToProfile = () => {
+    setShowSaveSheet(false);
+    onSaveToProfile?.(look);
   };
 
   return (
@@ -75,6 +106,16 @@ const FirstLook = ({ image, description, onSeeMore, onSave, onShare, isSaved = f
           </Button>
         </div>
       </div>
+
+      {/* Save Look Sheet - shown after liking */}
+      <SaveLookSheet
+        isOpen={showSaveSheet}
+        onClose={() => setShowSaveSheet(false)}
+        onEmailSubmit={handleEmailSubmit}
+        onSaveToProfile={handleSaveToProfile}
+        isAuthenticated={isAuthenticated}
+        isSending={isSendingEmail}
+      />
     </div>
   );
 };
