@@ -516,7 +516,13 @@ const TryOn = () => {
   };
 
   const handleViewDetails = (look) => {
-    setSelectedLookForDetails(look);
+    // Enrich outfit with full data (including products) from store
+    const fullOutfit = outfits.find(o => o.id === look.outfit?.id || o.id === look.outfitId);
+    const enrichedLook = {
+      ...look,
+      outfit: fullOutfit || look.outfit,
+    };
+    setSelectedLookForDetails(enrichedLook);
     setShowDetails(true);
   };
 
