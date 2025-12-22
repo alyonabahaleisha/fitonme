@@ -719,12 +719,17 @@ const TryOn = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              {/* Logo - silent signature, centered */}
-              <img
-                src={logo}
-                alt="ILOVME"
-                className="h-6 w-6 opacity-70"
-              />
+              {/* Logo + brand name - silent signature, centered */}
+              <div className="flex items-center gap-1.5">
+                <img
+                  src={logo}
+                  alt="ILOVME"
+                  className="h-5 w-5"
+                />
+                <span className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
+                  ilovme
+                </span>
+              </div>
 
               {/* My Style - personal destination, slightly bolder */}
               {isAuthenticated ? (
