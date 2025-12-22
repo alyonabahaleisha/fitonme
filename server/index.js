@@ -537,10 +537,8 @@ app.post('/api/detect-catalog', (req, res, next) => {
     const totalTime = Date.now() - startTime;
     logger.info(`[DETECT_CATALOG] ${requestId} - Sending response (totalTime=${totalTime}ms)`);
 
-    req.clearCatalogTimeout?.();
-
-    // Return decision
-    if (!res.headersSent && !req.catalogResponded?.()) {
+    // Return decision (check headersSent BEFORE clearing timeout)
+    if (!res.headersSent) {
       res.json({
         success: true,
         requestId,
@@ -551,11 +549,13 @@ app.post('/api/detect-catalog', (req, res, next) => {
       });
     }
 
+    req.clearCatalogTimeout?.();
+
   } catch (error) {
     const totalTime = Date.now() - startTime;
     logger.error(`[DETECT_CATALOG] ${requestId} - Error after ${totalTime}ms:`, error.message);
-    req.clearCatalogTimeout?.();
 
+    // Send response BEFORE clearing timeout
     if (!res.headersSent) {
       res.status(500).json({
         error: 'Failed to detect catalog',
@@ -566,6 +566,8 @@ app.post('/api/detect-catalog', (req, res, next) => {
         reason: 'fallback_error',
       });
     }
+
+    req.clearCatalogTimeout?.();
   }
 });
 
